@@ -73,7 +73,7 @@ const ConnectWallet = () => {
                   </div>
                 </div>
                 {/* Tooltip/Dropdown */}
-                {address && (
+                {/* {address && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     whileHover={{ opacity: 1, y: 0 }}
@@ -92,7 +92,7 @@ const ConnectWallet = () => {
                       </button>
                     </div>
                   </motion.div>
-                )}
+                )} */}
               </div>
             ),
           }}

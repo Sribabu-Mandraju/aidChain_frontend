@@ -4,11 +4,14 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { ThirdwebProvider } from "thirdweb/react";
+import { addAnimationStyles } from "./utils/dao_helper";
+
 
 // other imports
 
 // Create a client
-const queryClient = new QueryClient();
+// const queryClient = new QueryClient();
+addAnimationStyles();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
