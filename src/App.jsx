@@ -4,8 +4,8 @@ import ZkAadhaarAuth from "./pages/ZK_AUTH/ZkAuth";
 import AboutPage from "./pages/ABOUT/AboutPage";
 import DaoPage from "./pages/DAO/DaoPage";
 import AddProposalPage from "./pages/ADD_PROPOSAL/AddProposalPage";
-import './index.css'
-
+import "./index.css";
+import CampaignsPage from "./pages/CAMPAIGNS/CampaignsPage";
 
 const App = () => {
   return (
@@ -16,6 +16,7 @@ const App = () => {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/dao" element={<DaoPage />} />
         <Route path="/dao/new-proposal" element={<AddProposalPage />} />
+        <Route path="/campaigns" element={<CampaignsPage />} />
         {/* Add more routes as needed */}
       </Routes>
     </Router>
