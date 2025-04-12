@@ -1,5 +1,6 @@
 import React from 'react';
 import { Shield, Zap, BarChart3, Award, Heart, Globe2, Users, Target, Clock, HandHeart, Lightbulb, Trophy } from 'lucide-react';
+import MissionImage from '../../assets/about/logo.png'; // Import the local image
 
 function About() {
   const features = [
@@ -44,7 +45,7 @@ function About() {
     {
       year: "Step 1",
       title: "Proposal",
-      description: "Initiate the process with a proposal."
+      description: "Community members propose targeted relief initiatives, leveraging blockchain to ensure transparent aid delivery."
     },
     {
       year: "Step 2",
@@ -135,7 +136,7 @@ function About() {
               <div className="absolute -top-4 -left-4 w-72 h-72 bg-emerald-100 rounded-full mix-blend-multiply filter blur-xl opacity-70"></div>
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <img 
-                  src="https://images.unsplash.com/photo-1619633716507-7d4b8c9b3fac?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                  src={MissionImage} 
                   alt="Our Mission" 
                   className="w-full h-[500px] object-cover"
                 />
@@ -189,29 +190,29 @@ function About() {
 
       {/* Impact Stats */}
       <section className="py-20 bg-gradient-to-b from-emerald-50 to-white">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="text-center mb-16">
-      <h2 className="text-3xl font-bold mb-4">Our Technologies</h2>
-      <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-        Through the power of blockchain technology and community support, we've made a real difference in people's lives.
-      </p>
-    </div>
-    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-      {impactStats.map((stat, index) => (
-        <div key={index} className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-shadow duration-300">
-          <div className="bg-emerald-50 w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto">
-            {stat.icon}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">Our Technologies</h2>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              Through the power of blockchain technology and community support, we've made a real difference in people's lives.
+            </p>
           </div>
-          <div className="text-center">
-            <div className="text-4xl font-bold text-gray-900 mb-2">{stat.number}</div>
-            <div className="text-lg font-semibold text-emerald-600 mb-2">{stat.label}</div>
-            <div className="text-gray-600">{stat.description}</div>
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {impactStats.map((stat, index) => (
+              <div key={index} className="bg-white rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-shadow duration-300">
+                <div className="bg-emerald-50 w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto">
+                  {stat.icon}
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-gray-900 mb-2">{stat.number}</div>
+                  <div className="text-lg font-semibold text-emerald-600 mb-2">{stat.label}</div>
+                  <div className="text-gray-600">{stat.description}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      ))}
-    </div>
-  </div>
-</section>
+      </section>
 
       {/* Timeline Section */}
       <section className="py-20">

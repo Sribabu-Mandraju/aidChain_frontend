@@ -11,9 +11,11 @@ import {
   FaChevronRight,
   FaBars,
   FaTimes,
+  FaDonate,
 } from "react-icons/fa"
 import ConnectWallet from "../shared/ConnectWallet"
 import { Link } from "react-router-dom"
+import LogoImage from '../../assets/about/logo.png'; // Import the logo
 
 const Navbar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -32,18 +34,8 @@ const Navbar = () => {
     { label: "Home", link: "/", icon: FaHome },
     { label: "Campaigns", link: "/campaigns", icon: FaHeart },
     { label: "D.A.O", link: "/dao", icon: FaGlobe },
-    // {
-    //   label: "DAO",
-    //   link: "/dao",
-    //   icon: FaGlobe,
-    //   subItems: [
-    //     { label: "Guides", link: "/guides" },
-    //     { label: "Blog", link: "/blog" },
-    //     { label: "FAQ", link: "/faq" },
-    //   ],
-    // },
     { label: "About", link: "/about", icon: FaInfoCircle },
-    { label: "Contact", link: "/contact", icon: FaPhone },
+    { label: "Donation", link: "/donation", icon: FaDonate },
   ]
 
   return (
@@ -62,7 +54,11 @@ const Navbar = () => {
                 <FaBars className="w-6 h-6" />
               </button>
               <a href="/" className="ml-4 flex items-center space-x-2">
-                <div className="w-9 h-9 bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 rounded-xl shadow-md transform hover:scale-110 transition-transform duration-300"></div>
+                <img 
+                  src={LogoImage} 
+                  alt="Relief Logo" 
+                  className="w-[60px] h-[60px] rounded-xl  transform  duration-300 object-cover"
+                />
                 <span className="text-2xl font-extrabold text-gray-900 tracking-tight">Relief</span>
               </a>
             </div>
@@ -140,7 +136,11 @@ const Navbar = () => {
           {/* Sidebar Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-2">
-              <div className="w-9 h-9 bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 rounded-xl shadow-md"></div>
+              <img 
+                src={LogoImage} 
+                alt="Relief Logo" 
+                className="w-9 h-9 rounded-xl shadow-md object-cover"
+              />
               <span className="text-2xl font-extrabold text-gray-900 tracking-tight">Relief</span>
             </div>
             <button
@@ -211,4 +211,4 @@ const Navbar = () => {
   )
 }
 
-export default Navbar
+export default Navbar;
