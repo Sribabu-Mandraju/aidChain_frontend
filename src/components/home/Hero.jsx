@@ -1,51 +1,53 @@
-import React, { useState, useEffect, useRef } from 'react';
-import lottie from 'lottie-web';
-import donation from '../../assets/lottie/donation.json';
+"use client"
+
+import { useState, useEffect, useRef } from "react"
+import lottie from "lottie-web"
+import donation from "../../assets/lottie/donation.json"
 
 const Hero = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const animationContainer = useRef(null); // Ref for Lottie container
+  const [isVisible, setIsVisible] = useState(false)
+  const animationContainer = useRef(null) // Ref for Lottie container
 
   // Set visibility on mount and initialize Lottie animation
   useEffect(() => {
-    setIsVisible(true);
+    setIsVisible(true)
 
     // Load Lottie animation
     if (animationContainer.current) {
       const anim = lottie.loadAnimation({
         container: animationContainer.current,
-        renderer: 'svg',
+        renderer: "svg",
         loop: true,
         autoplay: true,
         animationData: donation,
-      });
+      })
 
       // Cleanup on unmount
       return () => {
-        anim.destroy();
-      };
+        anim.destroy()
+      }
     }
-  }, []);
+  }, [])
 
   const handleDonateClick = () => {
     // Placeholder for donation functionality
-    alert('Redirecting to donation page...');
-  };
+    alert("Redirecting to donation page...")
+  }
 
   const stats = [
-    { number: '50M+', label: 'People Helped' },
-    { number: '120+', label: 'Countries' },
-    { number: '98%', label: 'Funds Utilized' },
-  ];
+    { number: "50M+", label: "People Helped" },
+    { number: "120+", label: "Countries" },
+    { number: "98%", label: "Funds Utilized" },
+  ]
 
   return (
-    <section className="relative h-screen bg-gradient-to-br from-white to-purple-50 overflow-hidden">
+    <section className="relative h-screen bg-gradient-to-br from-white to-green-50 overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute w-full h-full opacity-30">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-          <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-green-200 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
+          <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
         </div>
       </div>
 
@@ -54,10 +56,10 @@ const Hero = () => {
         className="absolute inset-0 opacity-10"
         style={{
           backgroundImage: `
-            linear-gradient(to right, #6b46c1 1px, transparent 1px),
-            linear-gradient(to bottom, #6b46c1 1px, transparent 1px)
+            linear-gradient(to right, #10b981 1px, transparent 1px),
+            linear-gradient(to bottom, #10b981 1px, transparent 1px)
           `,
-          backgroundSize: '50px 50px',
+          backgroundSize: "50px 50px",
         }}
       ></div>
 
@@ -65,33 +67,34 @@ const Hero = () => {
       <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 flex items-center">
         <div
           className={`grid lg:grid-cols-2 gap-6 lg:gap-12 items-center transition-all duration-1000 transform ${
-            isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
           }`}
         >
           {/* Left Column - Text Content */}
           <div className="space-y-4 lg:space-y-6">
-            <div className="inline-flex items-center px-4 py-1.5 bg-purple-100 rounded-full">
-              <span className="animate-pulse w-2 h-2 bg-purple-600 rounded-full mr-2"></span>
-              <span className="text-purple-800 font-medium text-sm">Live Campaign</span>
+            <div className="inline-flex items-center px-4 py-1.5 bg-green-100 rounded-full">
+              <span className="animate-pulse w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+              <span className="text-green-800 font-medium text-sm">Live Campaign</span>
             </div>
 
             <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
-              Together, We Can{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+              Together, We Can{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">
                 Rebuild Lives
               </span>
             </h1>
 
             <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
-              Join our global movement to provide immediate relief and long-term recovery support to communities affected by natural disasters. Every contribution makes a difference.
+              Join our global movement to provide immediate relief and long-term recovery support to communities
+              affected by natural disasters. Every contribution makes a difference.
             </p>
 
             <div className="flex flex-wrap gap-4">
               <button
                 onClick={handleDonateClick}
-                className="group relative inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-full overflow-hidden shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-105"
+                className="group relative inline-flex items-center px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-full overflow-hidden shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-105"
               >
-                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"></span>
+                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-green-400 to-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out"></span>
                 <span className="relative">
                   Donate Now
                   <span className="ml-2">→</span>
@@ -100,17 +103,17 @@ const Hero = () => {
 
               <a
                 href="#learn-more"
-                className="inline-flex items-center px-6 py-3 text-base font-semibold text-purple-600 bg-white border-2 border-purple-200 rounded-full shadow-sm hover:border-purple-300 hover:bg-purple-50 transition-all duration-300 hover:scale-105"
+                className="inline-flex items-center px-6 py-3 text-base font-semibold text-green-600 bg-white border-2 border-green-200 rounded-full shadow-sm hover:border-green-300 hover:bg-green-50 transition-all duration-300 hover:scale-105"
               >
                 Learn More
               </a>
             </div>
 
             {/* Stats Section */}
-            <div className="grid grid-cols-3 gap-4 lg:gap-8 pt-4 mt-4 border-t border-purple-100">
+            <div className="grid grid-cols-3 gap-4 lg:gap-8 pt-4 mt-4 border-t border-green-100">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-2xl lg:text-3xl font-bold text-purple-600">{stat.number}</div>
+                  <div className="text-2xl lg:text-3xl font-bold text-green-600">{stat.number}</div>
                   <div className="text-xs lg:text-sm text-gray-600 mt-1">{stat.label}</div>
                 </div>
               ))}
@@ -119,15 +122,9 @@ const Hero = () => {
 
           {/* Right Column - Lottie Animation */}
           <div className="">
-            <div
-              ref={animationContainer}
-              className="relative z-10 duration-500 w-full h-64 sm:h-80 lg:h-96"
-            >
+            <div ref={animationContainer} className="relative z-10 duration-500 w-full h-64 sm:h-80 lg:h-96">
               {/* Lottie animation renders here */}
-              {/* <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent"></div> */}
             </div>
-
-            {/* Floating Elements */}
           </div>
         </div>
       </div>
@@ -143,7 +140,7 @@ const Hero = () => {
         </svg>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default Hero;
+export default Hero

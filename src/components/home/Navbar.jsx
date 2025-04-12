@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+"use client"
+
+import { useState } from "react"
 import {
   FaHome,
   FaHeart,
@@ -9,56 +11,58 @@ import {
   FaChevronRight,
   FaBars,
   FaTimes,
-} from 'react-icons/fa';
-import ConnectWallet from '../shared/ConnectWallet';
+} from "react-icons/fa"
+import ConnectWallet from "../shared/ConnectWallet"
+import { Link } from "react-router-dom"
 
 const Navbar = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-    if (isDropdownOpen) setIsDropdownOpen(false);
-  };
+    setIsSidebarOpen(!isSidebarOpen)
+    if (isDropdownOpen) setIsDropdownOpen(false)
+  }
 
   const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+    setIsDropdownOpen(!isDropdownOpen)
+  }
 
   const menuItems = [
-    { label: 'Home', href: '#', icon: FaHome },
-    { label: 'Campaigns', href: '#campaigns', icon: FaHeart },
-    {
-      label: 'Resources',
-      href: '#resources',
-      icon: FaGlobe,
-      subItems: [
-        { label: 'Guides', href: '#guides' },
-        { label: 'Blog', href: '#blog' },
-        { label: 'FAQ', href: '#faq' },
-      ],
-    },
-    { label: 'About', href: '#about', icon: FaInfoCircle },
-    { label: 'Contact', href: '#contact', icon: FaPhone },
-  ];
+    { label: "Home", link: "/", icon: FaHome },
+    { label: "Campaigns", link: "/campaigns", icon: FaHeart },
+    { label: "D.A.O", link: "/dao", icon: FaGlobe },
+    // {
+    //   label: "DAO",
+    //   link: "/dao",
+    //   icon: FaGlobe,
+    //   subItems: [
+    //     { label: "Guides", link: "/guides" },
+    //     { label: "Blog", link: "/blog" },
+    //     { label: "FAQ", link: "/faq" },
+    //   ],
+    // },
+    { label: "About", link: "/about", icon: FaInfoCircle },
+    { label: "Contact", link: "/contact", icon: FaPhone },
+  ]
 
   return (
     <>
       {/* Main Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-b border-purple-200 shadow-sm">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-b border-green-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left side - Menu Button and Logo */}
             <div className="flex items-center">
               <button
                 onClick={toggleSidebar}
-                className="p-2 rounded-lg text-gray-600 hover:bg-purple-200 hover:text-purple-700 transition-all duration-300 ease-in-out"
+                className="p-2 rounded-lg text-gray-600 hover:bg-green-100 hover:text-green-700 transition-all duration-300 ease-in-out"
                 aria-label="Toggle sidebar"
               >
                 <FaBars className="w-6 h-6" />
               </button>
               <a href="/" className="ml-4 flex items-center space-x-2">
-                <div className="w-9 h-9 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 rounded-xl shadow-md transform hover:scale-110 transition-transform duration-300"></div>
+                <div className="w-9 h-9 bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 rounded-xl shadow-md transform hover:scale-110 transition-transform duration-300"></div>
                 <span className="text-2xl font-extrabold text-gray-900 tracking-tight">Relief</span>
               </a>
             </div>
@@ -71,25 +75,25 @@ const Navbar = () => {
                     <div className="relative group">
                       <button
                         onClick={toggleDropdown}
-                        className="flex items-center px-4 py-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-300"
+                        className="flex items-center px-4 py-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all duration-300"
                       >
                         <item.icon className="w-5 h-5 mr-2" />
                         {item.label}
                         <FaChevronDown
-                          className={`w-4 h-4 ml-2 transform transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                          className={`w-4 h-4 ml-2 transform transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
                         />
                       </button>
                       {/* Dropdown Menu */}
                       <div
-                        className={`absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-purple-100 overflow-hidden transform transition-all duration-300 ease-in-out ${
-                          isDropdownOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+                        className={`absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-green-100 overflow-hidden transform transition-all duration-300 ease-in-out ${
+                          isDropdownOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
                         }`}
                       >
                         {item.subItems.map((subItem, subIndex) => (
                           <a
                             key={subIndex}
                             href={subItem.href}
-                            className="flex items-center px-4 py-3 text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-all duration-200"
+                            className="flex items-center px-4 py-3 text-gray-600 hover:bg-green-50 hover:text-green-600 transition-all duration-200"
                           >
                             <FaChevronRight className="w-4 h-4 mr-2" />
                             {subItem.label}
@@ -98,13 +102,13 @@ const Navbar = () => {
                       </div>
                     </div>
                   ) : (
-                    <a
-                      href={item.href}
-                      className="flex items-center px-4 py-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all duration-300"
+                    <Link
+                      to={item.link}
+                      className="flex items-center px-4 py-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all duration-300"
                     >
                       <item.icon className="w-5 h-5 mr-2" />
                       {item.label}
-                    </a>
+                    </Link>
                   )}
                 </div>
               ))}
@@ -129,19 +133,19 @@ const Navbar = () => {
       {/* Sidebar */}
       <div
         className={`fixed top-0 left-0 bottom-0 w-72 bg-white z-50 transform transition-transform duration-500 ease-in-out shadow-2xl ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="p-6 h-full flex flex-col">
           {/* Sidebar Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-2">
-              <div className="w-9 h-9 bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 rounded-xl shadow-md"></div>
+              <div className="w-9 h-9 bg-gradient-to-br from-green-400 via-green-500 to-emerald-600 rounded-xl shadow-md"></div>
               <span className="text-2xl font-extrabold text-gray-900 tracking-tight">Relief</span>
             </div>
             <button
               onClick={toggleSidebar}
-              className="p-2 rounded-lg text-gray-600 hover:bg-purple-200 hover:text-purple-700 transition-all duration-300"
+              className="p-2 rounded-lg text-gray-600 hover:bg-green-100 hover:text-green-700 transition-all duration-300"
               aria-label="Close sidebar"
             >
               <FaTimes className="w-6 h-6" />
@@ -156,55 +160,55 @@ const Navbar = () => {
                   <div>
                     <button
                       onClick={toggleDropdown}
-                      className="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-purple-100 hover:text-purple-600 rounded-xl transition-all duration-300"
+                      className="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-green-100 hover:text-green-600 rounded-xl transition-all duration-300"
                     >
                       <item.icon className="w-5 h-5 mr-3" />
                       {item.label}
                       <FaChevronDown
-                        className={`w-5 h-5 ml-auto transform transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                        className={`w-5 h-5 ml-auto transform transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
                       />
                     </button>
                     {/* Dropdown in Sidebar */}
                     <div
                       className={`ml-8 mt-2 space-y-2 transition-all duration-300 ease-in-out ${
-                        isDropdownOpen ? 'opacity-100 max-h-96' : 'opacity-0 max-h-0 overflow-hidden'
+                        isDropdownOpen ? "opacity-100 max-h-96" : "opacity-0 max-h-0 overflow-hidden"
                       }`}
                     >
                       {item.subItems.map((subItem, subIndex) => (
-                        <a
+                        <Link
                           key={subIndex}
-                          href={subItem.href}
-                          className="flex items-center px-4 py-2 text-gray-500 hover:bg-purple-50 hover:text-purple-600 rounded-lg transition-all duration-200"
+                          to={subItem.to}
+                          className="flex items-center px-4 py-2 text-gray-500 hover:bg-green-50 hover:text-green-600 rounded-lg transition-all duration-200"
                           onClick={toggleSidebar}
                         >
                           <FaChevronRight className="w-4 h-4 mr-3" />
                           {subItem.label}
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <a
-                    href={item.href}
-                    className="flex items-center px-4 py-3 text-gray-600 hover:bg-purple-100 hover:text-purple-600 rounded-xl transition-all duration-300"
+                  <Link
+                    to={item.link}
+                    className="flex items-center px-4 py-3 text-gray-600 hover:bg-green-100 hover:text-green-600 rounded-xl transition-all duration-300"
                     onClick={toggleSidebar}
                   >
                     <item.icon className="w-5 h-5 mr-3" />
                     {item.label}
-                  </a>
+                  </Link>
                 )}
               </div>
             ))}
           </div>
 
           {/* Sidebar Footer */}
-          <div className="pt-6 border-t border-purple-100">
+          <div className="pt-6 border-t border-green-100">
             <ConnectWallet />
           </div>
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar
