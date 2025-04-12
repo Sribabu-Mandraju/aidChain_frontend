@@ -1,26 +1,13 @@
-"use client"
-import { motion } from "framer-motion"
-import FormNavigation from "./FormNavigation"
-import { Check, Calendar, MapPin, DollarSign, ImageIcon, AlertTriangle } from "lucide-react"
+// Step4Review.jsx
+import React from 'react';
+import { motion } from 'framer-motion';
+import FormNavigation from './FormNavigation';
+import { Check, MapPin, DollarSign, ImageIcon, AlertTriangle, FileText } from 'lucide-react';
 
-const Step4Review = (props) => {
-  const { formData, ...stepWizard } = props
-  console.log("Step4: Received props", { formData, stepWizard })
-
-  const handlePrevious = () => {
-    console.log("Step4: Navigating to previous step")
-    if (stepWizard && typeof stepWizard.previousStep === "function") {
-      stepWizard.previousStep()
-    } else {
-      console.error("Step4: stepWizard.previousStep is not available", stepWizard)
-    }
-  }
-
+const Step4Review = ({ formData, previousStep, currentStep }) => {
   const handleSubmit = () => {
-    console.log("Step4: Submitting proposal:", formData)
-
-    const successMessage = document.createElement("div")
-    successMessage.className = "fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+    const successMessage = document.createElement('div');
+    successMessage.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50';
     successMessage.innerHTML = `
       <div class="bg-white rounded-xl p-8 shadow-xl max-w-md mx-auto">
         <div class="flex flex-col items-center text-center">
@@ -36,14 +23,14 @@ const Step4Review = (props) => {
           </button>
         </div>
       </div>
-    `
-    document.body.appendChild(successMessage)
+    `;
+    document.body.appendChild(successMessage);
 
-    const closeButton = successMessage.querySelector("button")
-    closeButton.addEventListener("click", () => {
-      document.body.removeChild(successMessage)
-    })
-  }
+    const closeButton = successMessage.querySelector('button');
+    closeButton.addEventListener('click', () => {
+      document.body.removeChild(successMessage);
+    });
+  };
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -52,22 +39,21 @@ const Step4Review = (props) => {
       y: 0,
       transition: { duration: 0.5, staggerChildren: 0.1 },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0 },
-  }
+  };
 
   const isComplete =
     formData.disasterName &&
     formData.fundsRequested &&
-    formData.startTime &&
-    formData.endTime &&
+    formData.description && // Added description
     formData.location?.latitude &&
     formData.location?.longitude &&
     formData.location?.radius &&
-    formData.image
+    formData.image;
 
   return (
     <motion.div
@@ -97,7 +83,7 @@ const Step4Review = (props) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-1">Disaster Name</h3>
-              <p className="text-lg font-medium text-gray-800">{formData.disasterName || "Not specified"}</p>
+              <p className="text-lg font-medium text-gray-800">{formData.disasterName || 'Not specified'}</p>
             </div>
 
             <div>
@@ -106,28 +92,16 @@ const Step4Review = (props) => {
                 Funds Requested
               </h3>
               <p className="text-lg font-medium text-gray-800">
-                {formData.fundsRequested ? `$${Number(formData.fundsRequested).toLocaleString()}` : "Not specified"}
+                {formData.fundsRequested ? `$${Number(formData.fundsRequested).toLocaleString()}` : 'Not specified'}
               </p>
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <h3 className="text-sm font-medium text-gray-500 mb-1 flex items-center">
-                <Calendar size={16} className="mr-1" />
-                Start Time
+                <FileText size={16} className="mr-1" />
+                Description
               </h3>
-              <p className="text-base text-gray-800">
-                {formData.startTime ? new Date(formData.startTime).toLocaleString() : "Not specified"}
-              </p>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1 flex items-center">
-                <Calendar size={16} className="mr-1" />
-                End Time
-              </h3>
-              <p className="text-base text-gray-800">
-                {formData.endTime ? new Date(formData.endTime).toLocaleString() : "Not specified"}
-              </p>
+              <p className="text-base text-gray-800">{formData.description || 'Not specified'}</p>
             </div>
           </div>
 
@@ -156,7 +130,7 @@ const Step4Review = (props) => {
           </h3>
           {formData.image ? (
             <div className="relative rounded-xl overflow-hidden border border-gray-200 shadow-md">
-              <img src={formData.image || "/placeholder.svg"} alt="Campaign" className="w-full h-48 object-cover" />
+              <img src={formData.image} alt="Campaign" className="w-full h-48 object-cover" />
             </div>
           ) : (
             <div className="bg-gray-100 rounded-xl p-8 text-center border border-gray-200">
@@ -178,13 +152,13 @@ const Step4Review = (props) => {
       </div>
 
       <FormNavigation
-        onPrevious={handlePrevious}
+        onPrevious={previousStep}
         onNext={handleSubmit}
         nextLabel="Submit Proposal"
-        stepWizard={stepWizard}
+        currentStep={currentStep}
       />
     </motion.div>
-  )
-}
+  );
+};
 
-export default Step4Review
+export default Step4Review;

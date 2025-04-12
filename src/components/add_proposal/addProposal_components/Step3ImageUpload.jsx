@@ -1,109 +1,85 @@
-"use client"
+import React, { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
+import axios from 'axios';
+import FormNavigation from './FormNavigation';
+import { Upload, ImageIcon, X, AlertCircle, Check } from 'lucide-react';
 
-import { useState, useRef } from "react"
-import { motion } from "framer-motion"
-import axios from "axios"
-import FormNavigation from "./FormNavigation"
-import { Upload, ImageIcon, X, AlertCircle, Check } from "lucide-react"
-
-const Step3ImageUpload = (props) => {
-  const { formData, updateFormData, ...stepWizard } = props
-  console.log("Step3: Received props", { formData, stepWizard })
-
-  const [imagePreview, setImagePreview] = useState(formData.image || null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [error, setError] = useState("")
-  const [uploadSuccess, setUploadSuccess] = useState(false)
-  const fileInputRef = useRef(null)
+const Step3ImageUpload = ({ formData, updateFormData, nextStep, previousStep, currentStep }) => {
+  const [imagePreview, setImagePreview] = useState(formData.image || null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [error, setError] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const fileInputRef = useRef(null);
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
+    const file = e.target.files[0];
+    if (!file) return;
 
-    const validTypes = ["image/jpeg", "image/png", "image/jpg", "image/gif"]
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
     if (!validTypes.includes(file.type)) {
-      setError("Please select a valid image file (JPEG, PNG, GIF)")
-      return
+      setError('Please select a valid image file (JPEG, PNG, GIF)');
+      return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setError("Image size should be less than 5MB")
-      return
+      setError('Image size should be less than 5MB');
+      return;
     }
 
-    setError("")
-    setImagePreview(URL.createObjectURL(file))
-    uploadImage(file)
-  }
+    setError('');
+    setImagePreview(URL.createObjectURL(file));
+    uploadImage(file);
+  };
 
   const uploadImage = async (file) => {
-    setUploading(true)
-    setUploadProgress(0)
-    setUploadSuccess(false)
+    setUploading(true);
+    setUploadProgress(0);
+    setUploadSuccess(false);
 
-    const formData = new FormData()
-    formData.append("file", file)
-    formData.append("upload_preset","futureX")
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'futureX');
 
     try {
       const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/${
-          import.meta.env.VITE_CLOUDINARY_NAME || "your_cloud_name"
-        }/image/upload`,
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_NAME || 'your_cloud_name'}/image/upload`,
         formData,
         {
           onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-            setUploadProgress(percentCompleted)
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
           },
         },
-      )
+      );
 
-      updateFormData({ image: response.data.secure_url })
-      setUploadSuccess(true)
-      setError("")
+      updateFormData({ image: response.data.secure_url });
+      setUploadSuccess(true);
+      setError('');
     } catch (error) {
-      console.error("Image upload error:", error)
-      setError("Failed to upload image. Please try again.")
+      console.error('Image upload error:', error);
+      setError('Failed to upload image. Please try again.');
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
 
   const handleRemoveImage = () => {
-    setImagePreview(null)
-    setUploadSuccess(false)
-    updateFormData({ image: "" })
+    setImagePreview(null);
+    setUploadSuccess(false);
+    updateFormData({ image: '' });
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      fileInputRef.current.value = '';
     }
-  }
-
-  const handlePrevious = () => {
-    console.log("Step3: Navigating to previous step")
-    if (stepWizard && typeof stepWizard.previousStep === "function") {
-      stepWizard.previousStep()
-    } else {
-      console.error("Step3: stepWizard.previousStep is not available", stepWizard)
-    }
-  }
+  };
 
   const handleNext = () => {
-    console.log("Step3: handleNext called with formData.image:", formData.image)
     if (!formData.image) {
-      setError("Please upload an image for your campaign")
-      console.log("Step3: Validation failed - no image")
-      return
+      setError('Please upload an image for your campaign');
+      return;
     }
-    console.log("Step3: Validation passed, attempting to call nextStep")
-    if (stepWizard && typeof stepWizard.nextStep === "function") {
-      console.log("Step3: Calling stepWizard.nextStep")
-      stepWizard.nextStep()
-    } else {
-      console.error("Step3: stepWizard.nextStep is not available", stepWizard)
-    }
-  }
+    nextStep();
+  };
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -112,12 +88,12 @@ const Step3ImageUpload = (props) => {
       y: 0,
       transition: { duration: 0.5, staggerChildren: 0.1 },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0 },
-  }
+  };
 
   return (
     <motion.div
@@ -143,7 +119,7 @@ const Step3ImageUpload = (props) => {
                 <div className="flex flex-col items-center justify-center pt-5 pb-6 px-4">
                   <Upload className="w-12 h-12 text-green-500 mb-3" />
                   <p className="text-lg text-gray-700 font-medium">
-                    {uploading ? "Uploading..." : "Click to upload or drag and drop"}
+                    {uploading ? 'Uploading...' : 'Click to upload or drag and drop'}
                   </p>
                   <p className="text-sm text-gray-500 text-center mt-1">PNG, JPG, GIF (max. 5MB)</p>
                   <p className="text-xs text-gray-400 mt-4 text-center">
@@ -163,7 +139,7 @@ const Step3ImageUpload = (props) => {
               <div className="relative w-full">
                 <div className="relative rounded-xl overflow-hidden border border-gray-200 shadow-md">
                   <img
-                    src={imagePreview || "/placeholder.svg"}
+                    src={imagePreview}
                     alt="Campaign Preview"
                     className="w-full h-64 object-cover"
                   />
@@ -232,9 +208,13 @@ const Step3ImageUpload = (props) => {
         </motion.div>
       </div>
 
-      <FormNavigation onPrevious={handlePrevious} onNext={handleNext} stepWizard={stepWizard} />
+      <FormNavigation
+        onPrevious={previousStep}
+        onNext={handleNext}
+        currentStep={currentStep}
+      />
     </motion.div>
-  )
-}
+  );
+};
 
-export default Step3ImageUpload
+export default Step3ImageUpload;
