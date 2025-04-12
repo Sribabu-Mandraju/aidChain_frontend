@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HOME/HomePage";
+import ZkAadhaarAuth from "./pages/ZK_AUTH/ZkAuth";
 import './index.css'
 
 const App = () => {
