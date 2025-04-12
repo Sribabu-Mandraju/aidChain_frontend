@@ -1,94 +1,80 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { MapContainer, TileLayer, Marker, Circle, useMap, Popup } from "react-leaflet"
-import FormNavigation from "./FormNavigation"
-import { Search, MapPin, AlertCircle } from "lucide-react"
-import "leaflet/dist/leaflet.css"
-import L from "leaflet"
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { MapContainer, TileLayer, Marker, Circle, useMap, Popup } from 'react-leaflet';
+import FormNavigation from './FormNavigation';
+import { Search, MapPin, AlertCircle } from 'lucide-react';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 
 // Fix for default marker icons
 const DefaultIcon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
-})
+});
 
-L.Marker.prototype.options.icon = DefaultIcon
+L.Marker.prototype.options.icon = DefaultIcon;
 
 const geocodeAddress = async (address) => {
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
   try {
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "ProposalFormApp/1.0 (your.email@example.com)",
+        'User-Agent': 'ProposalFormApp/1.0',
       },
-    })
-    const data = await response.json()
+    });
+    const data = await response.json();
     if (data && data.length > 0) {
-      const { lat, lon, display_name } = data[0]
+      const { lat, lon, display_name } = data[0];
       return {
-        lat: Number.parseFloat(lat),
-        lng: Number.parseFloat(lon),
+        lat: parseFloat(lat),
+        lng: parseFloat(lon),
         displayName: display_name,
-      }
+      };
     } else {
-      throw new Error("No results found")
+      throw new Error('No results found');
     }
   } catch (error) {
-    console.error("Geocoding error:", error)
-    throw error
+    console.error('Geocoding error:', error);
+    throw error;
   }
-}
+};
 
 const MapController = ({ center, setLocation, disasterName, radius }) => {
-  const map = useMap()
+  const map = useMap();
 
   useEffect(() => {
-    // Only set view if we have valid coordinates
-    if (
-      center &&
-      typeof center.latitude === "number" &&
-      typeof center.longitude === "number" &&
-      !isNaN(center.latitude) &&
-      !isNaN(center.longitude)
-    ) {
-      map.setView([center.latitude, center.longitude], 10)
+    if (center && typeof center.latitude === 'number' && typeof center.longitude === 'number' &&
+        !isNaN(center.latitude) && !isNaN(center.longitude)) {
+      map.setView([center.latitude, center.longitude], 10);
     }
-  }, [center, map])
+  }, [center, map]);
 
   const handleMapClick = (e) => {
     if (e && e.latlng) {
-      const { lat, lng } = e.latlng
+      const { lat, lng } = e.latlng;
       setLocation((prev) => ({
         ...prev,
         latitude: lat.toFixed(6),
         longitude: lng.toFixed(6),
-      }))
+      }));
     }
-  }
+  };
 
   useEffect(() => {
-    map.on("click", handleMapClick)
+    map.on('click', handleMapClick);
     return () => {
-      map.off("click", handleMapClick)
-    }
-  }, [map])
+      map.off('click', handleMapClick);
+    };
+  }, [map]);
 
-  // Only render markers and circles if we have valid coordinates
-  if (
-    !center ||
-    typeof center.latitude !== "number" ||
-    typeof center.longitude !== "number" ||
-    isNaN(center.latitude) ||
-    isNaN(center.longitude)
-  ) {
-    return null
+  if (!center || typeof center.latitude !== 'number' || typeof center.longitude !== 'number' ||
+      isNaN(center.latitude) || isNaN(center.longitude)) {
+    return null;
   }
 
   return (
@@ -96,123 +82,107 @@ const MapController = ({ center, setLocation, disasterName, radius }) => {
       <Marker position={[center.latitude, center.longitude]}>
         <Popup>
           <div className="text-center">
-            <strong>{disasterName || "Selected Location"}</strong>
+            <strong>{disasterName || 'Selected Location'}</strong>
             <div className="text-xs mt-1">
               {center.latitude}, {center.longitude}
             </div>
           </div>
         </Popup>
       </Marker>
-      {radius && !isNaN(Number.parseFloat(radius)) && (
+      {radius && !isNaN(parseFloat(radius)) && (
         <Circle
           center={[center.latitude, center.longitude]}
-          radius={Number.parseFloat(radius) * 1000}
+          radius={parseFloat(radius) * 1000}
           pathOptions={{
-            color: "red",
-            fillColor: "red",
+            color: 'red',
+            fillColor: 'red',
             fillOpacity: 0.2,
             weight: 2,
-            dashArray: "5, 5",
+            dashArray: '5, 5',
           }}
         />
       )}
     </>
-  )
-}
+  );
+};
 
-const Step2Location = (props) => {
-  const { formData, updateFormData, ...stepWizard } = props
-  console.log("Step2: Received props", { formData, stepWizard })
-
+const Step2Location = ({ formData, updateFormData, nextStep, previousStep, currentStep }) => {
   const [localData, setLocalData] = useState({
-    latitude: formData?.location?.latitude ? Number.parseFloat(formData.location.latitude) : null,
-    longitude: formData?.location?.longitude ? Number.parseFloat(formData.location.longitude) : null,
-    radius: formData?.location?.radius || "",
-    search: "",
-    displayName: "",
-  })
+    latitude: formData?.location?.latitude ? parseFloat(formData.location.latitude) : null,
+    longitude: formData?.location?.longitude ? parseFloat(formData.location.longitude) : null,
+    radius: formData?.location?.radius || '',
+    search: '',
+    displayName: '',
+  });
 
-  const [isSearching, setIsSearching] = useState(false)
-  const [errors, setErrors] = useState({})
-  const [mapReady, setMapReady] = useState(false)
-  const [mapKey, setMapKey] = useState(Date.now()) // Add key for map re-rendering
+  const [isSearching, setIsSearching] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [mapReady, setMapReady] = useState(false);
+  const [mapKey, setMapKey] = useState(Date.now());
 
   useEffect(() => {
-    // Set map ready after component mounts (client-side)
-    setMapReady(true)
-  }, [])
+    setMapReady(true);
+  }, []);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setLocalData((prev) => ({ ...prev, [name]: value }))
+    const { name, value } = e.target;
+    setLocalData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }))
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
-  }
+  };
 
   const handleSearch = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!localData.search) {
-      setErrors((prev) => ({
+      setErrors(prev => ({
         ...prev,
-        search: "Please enter a location to search",
-      }))
-      return
+        search: 'Please enter a location to search',
+      }));
+      return;
     }
 
-    setIsSearching(true)
+    setIsSearching(true);
     try {
-      const { lat, lng, displayName } = await geocodeAddress(localData.search)
-      setLocalData((prev) => ({
+      const { lat, lng, displayName } = await geocodeAddress(localData.search);
+      setLocalData(prev => ({
         ...prev,
-        latitude: Number.parseFloat(lat),
-        longitude: Number.parseFloat(lng),
+        latitude: parseFloat(lat),
+        longitude: parseFloat(lng),
         displayName: displayName,
-      }))
-      setErrors((prev) => ({ ...prev, search: "" }))
-      // Force map to re-render with new coordinates
-      setMapKey(Date.now())
+      }));
+      setErrors(prev => ({ ...prev, search: '' }));
+      setMapKey(Date.now());
     } catch (error) {
-      setErrors((prev) => ({
+      setErrors(prev => ({
         ...prev,
-        search: "Could not find location. Please try another address.",
-      }))
+        search: 'Could not find location. Please try another address.',
+      }));
     } finally {
-      setIsSearching(false)
+      setIsSearching(false);
     }
-  }
+  };
 
   const validateFields = () => {
-    const newErrors = {}
+    const newErrors = {};
     if (localData.latitude === null || localData.longitude === null) {
-      newErrors.location = "Please select a location on the map"
+      newErrors.location = 'Please select a location on the map';
     }
     if (!localData.radius) {
-      newErrors.radius = "Please specify a radius"
+      newErrors.radius = 'Please specify a radius';
     } else if (Number(localData.radius) <= 0) {
-      newErrors.radius = "Radius must be greater than 0"
+      newErrors.radius = 'Radius must be greater than 0';
     }
-    return newErrors
-  }
-
-  const handlePrevious = () => {
-    console.log("Step2: Navigating to previous step")
-    if (stepWizard && typeof stepWizard.previousStep === "function") {
-      stepWizard.previousStep()
-    } else {
-      console.error("Step2: stepWizard.previousStep is not available", stepWizard)
-    }
-  }
+    return newErrors;
+  };
 
   const handleNext = () => {
-    console.log("Step2: handleNext called with localData:", localData)
-    const newErrors = validateFields()
+    const newErrors = validateFields();
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      console.log("Step2: Validation failed", newErrors)
-      return
+      setErrors(newErrors);
+      return;
     }
 
     updateFormData({
@@ -221,15 +191,9 @@ const Step2Location = (props) => {
         longitude: localData.longitude.toString(),
         radius: localData.radius,
       },
-    })
-    console.log("Step2: Validation passed, attempting to call nextStep")
-    if (stepWizard && typeof stepWizard.nextStep === "function") {
-      console.log("Step2: Calling stepWizard.nextStep")
-      stepWizard.nextStep()
-    } else {
-      console.error("Step2: stepWizard.nextStep is not available", stepWizard)
-    }
-  }
+    });
+    nextStep();
+  };
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -238,27 +202,24 @@ const Step2Location = (props) => {
       y: 0,
       transition: { duration: 0.5, staggerChildren: 0.1 },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: { opacity: 1, y: 0 },
-  }
+  };
 
-  // Default center for the map when no location is selected
-  const defaultCenter = [20, 0] // Center of the world map
-  const defaultZoom = 2
+  const defaultCenter = [20, 0];
+  const defaultZoom = 2;
 
-  // Determine map center and zoom based on selected location
-  const mapCenter =
-    localData.latitude !== null && localData.longitude !== null
-      ? [localData.latitude, localData.longitude]
-      : defaultCenter
+  const mapCenter = localData.latitude !== null && localData.longitude !== null
+    ? [localData.latitude, localData.longitude]
+    : defaultCenter;
 
-  const mapZoom = localData.latitude !== null && localData.longitude !== null ? 10 : defaultZoom
+  const mapZoom = localData.latitude !== null && localData.longitude !== null ? 10 : defaultZoom;
 
   if (!mapReady) {
-    return null
+    return null;
   }
 
   return (
@@ -287,7 +248,7 @@ const Step2Location = (props) => {
                 value={localData.search}
                 onChange={handleChange}
                 className={`w-full pl-10 pr-4 py-3 rounded-lg border ${
-                  errors.search ? "border-red-300 bg-red-50" : "border-gray-300"
+                  errors.search ? 'border-red-300 bg-red-50' : 'border-gray-300'
                 } focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
                 placeholder="e.g., New York, NY"
               />
@@ -299,7 +260,7 @@ const Step2Location = (props) => {
               className="px-5 py-3 rounded-lg bg-green-600 text-white flex items-center gap-2 hover:bg-green-700 transition-all shadow-md"
               disabled={isSearching}
             >
-              {isSearching ? "Searching..." : "Search"}
+              {isSearching ? 'Searching...' : 'Search'}
             </motion.button>
           </form>
           {errors.search && (
@@ -323,7 +284,7 @@ const Step2Location = (props) => {
             value={localData.radius}
             onChange={handleChange}
             className={`w-full px-4 py-3 rounded-lg border ${
-              errors.radius ? "border-red-300 bg-red-50" : "border-gray-300"
+              errors.radius ? 'border-red-300 bg-red-50' : 'border-gray-300'
             } focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
             placeholder="e.g., 10"
           />
@@ -341,7 +302,7 @@ const Step2Location = (props) => {
               key={mapKey}
               center={mapCenter}
               zoom={mapZoom}
-              style={{ height: "100%", width: "100%" }}
+              style={{ height: '100%', width: '100%' }}
               scrollWheelZoom={true}
               zoomControl={true}
               className="z-0"
@@ -357,7 +318,7 @@ const Step2Location = (props) => {
                     longitude: localData.longitude,
                   }}
                   setLocation={setLocalData}
-                  disasterName={formData?.disasterName || ""}
+                  disasterName={formData?.disasterName || ''}
                   radius={localData.radius}
                 />
               )}
@@ -402,9 +363,13 @@ const Step2Location = (props) => {
         </motion.div>
       </div>
 
-      <FormNavigation onPrevious={handlePrevious} onNext={handleNext} stepWizard={stepWizard} />
+      <FormNavigation
+        onPrevious={previousStep}
+        onNext={handleNext}
+        currentStep={currentStep}
+      />
     </motion.div>
-  )
-}
+  );
+};
 
-export default Step2Location
+export default Step2Location;

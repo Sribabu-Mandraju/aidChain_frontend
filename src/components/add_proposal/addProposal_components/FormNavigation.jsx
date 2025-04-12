@@ -1,16 +1,15 @@
-"use client"
-import { motion } from "framer-motion"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import React from 'react';
+import { motion } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const FormNavigation = ({
   onPrevious,
   onNext,
   showPrevious = true,
-  nextLabel = "Next",
-  stepWizard = {},
+  nextLabel = 'Next',
+  currentStep,
 }) => {
-  const currentStep = stepWizard.currentStep || 1
-  const steps = ["Basic Info", "Location", "Image", "Review"]
+  const steps = ['Basic Info', 'Location', 'Image', 'Review'];
 
   return (
     <div className="mt-8">
@@ -20,7 +19,7 @@ const FormNavigation = ({
             <div
               key={index}
               className={`text-sm font-medium transition-colors duration-300 ${
-                currentStep >= index + 1 ? "text-green-600" : "text-gray-400"
+                currentStep >= index + 1 ? 'text-green-600' : 'text-gray-400'
               }`}
             >
               {label}
@@ -64,7 +63,7 @@ const FormNavigation = ({
         </motion.button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default FormNavigation
+export default FormNavigation;
