@@ -44,12 +44,12 @@ const Step3ImageUpload = (props) => {
 
     const formData = new FormData()
     formData.append("file", file)
-    formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET || "your_upload_preset")
+    formData.append("upload_preset","futureX")
 
     try {
       const response = await axios.post(
         `https://api.cloudinary.com/v1_1/${
-          process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || "your_cloud_name"
+          import.meta.env.VITE_CLOUDINARY_NAME || "your_cloud_name"
         }/image/upload`,
         formData,
         {
