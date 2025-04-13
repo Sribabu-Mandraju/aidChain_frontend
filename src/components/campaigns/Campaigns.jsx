@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import CampaignHeader from "./campaigns_components/CampaignHeader";
 import CampaignFilters from "./campaigns_components/CampaignFilters";

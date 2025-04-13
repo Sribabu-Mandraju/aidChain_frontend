@@ -1,9 +1,20 @@
-"use client"
-
-const FormField = ({ label, name, value, onChange, error, type = "text", placeholder = "", min, max }) => {
+const FormField = ({
+  label,
+  name,
+  value,
+  onChange,
+  error,
+  type = "text",
+  placeholder = "",
+  min,
+  max,
+}) => {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium text-gray-700 mb-2"
+      >
         {label}
       </label>
       <input
@@ -21,7 +32,7 @@ const FormField = ({ label, name, value, onChange, error, type = "text", placeho
       />
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
-  )
-}
+  );
+};
 
-export default FormField
+export default FormField;

@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { DollarSign, Gift } from "lucide-react";
@@ -44,9 +42,7 @@ const DonationSection = ({ campaigns }) => {
 
       // Set success message
       setSuccess(
-        `Thank you for your ${donationAmount} ETH donation to ${
-          donationDetails.campaignTitle
-        }! Your support makes a difference.`
+        `Thank you for your ${donationAmount} ETH donation to ${donationDetails.campaignTitle}! Your support makes a difference.`
       );
 
       // Reset form
@@ -72,7 +68,8 @@ const DonationSection = ({ campaigns }) => {
             Make a Difference Today
           </h2>
           <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl mx-auto">
-            Choose to support a specific campaign or donate to our organization to fund ongoing relief efforts.
+            Choose to support a specific campaign or donate to our organization
+            to fund ongoing relief efforts.
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
@@ -105,7 +102,9 @@ const DonationSection = ({ campaigns }) => {
           <div className="max-w-lg mx-auto space-y-6">
             {donationType === "campaign" && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Select Campaign</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Campaign
+                </label>
                 <select
                   value={selectedCampaign}
                   onChange={(e) => setSelectedCampaign(e.target.value)}
@@ -122,7 +121,9 @@ const DonationSection = ({ campaigns }) => {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Donation Amount (ETH)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Donation Amount (ETH)
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <DollarSign size={18} className="text-gray-500" />
@@ -140,7 +141,12 @@ const DonationSection = ({ campaigns }) => {
 
             {error && (
               <div className="text-red-500 text-sm flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"

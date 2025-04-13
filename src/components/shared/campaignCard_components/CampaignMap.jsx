@@ -1,52 +1,53 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { MapContainer, TileLayer, Marker, Circle, Popup } from "react-leaflet"
-import "leaflet/dist/leaflet.css"
-import L from "leaflet"
+import { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Circle, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
 // Fix for default marker icons
 const DefaultIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
   shadowSize: [41, 41],
-})
+});
 
-L.Marker.prototype.options.icon = DefaultIcon
+L.Marker.prototype.options.icon = DefaultIcon;
 
 const MapController = ({ map, center, radius, title }) => {
   useEffect(() => {
     if (center && map) {
-      map.setView([center.lat, center.lng], 10)
+      map.setView([center.lat, center.lng], 10);
     }
-  }, [center, map])
+  }, [center, map]);
 
-  return null
-}
+  return null;
+};
 
 const CampaignMap = ({ latitude, longitude, radius, title }) => {
-  const [map, setMap] = useState(null)
-  const [isMapReady, setIsMapReady] = useState(false)
+  const [map, setMap] = useState(null);
+  const [isMapReady, setIsMapReady] = useState(false);
 
   useEffect(() => {
-    setIsMapReady(true)
-  }, [])
+    setIsMapReady(true);
+  }, []);
 
   const center = {
     lat: Number.parseFloat(latitude),
     lng: Number.parseFloat(longitude),
-  }
+  };
 
   if (!isMapReady || isNaN(center.lat) || isNaN(center.lng)) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100 rounded-lg">
-        <div className="text-gray-500">Loading map or invalid coordinates...</div>
+        <div className="text-gray-500">
+          Loading map or invalid coordinates...
+        </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -89,10 +90,15 @@ const CampaignMap = ({ latitude, longitude, radius, title }) => {
           />
         )}
 
-        <MapController map={map} center={center} radius={radius} title={title} />
+        <MapController
+          map={map}
+          center={center}
+          radius={radius}
+          title={title}
+        />
       </MapContainer>
     </div>
-  )
-}
+  );
+};
 
-export default CampaignMap
+export default CampaignMap;

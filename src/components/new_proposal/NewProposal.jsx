@@ -1,108 +1,107 @@
-"use client"
-
-import { useState } from "react"
-import { motion } from "framer-motion"
-import RichTextEditor from "./newProposal_components/RichTextEditor"
-import FormField from "./newProposal_components/FormField"
-import ImageUploadField from "./newProposal_components/ImageUploadField"
-import ProposalPreview from "./newProposal_components/ProposalPreview"
-import { validateProposalForm } from "../../utils/newProposal_validation"
-import { useNavigate } from "react-router-dom"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import RichTextEditor from "./newProposal_components/RichTextEditor";
+import FormField from "./newProposal_components/FormField";
+import ImageUploadField from "./newProposal_components/ImageUploadField";
+import ProposalPreview from "./newProposal_components/ProposalPreview";
+import { validateProposalForm } from "../../utils/newProposal_validation";
+import { useNavigate } from "react-router-dom";
 
 const NewProposal = () => {
-  const navigate = useNavigate()
-  const [activeStep, setActiveStep] = useState(1)
+  const navigate = useNavigate();
+  const [activeStep, setActiveStep] = useState(1);
   const [formData, setFormData] = useState({
     disasterName: "",
     area: "",
     duration: 30,
     fundsRequested: 100000,
     description: "",
-    image: "https://images.unsplash.com/photo-1542393545-10f5b85e14fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-  })
-  const [errors, setErrors] = useState({})
-  const [isSubmitting, setIsSubmitting] = useState(false)
+    image:
+      "https://images.unsplash.com/photo-1542393545-10f5b85e14fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+  });
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target
+    const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? Number(value) : value,
-    }))
+    }));
 
     // Clear error when field is edited
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
         [name]: null,
-      }))
+      }));
     }
-  }
+  };
 
   const handleEditorChange = (content) => {
     setFormData((prev) => ({
       ...prev,
       description: content,
-    }))
+    }));
 
     if (errors.description) {
       setErrors((prev) => ({
         ...prev,
         description: null,
-      }))
+      }));
     }
-  }
+  };
 
   const handleImageChange = (imageUrl) => {
     setFormData((prev) => ({
       ...prev,
       image: imageUrl,
-    }))
-  }
+    }));
+  };
 
   const nextStep = () => {
-    const stepErrors = validateProposalForm(formData, activeStep)
+    const stepErrors = validateProposalForm(formData, activeStep);
 
     if (Object.keys(stepErrors).length === 0) {
-      setActiveStep((prev) => prev + 1)
-      window.scrollTo(0, 0)
+      setActiveStep((prev) => prev + 1);
+      window.scrollTo(0, 0);
     } else {
-      setErrors(stepErrors)
+      setErrors(stepErrors);
     }
-  }
+  };
 
   const prevStep = () => {
-    setActiveStep((prev) => prev - 1)
-    window.scrollTo(0, 0)
-  }
+    setActiveStep((prev) => prev - 1);
+    window.scrollTo(0, 0);
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const formErrors = validateProposalForm(formData, activeStep)
+    const formErrors = validateProposalForm(formData, activeStep);
 
     if (Object.keys(formErrors).length === 0) {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
 
       try {
         // In a real app, this would be a call to your blockchain contract
-        console.log("Submitting proposal:", formData)
+        console.log("Submitting proposal:", formData);
 
         // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         // Redirect to DAO page after successful submission
-        navigate("/dao")
+        navigate("/dao");
       } catch (error) {
-        console.error("Error submitting proposal:", error)
-        alert("Failed to submit proposal. Please try again.")
+        console.error("Error submitting proposal:", error);
+        alert("Failed to submit proposal. Please try again.");
       } finally {
-        setIsSubmitting(false)
+        setIsSubmitting(false);
       }
     } else {
-      setErrors(formErrors)
+      setErrors(formErrors);
     }
-  }
+  };
 
   const renderStepContent = () => {
     switch (activeStep) {
@@ -149,28 +148,42 @@ const NewProposal = () => {
               />
             </div>
           </div>
-        )
+        );
 
       case 2:
         return (
           <div className="space-y-6">
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Proposal Description</label>
-              <RichTextEditor value={formData.description} onChange={handleEditorChange} error={errors.description} />
-              {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Proposal Description
+              </label>
+              <RichTextEditor
+                value={formData.description}
+                onChange={handleEditorChange}
+                error={errors.description}
+              />
+              {errors.description && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.description}
+                </p>
+              )}
             </div>
 
-            <ImageUploadField value={formData.image} onChange={handleImageChange} label="Campaign Image" />
+            <ImageUploadField
+              value={formData.image}
+              onChange={handleImageChange}
+              label="Campaign Image"
+            />
           </div>
-        )
+        );
 
       case 3:
-        return <ProposalPreview proposal={formData} />
+        return <ProposalPreview proposal={formData} />;
 
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <section className="relative py-16 sm:py-24 bg-gradient-to-br from-white to-green-50 min-h-screen">
@@ -195,7 +208,12 @@ const NewProposal = () => {
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              ></path>
             </svg>
             Back to DAO
           </button>
@@ -210,7 +228,9 @@ const NewProposal = () => {
         >
           <div className="inline-flex items-center px-4 py-1.5 bg-green-100 rounded-full mb-4">
             <span className="animate-pulse w-2 h-2 bg-green-600 rounded-full mr-2"></span>
-            <span className="text-green-800 font-medium text-sm">New Proposal</span>
+            <span className="text-green-800 font-medium text-sm">
+              New Proposal
+            </span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight mb-4">
             Create a{" "}
@@ -219,8 +239,8 @@ const NewProposal = () => {
             </span>
           </h1>
           <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-            Submit your proposal to the DAO for consideration. Provide detailed information to help members make
-            informed decisions.
+            Submit your proposal to the DAO for consideration. Provide detailed
+            information to help members make informed decisions.
           </p>
         </motion.div>
 
@@ -239,7 +259,11 @@ const NewProposal = () => {
                   {step}
                 </div>
                 <span className="mt-2 text-xs text-gray-500">
-                  {step === 1 ? "Basic Info" : step === 2 ? "Details" : "Review"}
+                  {step === 1
+                    ? "Basic Info"
+                    : step === 2
+                    ? "Details"
+                    : "Review"}
                 </span>
               </div>
             ))}
@@ -320,7 +344,7 @@ const NewProposal = () => {
         </motion.div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default NewProposal
+export default NewProposal;

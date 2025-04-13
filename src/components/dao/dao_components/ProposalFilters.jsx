@@ -1,8 +1,7 @@
-"use client"
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 
 const ProposalFilters = ({ filter, setFilter, searchTerm, setSearchTerm }) => {
-  const filterOptions = ["All", "Active", "Urgent", "Completed"]
+  const filterOptions = ["All", "Active", "Urgent", "Completed"];
 
   return (
     <motion.div
@@ -56,7 +55,7 @@ const ProposalFilters = ({ filter, setFilter, searchTerm, setSearchTerm }) => {
         </div>
       </div>
     </motion.div>
-  )
-}
+  );
+};
 
-export default ProposalFilters
+export default ProposalFilters;

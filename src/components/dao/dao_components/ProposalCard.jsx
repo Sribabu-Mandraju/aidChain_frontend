@@ -1,9 +1,12 @@
-"use client"
-import { motion } from "framer-motion"
-import { formatAddress, formatCurrency, calculateTimeLeft } from "../../../utils/dao_helper"
+import { motion } from "framer-motion";
+import {
+  formatAddress,
+  formatCurrency,
+  calculateTimeLeft,
+} from "../../../utils/dao_helper";
 
 const ProposalCard = ({ proposal, onViewDetails, index }) => {
-  const timeLeft = calculateTimeLeft(proposal.endTime)
+  const timeLeft = calculateTimeLeft(proposal.endTime);
 
   return (
     <motion.div
@@ -25,8 +28,8 @@ const ProposalCard = ({ proposal, onViewDetails, index }) => {
               proposal.state === "Active"
                 ? "bg-green-100 text-green-800"
                 : proposal.state === "Urgent"
-                  ? "bg-red-100 text-red-800"
-                  : "bg-gray-100 text-gray-800"
+                ? "bg-red-100 text-red-800"
+                : "bg-gray-100 text-gray-800"
             }`}
           >
             {proposal.state}
@@ -36,7 +39,9 @@ const ProposalCard = ({ proposal, onViewDetails, index }) => {
 
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-semibold text-gray-900 truncate">{proposal.disasterName}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 truncate">
+            {proposal.disasterName}
+          </h3>
           <span className="text-sm text-gray-500">#{proposal.id}</span>
         </div>
 
@@ -45,15 +50,21 @@ const ProposalCard = ({ proposal, onViewDetails, index }) => {
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <p className="text-xs text-gray-500">Proposer</p>
-            <p className="text-sm font-medium">{formatAddress(proposal.proposer)}</p>
+            <p className="text-sm font-medium">
+              {formatAddress(proposal.proposer)}
+            </p>
           </div>
           <div>
             <p className="text-xs text-gray-500">Funds Requested</p>
-            <p className="text-sm font-medium">{formatCurrency(proposal.fundsRequested)}</p>
+            <p className="text-sm font-medium">
+              {formatCurrency(proposal.fundsRequested)}
+            </p>
           </div>
           <div>
             <p className="text-xs text-gray-500">Time Left</p>
-            <p className="text-sm font-medium">{proposal.state === "Completed" ? "Ended" : timeLeft}</p>
+            <p className="text-sm font-medium">
+              {proposal.state === "Completed" ? "Ended" : timeLeft}
+            </p>
           </div>
           <div>
             <p className="text-xs text-gray-500">Votes (For/Against)</p>
@@ -73,7 +84,7 @@ const ProposalCard = ({ proposal, onViewDetails, index }) => {
         </button>
       </div>
     </motion.div>
-  )
-}
+  );
+};
 
-export default ProposalCard
+export default ProposalCard;
