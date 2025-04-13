@@ -5,23 +5,8 @@ import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import { useAccount, useDisconnect } from "wagmi";
 import { base } from "wagmi/chains";
 
-// Coinbase Smart Wallet logo (SVG as inline JSX for simplicity)
-// Replace with an actual logo URL or local asset if available
-const CoinbaseSmartWalletLogo = () => (
-  <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="inline-block"
-  >
-    <path
-      d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2c5.514 0 10 4.486 10 10s-4.486 10-10 10S2 17.514 2 12 6.486 2 12 2zm-1 4v4H7v2h4v4h2v-4h4v-2h-4V6h-2z"
-      fill="#0052FF"
-    />
-  </svg>
-);
+// Import your logo at the top
+import WalletLogo from "../../assets/wallet/BaseLogo.png"; // Replace with your actual logo path, e.g., "../assets/wallet-logo.png"
 
 // Animation variants
 const buttonVariants = {
@@ -38,20 +23,27 @@ const ConnectWalletComponent = () => {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
 
-  // Custom styles for Coinbase OnchainKit button
+  // Minimal custom styles for Coinbase OnchainKit
   const customStyles = {
-    "--ock-accentColor": "#ffffff",
-    "--ock-accentBackground": "linear-gradient(to right, #0052FF, #22c55e)", // Coinbase blue to your green
-    "--ock-backgroundColor": "#ffffff",
-    "--ock-borderColor": "#bfdbfe", // Light blue for Coinbase branding
-    "--ock-secondaryBackground": "#eff6ff", // Blue-50 equivalent
-    "--ock-secondaryColor": "#1e3a8a", // Dark blue for text
     "--ock-borderRadius": "9999px",
     "--ock-fontFamily": "Inter, sans-serif",
   };
 
   return (
     <div className="flex items-center gap-2">
+      <style jsx global>{`
+        .ock-button, /* Targeting Coinbase OnchainKit button */
+        .ock-button * {
+          background: white !important;
+          background-image: none !important;
+          border: 2px solid #22c55e !important;
+          color: #0052FF !important;
+        }
+        .ock-button:hover {
+          border-color: #22c55e !important;
+          color: #003bb5 !important;
+        }
+      `}</style>
       <motion.div
         variants={buttonVariants}
         initial="hidden"
@@ -64,21 +56,52 @@ const ConnectWalletComponent = () => {
           <div className="flex items-center gap-2">
             {/* Connected Address Display */}
             <div
-              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full px-3 py-1.5 text-sm font-semibold shadow-sm hover:from-blue-500 hover:to-green-400 transition-all duration-300"
-              title={address} // Full address on hover
+              style={{
+                background: "white",
+                border: "2px solid #22c55e",
+                color: "#0052FF",
+                borderRadius: "9999px",
+                padding: "0.375rem 0.75rem",
+                fontSize: "0.875rem",
+                fontWeight: "600",
+                boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+              }}
+              className="transition-all duration-300 hover:border-[#003bb5] hover:text-[#003bb5]"
+              title={address}
             >
-              <CoinbaseSmartWalletLogo />
-              <span className="font-mono truncate max-w-[80px] sm:max-w-[100px]">
+              <img
+                src={WalletLogo}
+                alt="Wallet Logo"
+                style={{ width: "24px", height: "24px", display: "inline-block" }}
+              />
+              <span
+                style={{ fontFamily: "monospace", maxWidth: "100px" }}
+                className="truncate"
+              >
                 {address.slice(0, 4)}...{address.slice(-4)}
               </span>
             </div>
             {/* Disconnect Button */}
             <button
               onClick={() => disconnect()}
-              className="flex items-center gap-1 bg-red-50 text-red-600 rounded-full px-2.5 py-1 text-xs font-semibold hover:bg-red-100 transition-all duration-300"
+              style={{
+                background: "#fef2f2",
+                color: "#dc2626",
+                borderRadius: "9999px",
+                padding: "0.25rem 0.625rem",
+                fontSize: "0.75rem",
+                fontWeight: "600",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.25rem",
+              }}
+              className="transition-all duration-300 hover:bg-red-100"
             >
               <svg
-                className="w-4 h-4"
+                style={{ width: "16px", height: "16px" }}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -95,15 +118,36 @@ const ConnectWalletComponent = () => {
             </button>
           </div>
         ) : (
-          <ConnectWallet
-            chainId={base.id}
-            style={customStyles}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-semibold shadow-sm"
+          <div
+            style={{
+              background: "white",
+              border: "2px solid #0052FF",
+              borderRadius: "9999px",
+              padding: "0.375rem 0.75rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              fontSize: "0.875rem",
+              fontWeight: "600",
+              color: "#0052FF",
+              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+            }}
+            className="transition-all duration-300 hover:border-[#003bb5] hover:text-[#003bb5]"
           >
-            <CoinbaseSmartWalletLogo />
-            <span className="hidden sm:inline">Connect Wallet</span>
-            <FaWallet className="text-lg sm:hidden" /> {/* Icon-only on mobile */}
-          </ConnectWallet>
+            <ConnectWallet
+              chainId={base.id}
+              style={customStyles}
+              className="flex items-center gap-2 bg-transparent"
+            >
+              <img
+                src={WalletLogo}
+                alt="Wallet Logo"
+                style={{ width: "24px", height: "24px", display: "inline-block" }}
+              />
+              <span className="hidden sm:inline">Connect Wallet</span>
+              <FaWallet className="text-lg sm:hidden" />
+            </ConnectWallet>
+          </div>
         )}
       </motion.div>
     </div>
