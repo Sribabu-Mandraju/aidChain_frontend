@@ -4,6 +4,8 @@ import {
   AnonAadhaarProvider,
   LogInWithAnonAadhaar,
   useAnonAadhaar,
+  DEVELOPMENT_APP_ID,
+  DEVELOPMENT_MODE
 } from "@anon-aadhaar/react";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import { useAccount } from "wagmi";
@@ -148,8 +150,30 @@ const VictimRegistrationPage = () => {
     </motion.div>
   );
 
+  // Render the Aadhar verification section with optimized settings
+  const renderAadharVerification = () => (
+    <div className="w-full bg-white border border-gray-200 rounded-lg p-4">
+      <p className="text-sm text-gray-500 mb-3">
+        Generate a zero-knowledge proof with Anon Aadhaar:
+      </p>
+      <div className="flex justify-center">
+        <LogInWithAnonAadhaar
+          mode={DEVELOPMENT_MODE}
+          appId={DEVELOPMENT_APP_ID}
+          quickMode={true}
+          cacheProof={true}
+          skipPreliminaryCheck={true}
+        />
+      </div>
+    </div>
+  );
+
   return (
-    <AnonAadhaarProvider>
+    <AnonAadhaarProvider
+      _appId={DEVELOPMENT_APP_ID}
+      _development={true}
+      _fastMode={true}
+    >
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-indigo-50 py-12 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
           {/* Header */}
@@ -293,14 +317,7 @@ const VictimRegistrationPage = () => {
                       </p>
                     </div>
 
-                    <div className="w-full bg-white border border-gray-200 rounded-lg p-4">
-                      <p className="text-sm text-gray-500 mb-3">
-                        Generate a zero-knowledge proof with Anon Aadhaar:
-                      </p>
-                      <div className="flex justify-center">
-                        <LogInWithAnonAadhaar />
-                      </div>
-                    </div>
+                    {renderAadharVerification()}
 
                     <div className="flex flex-col sm:flex-row gap-3">
                       <motion.button
@@ -479,4 +496,14 @@ const VictimRegistrationPage = () => {
   );
 };
 
-export default VictimRegistrationPage;
+const ProductionVictimRegistrationPage = () => (
+  <AnonAadhaarProvider
+    _appId="YOUR_ACTUAL_APP_ID"
+    _development={false}
+    _fastMode={false}
+  >
+    <VictimRegistrationPage />
+  </AnonAadhaarProvider>
+);
+
+export default ProductionVictimRegistrationPage;
