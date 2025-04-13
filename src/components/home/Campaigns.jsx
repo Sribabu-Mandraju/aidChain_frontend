@@ -1,73 +1,83 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import CampaignCard from "../shared/CampaignCard"
-import flood from '../../assets/campaigns/floods.webp'
+import { useState } from "react";
+import { motion } from "framer-motion";
+import CampaignCard from "../shared/CampaignCard";
+import flood from "../../assets/campaigns/floods.webp";
+import CampaignList from "../shared/campaignCard_components/CampaignList";
 
 const campaignImages = [
   "https://images.unsplash.com/photo-1542393545-10f5b85e14fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
   "https://images.unsplash.com/photo-1610550603158-91f50474b235?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
   "https://images.unsplash.com/photo-1595854341625-fc2528d3b11e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
   "https://images.unsplash.com/photo-1500994340878-40ce894df491?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-]
+];
 
 const Campaigns = () => {
-  const [filter, setFilter] = useState("All")
+  const [filter, setFilter] = useState("All");
 
   const campaigns = [
     {
+      id: "1",
+      title: "Clean Water Initiative",
+      description:
+        "Help us provide clean drinking water to communities affected by the recent drought. Your support will fund water purification systems and well construction in areas with limited access to clean water sources. Join us in making a difference!",
+      image:
+        "https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      status: "Urgent",
+      totalDonations: "15.5 ETH",
+      goal: "30 ETH",
+      progress: 52,
+      donors: 78,
+      volunteers: 24,
+      daysLeft: 12,
+      latitude: "37.7749",
+      longitude: "-122.4194",
+      radius: "10",
+    },
+    {
+      id: "2",
+      title: "Reforestation Project",
+      description:
+        "Join our effort to restore forest ecosystems damaged by wildfires. We're planting native trees and implementing sustainable land management practices to prevent future disasters and support local wildlife.",
+      image:
+        "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      status: "Active",
+      totalDonations: "22.3 ETH",
+      goal: "40 ETH",
+      progress: 56,
+      donors: 104,
+      volunteers: 37,
+      daysLeft: 25,
+      latitude: "34.0522",
+      longitude: "-118.2437",
+      radius: "15",
+    },
+    {
+      id: "3",
       title: "Hurricane Relief Fund",
       description:
-        "Support communities devastated by Hurricane X in the Caribbean. Immediate assistance needed for food, shelter, and medical supplies.",
-      totalDonations: "$125,000",
-      goal: "$200,000",
-      progress: 62.5,
-      status: "Active",
-      image: flood,
-      daysLeft: 15,
-      donors: 1234,
-    },
-    {
-      title: "Earthquake Recovery Initiative",
-      description:
-        "Aid rebuilding efforts after a 7.2 magnitude earthquake in Southeast Asia. Help provide temporary housing and essential supplies.",
-      totalDonations: "$89,500",
-      goal: "$150,000",
-      progress: 59.7,
+        "Support families affected by Hurricane Maria with emergency supplies, temporary housing, and rebuilding assistance. Your donation provides immediate relief and long-term recovery support to devastated communities.",
+      image:
+        "https://images.unsplash.com/photo-1603720999656-f4f9d7e186f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       status: "Urgent",
-      image: flood,
-      daysLeft: 7,
-      donors: 892,
+      totalDonations: "45.8 ETH",
+      goal: "50 ETH",
+      progress: 92,
+      donors: 215,
+      volunteers: 68,
+      daysLeft: 5,
+      latitude: "25.7617",
+      longitude: "-80.1918",
+      radius: "25",
     },
-    {
-      title: "Flood Relief Campaign",
-      description:
-        "Provide immediate relief to flood victims in Western Europe. Support evacuation efforts and emergency response teams.",
-      totalDonations: "$47,200",
-      goal: "$100,000",
-      progress: 47.2,
-      status: "Active",
-      image: flood,
-      daysLeft: 21,
-      donors: 567,
-    },
-    {
-      title: "Wildfire Support Network",
-      description:
-        "Help families displaced by wildfires in North America. Funding goes towards temporary housing and rebuilding efforts.",
-      totalDonations: "$63,800",
-      goal: "$80,000",
-      progress: 79.75,
-      status: "Completed",
-      image: flood,
-      daysLeft: 0,
-      donors: 945,
-    },
-  ]
+  ];
 
-  const filterOptions = ["All", "Active", "Urgent", "Completed"]
-  const filteredCampaigns = filter === "All" ? campaigns : campaigns.filter((campaign) => campaign.status === filter)
+  const filterOptions = ["All", "Active", "Urgent", "Completed"];
+  const filteredCampaigns =
+    filter === "All"
+      ? campaigns
+      : campaigns.filter((campaign) => campaign.status === filter);
 
   return (
     <section className="relative py-16 sm:py-24 bg-gradient-to-br from-white to-green-50 overflow-hidden">
@@ -89,7 +99,9 @@ const Campaigns = () => {
         >
           <div className="inline-flex items-center px-4 py-1.5 bg-green-100 rounded-full mb-4">
             <span className="animate-pulse w-2 h-2 bg-green-600 rounded-full mr-2"></span>
-            <span className="text-green-800 font-medium text-sm">Live Campaigns</span>
+            <span className="text-green-800 font-medium text-sm">
+              Live Campaigns
+            </span>
           </div>
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight mb-4">
             Support Our{" "}
@@ -98,8 +110,8 @@ const Campaigns = () => {
             </span>
           </h2>
           <p className="mt-4 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-            Your donations help us provide critical aid to those in need. Join our global community of donors making a
-            real difference.
+            Your donations help us provide critical aid to those in need. Join
+            our global community of donors making a real difference.
           </p>
         </motion.div>
 
@@ -123,10 +135,10 @@ const Campaigns = () => {
         </div>
 
         {/* Campaign Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {filteredCampaigns.map((campaign, index) => (
-            <CampaignCard key={index} campaign={campaign} index={index} />
-          ))}
+        <div className="w-full max-w-7xl mx-auto">
+          {/* {filteredCampaigns.map((campaign, index) => ( */}
+          <CampaignList campaigns={filteredCampaigns} />
+          {/* ))} */}
         </div>
 
         {/* View More Button */}
@@ -139,14 +151,24 @@ const Campaigns = () => {
         >
           <button className="inline-flex items-center px-8 py-3 bg-white text-green-600 border-2 border-green-200 rounded-full font-semibold hover:border-green-300 hover:bg-green-50 transition-all duration-300 transform hover:scale-105 shadow-sm">
             View All Campaigns
-            <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            <svg
+              className="w-5 h-5 ml-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              />
             </svg>
           </button>
         </motion.div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default Campaigns
+export default Campaigns;
