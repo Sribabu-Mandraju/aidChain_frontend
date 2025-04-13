@@ -1,26 +1,36 @@
-// In main.jsx or App.jsx
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
-import ReactDOM from "react-dom/client";
+import { createRoot } from "react-dom/client";
+import { WagmiProvider, createConfig, http } from "wagmi";
+import { base, baseSepolia } from "wagmi/chains";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WalletProvider } from "@coinbase/onchainkit/wallet";
+import { coinbaseWallet } from "wagmi/connectors"; // Import connector
 import App from "./App";
-import { ThirdwebProvider } from "thirdweb/react";
-import { addAnimationStyles } from "./utils/dao_helper";
 
+// Wagmi config with proper Coinbase Wallet connector
+const config = createConfig({
+  chains: [base, baseSepolia],
+  connectors: [
+    coinbaseWallet({
+      appName: "Your App Name", // Replace with your app's name
+      preference: "all", // Supports both Coinbase Wallet and Smart Wallet
+    }),
+  ],
+  transports: {
+    [base.id]: http(),
+    [baseSepolia.id]: http(),
+  },
+});
 
-// other imports
+const queryClient = new QueryClient();
 
-// Create a client
-// const queryClient = new QueryClient();
-addAnimationStyles();
-
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <React.StrictMode>
-    {" "}
-    <ThirdwebProvider
-      activeChain="ethereum" // or your preferred chain
-      clientId="6d1bf7da64bebfb8c1d07dcc2f72c2f1" // if using thirdweb services
-    >
-      <App />
-    </ThirdwebProvider>{" "}
-  </React.StrictMode>
+const root = createRoot(document.getElementById("root"));
+root.render(
+  <WagmiProvider config={config}>
+    <QueryClientProvider client={queryClient}>
+      <WalletProvider>
+        <App />
+      </WalletProvider>
+    </QueryClientProvider>
+  </WagmiProvider>
 );

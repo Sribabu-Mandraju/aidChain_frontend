@@ -13,8 +13,8 @@ import {
   FaTimes,
   FaDonate,
 } from "react-icons/fa"
-import ConnectWallet from "../shared/ConnectWallet"
 import { Link } from "react-router-dom"
+import ConnectWalletComponent from '../shared/ConnectWallet'
 import LogoImage from '../../assets/about/logo.png'; // Import the logo
 
 const Navbar = () => {
@@ -112,7 +112,7 @@ const Navbar = () => {
 
             {/* Right side - Connect Wallet Button */}
             <div>
-              <ConnectWallet />
+              <ConnectWalletComponent />
             </div>
           </div>
         </div>
@@ -203,7 +203,7 @@ const Navbar = () => {
 
           {/* Sidebar Footer */}
           <div className="pt-6 border-t border-green-100">
-            <ConnectWallet />
+            <ConnectWalletComponent />
           </div>
         </div>
       </div>
