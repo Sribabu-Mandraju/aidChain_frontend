@@ -1,6 +1,4 @@
-"use client"
-
-import { useState } from "react"
+import { useState } from "react";
 import {
   FaHome,
   FaHeart,
@@ -12,23 +10,23 @@ import {
   FaBars,
   FaTimes,
   FaDonate,
-} from "react-icons/fa"
-import { Link } from "react-router-dom"
-import ConnectWalletComponent from '../shared/ConnectWallet'
-import LogoImage from '../../assets/about/logo.png'; // Import the logo
+} from "react-icons/fa";
+import { Link } from "react-router-dom";
+import ConnectWalletComponent from "../shared/ConnectWallet";
+import LogoImage from "../../assets/about/logo.png"; // Import the logo
 
 const Navbar = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen)
-    if (isDropdownOpen) setIsDropdownOpen(false)
-  }
+    setIsSidebarOpen(!isSidebarOpen);
+    if (isDropdownOpen) setIsDropdownOpen(false);
+  };
 
   const toggleDropdown = () => {
-    setIsDropdownOpen(!isDropdownOpen)
-  }
+    setIsDropdownOpen(!isDropdownOpen);
+  };
 
   const menuItems = [
     { label: "Home", link: "/", icon: FaHome },
@@ -36,7 +34,7 @@ const Navbar = () => {
     { label: "D.A.O", link: "/dao", icon: FaGlobe },
     { label: "About", link: "/about", icon: FaInfoCircle },
     { label: "Donation", link: "/donation", icon: FaDonate },
-  ]
+  ];
 
   return (
     <>
@@ -54,12 +52,14 @@ const Navbar = () => {
                 <FaBars className="w-6 h-6" />
               </button>
               <a href="/" className="ml-4 flex items-center space-x-2">
-                <img 
-                  src={LogoImage} 
-                  alt="Relief Logo" 
+                <img
+                  src={LogoImage}
+                  alt="Relief Logo"
                   className="w-[60px] h-[60px] rounded-xl  transform  duration-300 object-cover"
                 />
-                <span className="text-2xl font-extrabold text-gray-900 tracking-tight">Relief</span>
+                <span className="text-2xl font-extrabold text-gray-900 tracking-tight">
+                  Relief
+                </span>
               </a>
             </div>
 
@@ -76,13 +76,17 @@ const Navbar = () => {
                         <item.icon className="w-5 h-5 mr-2" />
                         {item.label}
                         <FaChevronDown
-                          className={`w-4 h-4 ml-2 transform transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
+                          className={`w-4 h-4 ml-2 transform transition-transform duration-300 ${
+                            isDropdownOpen ? "rotate-180" : ""
+                          }`}
                         />
                       </button>
                       {/* Dropdown Menu */}
                       <div
                         className={`absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-green-100 overflow-hidden transform transition-all duration-300 ease-in-out ${
-                          isDropdownOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
+                          isDropdownOpen
+                            ? "opacity-100 scale-100"
+                            : "opacity-0 scale-95 pointer-events-none"
                         }`}
                       >
                         {item.subItems.map((subItem, subIndex) => (
@@ -136,12 +140,14 @@ const Navbar = () => {
           {/* Sidebar Header */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-2">
-              <img 
-                src={LogoImage} 
-                alt="Relief Logo" 
+              <img
+                src={LogoImage}
+                alt="Relief Logo"
                 className="w-9 h-9 rounded-xl shadow-md object-cover"
               />
-              <span className="text-2xl font-extrabold text-gray-900 tracking-tight">Relief</span>
+              <span className="text-2xl font-extrabold text-gray-900 tracking-tight">
+                Relief
+              </span>
             </div>
             <button
               onClick={toggleSidebar}
@@ -165,13 +171,17 @@ const Navbar = () => {
                       <item.icon className="w-5 h-5 mr-3" />
                       {item.label}
                       <FaChevronDown
-                        className={`w-5 h-5 ml-auto transform transition-transform duration-300 ${isDropdownOpen ? "rotate-180" : ""}`}
+                        className={`w-5 h-5 ml-auto transform transition-transform duration-300 ${
+                          isDropdownOpen ? "rotate-180" : ""
+                        }`}
                       />
                     </button>
                     {/* Dropdown in Sidebar */}
                     <div
                       className={`ml-8 mt-2 space-y-2 transition-all duration-300 ease-in-out ${
-                        isDropdownOpen ? "opacity-100 max-h-96" : "opacity-0 max-h-0 overflow-hidden"
+                        isDropdownOpen
+                          ? "opacity-100 max-h-96"
+                          : "opacity-0 max-h-0 overflow-hidden"
                       }`}
                     >
                       {item.subItems.map((subItem, subIndex) => (
@@ -208,7 +218,7 @@ const Navbar = () => {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
 export default Navbar;

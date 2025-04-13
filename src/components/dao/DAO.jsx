@@ -1,21 +1,19 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { useNavigate } from "react-router-dom"
-import ProposalTable from "./dao_components/ProposalTable"
-import ProposalModal from "./dao_components/ProposalModal"
-import ProposalFilters from "./dao_components/ProposalFilters"
-import { formatAddress } from "../../utils/dao_helper"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import ProposalTable from "./dao_components/ProposalTable";
+import ProposalModal from "./dao_components/ProposalModal";
+import ProposalFilters from "./dao_components/ProposalFilters";
+import { formatAddress } from "../../utils/dao_helper";
 
 const DAO = () => {
-  const [proposals, setProposals] = useState([])
-  const [filteredProposals, setFilteredProposals] = useState([])
-  const [selectedProposal, setSelectedProposal] = useState(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [filter, setFilter] = useState("All")
-  const [searchTerm, setSearchTerm] = useState("")
-  const navigate = useNavigate()
+  const [proposals, setProposals] = useState([]);
+  const [filteredProposals, setFilteredProposals] = useState([]);
+  const [selectedProposal, setSelectedProposal] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filter, setFilter] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
 
   // Mock data - in a real app, this would come from your blockchain connection
   useEffect(() => {
@@ -95,44 +93,44 @@ const DAO = () => {
           "https://images.unsplash.com/photo-1594367031514-3aee0295ec98?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
         state: "Active",
       },
-    ]
+    ];
 
-    setProposals(mockProposals)
-    setFilteredProposals(mockProposals)
-  }, [])
+    setProposals(mockProposals);
+    setFilteredProposals(mockProposals);
+  }, []);
 
   // Filter proposals based on state and search term
   useEffect(() => {
-    let result = [...proposals]
+    let result = [...proposals];
 
     // Apply state filter
     if (filter !== "All") {
-      result = result.filter((proposal) => proposal.state === filter)
+      result = result.filter((proposal) => proposal.state === filter);
     }
 
     // Apply search filter
     if (searchTerm) {
-      const term = searchTerm.toLowerCase()
+      const term = searchTerm.toLowerCase();
       result = result.filter(
         (proposal) =>
           proposal.disasterName.toLowerCase().includes(term) ||
           proposal.area.toLowerCase().includes(term) ||
-          formatAddress(proposal.proposer).toLowerCase().includes(term),
-      )
+          formatAddress(proposal.proposer).toLowerCase().includes(term)
+      );
     }
 
-    setFilteredProposals(result)
-  }, [filter, searchTerm, proposals])
+    setFilteredProposals(result);
+  }, [filter, searchTerm, proposals]);
 
   const handleOpenModal = (proposal) => {
-    setSelectedProposal(proposal)
-    setIsModalOpen(true)
-  }
+    setSelectedProposal(proposal);
+    setIsModalOpen(true);
+  };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setSelectedProposal(null)
-  }
+    setIsModalOpen(false);
+    setSelectedProposal(null);
+  };
 
   const handleVote = (proposalId, voteType) => {
     // In a real app, this would call a smart contract function
@@ -141,14 +139,18 @@ const DAO = () => {
         if (proposal.id === proposalId) {
           return {
             ...proposal,
-            forVotes: voteType === "for" ? proposal.forVotes + 1 : proposal.forVotes,
-            againstVotes: voteType === "against" ? proposal.againstVotes + 1 : proposal.againstVotes,
-          }
+            forVotes:
+              voteType === "for" ? proposal.forVotes + 1 : proposal.forVotes,
+            againstVotes:
+              voteType === "against"
+                ? proposal.againstVotes + 1
+                : proposal.againstVotes,
+          };
         }
-        return proposal
-      }),
-    )
-  }
+        return proposal;
+      })
+    );
+  };
 
   return (
     <section className="relative py-16 sm:py-24 bg-gradient-to-br from-white to-green-50 overflow-hidden min-h-screen">
@@ -169,7 +171,9 @@ const DAO = () => {
         >
           <div className="inline-flex items-center px-4 py-1.5 bg-green-100 rounded-full mb-4">
             <span className="animate-pulse w-2 h-2 bg-green-600 rounded-full mr-2"></span>
-            <span className="text-green-800 font-medium text-sm">DAO Governance</span>
+            <span className="text-green-800 font-medium text-sm">
+              DAO Governance
+            </span>
           </div>
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight mb-4">
             Disaster Relief{" "}
@@ -178,8 +182,9 @@ const DAO = () => {
             </span>
           </h2>
           <p className="mt-4 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-            Vote on active proposals or create new ones to help communities in need. Your participation shapes our
-            collective response to disasters worldwide.
+            Vote on active proposals or create new ones to help communities in
+            need. Your participation shapes our collective response to disasters
+            worldwide.
           </p>
         </motion.div>
 
@@ -201,14 +206,24 @@ const DAO = () => {
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              ></path>
             </svg>
             New Proposal
           </button>
         </motion.div>
 
         {/* Filters */}
-        <ProposalFilters filter={filter} setFilter={setFilter} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <ProposalFilters
+          filter={filter}
+          setFilter={setFilter}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
 
         {/* Proposals Table */}
         <motion.div
@@ -216,16 +231,23 @@ const DAO = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <ProposalTable proposals={filteredProposals} onViewDetails={handleOpenModal} />
+          <ProposalTable
+            proposals={filteredProposals}
+            onViewDetails={handleOpenModal}
+          />
         </motion.div>
 
         {/* Proposal Details Modal */}
         {isModalOpen && selectedProposal && (
-          <ProposalModal proposal={selectedProposal} onClose={handleCloseModal} onVote={handleVote} />
+          <ProposalModal
+            proposal={selectedProposal}
+            onClose={handleCloseModal}
+            onVote={handleVote}
+          />
         )}
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default DAO
+export default DAO;

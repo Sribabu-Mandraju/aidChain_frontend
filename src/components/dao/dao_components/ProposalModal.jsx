@@ -1,31 +1,35 @@
-"use client"
-
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { formatAddress, formatCurrency, calculateTimeLeft, formatDate } from"../../../utils/dao_helper"
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  formatAddress,
+  formatCurrency,
+  calculateTimeLeft,
+  formatDate,
+} from "../../../utils/dao_helper";
 
 const ProposalModal = ({ proposal, onClose, onVote }) => {
-  const [isVoting, setIsVoting] = useState(false)
-  const [voteType, setVoteType] = useState(null)
-  const timeLeft = calculateTimeLeft(proposal.endTime)
-  const totalVotes = proposal.forVotes + proposal.againstVotes
-  const forPercentage = totalVotes > 0 ? (proposal.forVotes / totalVotes) * 100 : 0
+  const [isVoting, setIsVoting] = useState(false);
+  const [voteType, setVoteType] = useState(null);
+  const timeLeft = calculateTimeLeft(proposal.endTime);
+  const totalVotes = proposal.forVotes + proposal.againstVotes;
+  const forPercentage =
+    totalVotes > 0 ? (proposal.forVotes / totalVotes) * 100 : 0;
 
   const handleVote = (type) => {
-    setVoteType(type)
-    setIsVoting(true)
-  }
+    setVoteType(type);
+    setIsVoting(true);
+  };
 
   const confirmVote = () => {
-    onVote(proposal.id, voteType)
-    setIsVoting(false)
+    onVote(proposal.id, voteType);
+    setIsVoting(false);
     // In a real app, you would wait for transaction confirmation
-  }
+  };
 
   const cancelVote = () => {
-    setIsVoting(false)
-    setVoteType(null)
-  }
+    setIsVoting(false);
+    setVoteType(null);
+  };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
@@ -34,7 +38,10 @@ const ProposalModal = ({ proposal, onClose, onVote }) => {
           <div className="absolute inset-0  opacity-75" onClick={onClose}></div>
         </div>
 
-        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+        <span
+          className="hidden sm:inline-block sm:align-middle sm:h-screen"
+          aria-hidden="true"
+        >
           &#8203;
         </span>
 
@@ -62,8 +69,8 @@ const ProposalModal = ({ proposal, onClose, onVote }) => {
                       proposal.state === "Active"
                         ? "bg-green-500"
                         : proposal.state === "Urgent"
-                          ? "bg-red-500"
-                          : "bg-gray-500"
+                        ? "bg-red-500"
+                        : "bg-gray-500"
                     }`}
                   >
                     {proposal.state}
@@ -83,7 +90,12 @@ const ProposalModal = ({ proposal, onClose, onVote }) => {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  ></path>
                 </svg>
               </button>
             </div>
@@ -99,11 +111,15 @@ const ProposalModal = ({ proposal, onClose, onVote }) => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Proposer</p>
-                      <p className="font-medium">{formatAddress(proposal.proposer)}</p>
+                      <p className="font-medium">
+                        {formatAddress(proposal.proposer)}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Funds Requested</p>
-                      <p className="font-medium">{formatCurrency(proposal.fundsRequested)}</p>
+                      <p className="font-medium">
+                        {formatCurrency(proposal.fundsRequested)}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Duration</p>
@@ -111,25 +127,37 @@ const ProposalModal = ({ proposal, onClose, onVote }) => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Start Date</p>
-                      <p className="font-medium">{formatDate(proposal.startTime)}</p>
+                      <p className="font-medium">
+                        {formatDate(proposal.startTime)}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">End Date</p>
-                      <p className="font-medium">{formatDate(proposal.endTime)}</p>
+                      <p className="font-medium">
+                        {formatDate(proposal.endTime)}
+                      </p>
                     </div>
                   </div>
 
                   {/* Voting Progress */}
                   <div className="mb-6">
                     <div className="flex justify-between mb-1">
-                      <span className="text-sm font-medium text-green-600">{proposal.forVotes} For</span>
-                      <span className="text-sm font-medium text-red-600">{proposal.againstVotes} Against</span>
+                      <span className="text-sm font-medium text-green-600">
+                        {proposal.forVotes} For
+                      </span>
+                      <span className="text-sm font-medium text-red-600">
+                        {proposal.againstVotes} Against
+                      </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
-                      <div className="bg-green-600 h-2.5 rounded-full" style={{ width: `${forPercentage}%` }}></div>
+                      <div
+                        className="bg-green-600 h-2.5 rounded-full"
+                        style={{ width: `${forPercentage}%` }}
+                      ></div>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      {totalVotes} total votes • {proposal.state === "Completed" ? "Ended" : timeLeft}
+                      {totalVotes} total votes •{" "}
+                      {proposal.state === "Completed" ? "Ended" : timeLeft}
                     </p>
                   </div>
 
@@ -157,8 +185,9 @@ const ProposalModal = ({ proposal, onClose, onVote }) => {
                     Confirm your vote: {voteType === "for" ? "For" : "Against"}
                   </h4>
                   <p className="text-gray-600 mb-6">
-                    You are about to cast your vote {voteType === "for" ? "in support of" : "against"} this proposal.
-                    This action cannot be undone.
+                    You are about to cast your vote{" "}
+                    {voteType === "for" ? "in support of" : "against"} this
+                    proposal. This action cannot be undone.
                   </p>
                   <div className="flex space-x-3">
                     <button
@@ -185,7 +214,7 @@ const ProposalModal = ({ proposal, onClose, onVote }) => {
         </AnimatePresence>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProposalModal
+export default ProposalModal;

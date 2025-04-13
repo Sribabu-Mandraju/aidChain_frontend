@@ -1,13 +1,11 @@
-"use client"
-
-import { useEffect, useRef } from "react"
-import { motion } from "framer-motion"
-import lottie from "lottie-web"
+import { useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import lottie from "lottie-web";
 
 // Lottie animation files
-import connectWallet from "../../assets/lottie/wallet.json"
-import selectDonate from "../../assets/lottie/donation.json"
-import nftBadge from "../../assets/lottie/nft.json"
+import connectWallet from "../../assets/lottie/wallet.json";
+import selectDonate from "../../assets/lottie/donation.json";
+import nftBadge from "../../assets/lottie/nft.json";
 
 const About = () => {
   // Animation variants for text
@@ -18,7 +16,7 @@ const About = () => {
       y: 0,
       transition: { duration: 0.6, ease: "easeOut" },
     },
-  }
+  };
 
   // Animation variants for Lottie containers
   const lottieVariants = {
@@ -28,7 +26,7 @@ const About = () => {
       scale: 1,
       transition: { duration: 0.6, ease: "easeOut" },
     },
-  }
+  };
 
   // Content for each section with Lottie animations
   const steps = [
@@ -50,10 +48,10 @@ const About = () => {
         "After a successful donation, the donor is rewarded with a unique NFT appreciation badge. This serves as a digital token of gratitude and proof of their impact.",
       animation: nftBadge,
     },
-  ]
+  ];
 
   // Create refs for each Lottie container
-  const animationRefs = useRef(steps.map(() => ({ current: null })))
+  const animationRefs = useRef(steps.map(() => ({ current: null })));
 
   // Initialize and clean up Lottie animations
   useEffect(() => {
@@ -65,19 +63,22 @@ const About = () => {
           loop: true,
           autoplay: true,
           animationData: step.animation,
-        })
+        });
       }
-      return null
-    })
+      return null;
+    });
 
     // Cleanup on unmount
     return () => {
-      animations.forEach((anim) => anim?.destroy())
-    }
-  }, []) // Empty dependency array since `steps` is static
+      animations.forEach((anim) => anim?.destroy());
+    };
+  }, []); // Empty dependency array since `steps` is static
 
   return (
-    <section id="about" className="py-16 sm:py-24 bg-gradient-to-br from-white to-green-50">
+    <section
+      id="about"
+      className="py-16 sm:py-24 bg-gradient-to-br from-white to-green-50"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -87,10 +88,12 @@ const About = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12 sm:mb-16"
         >
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">How It Works</h2>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+            How It Works
+          </h2>
           <p className="mt-4 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-            Join our mission to make a difference with a seamless, secure, and rewarding donation process powered by
-            blockchain technology.
+            Join our mission to make a difference with a seamless, secure, and
+            rewarding donation process powered by blockchain technology.
           </p>
         </motion.div>
 
@@ -110,7 +113,10 @@ const About = () => {
               viewport={{ once: true, margin: "-100px" }}
               className="w-full md:w-1/2 relative"
             >
-              <div ref={animationRefs.current[index]} className="w-full h-64 sm:h-80">
+              <div
+                ref={animationRefs.current[index]}
+                className="w-full h-64 sm:h-80"
+              >
                 {/* Lottie animation renders here */}
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-green-600/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
@@ -124,8 +130,12 @@ const About = () => {
               viewport={{ once: true, margin: "-100px" }}
               className="w-full md:w-1/2"
             >
-              <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">{step.title}</h3>
-              <p className="text-base sm:text-lg text-gray-600 leading-relaxed">{step.description}</p>
+              <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+                {step.title}
+              </h3>
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+                {step.description}
+              </p>
               <div className="mt-6">
                 <a
                   href="#donate"
@@ -139,7 +149,7 @@ const About = () => {
         ))}
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default About
+export default About;

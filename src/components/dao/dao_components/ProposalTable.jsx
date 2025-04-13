@@ -1,15 +1,20 @@
-"use client"
-import { motion } from "framer-motion"
-import ProposalCard from "./ProposalCard"
-import { formatAddress, formatCurrency, calculateTimeLeft } from "../../../utils/dao_helper"
+import { motion } from "framer-motion";
+import ProposalCard from "./ProposalCard";
+import {
+  formatAddress,
+  formatCurrency,
+  calculateTimeLeft,
+} from "../../../utils/dao_helper";
 
 const ProposalTable = ({ proposals, onViewDetails }) => {
   if (proposals.length === 0) {
     return (
       <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-8 text-center">
-        <p className="text-gray-500 text-lg">No proposals found matching your criteria.</p>
+        <p className="text-gray-500 text-lg">
+          No proposals found matching your criteria.
+        </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -77,7 +82,7 @@ const ProposalTable = ({ proposals, onViewDetails }) => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {proposals.map((proposal) => {
-              const timeLeft = calculateTimeLeft(proposal.endTime)
+              const timeLeft = calculateTimeLeft(proposal.endTime);
 
               return (
                 <motion.tr
@@ -87,9 +92,15 @@ const ProposalTable = ({ proposals, onViewDetails }) => {
                   transition={{ duration: 0.3 }}
                   className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{proposal.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{proposal.disasterName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{proposal.area}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    #{proposal.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {proposal.disasterName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {proposal.area}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {formatAddress(proposal.proposer)}
                   </td>
@@ -106,8 +117,8 @@ const ProposalTable = ({ proposals, onViewDetails }) => {
                         proposal.state === "Active"
                           ? "bg-green-100 text-green-800"
                           : proposal.state === "Urgent"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-800"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-gray-100 text-gray-800"
                       }`}
                     >
                       {proposal.state}
@@ -115,9 +126,13 @@ const ProposalTable = ({ proposals, onViewDetails }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex items-center space-x-1">
-                      <span className="text-green-600">{proposal.forVotes}</span>
+                      <span className="text-green-600">
+                        {proposal.forVotes}
+                      </span>
                       <span>/</span>
-                      <span className="text-red-600">{proposal.againstVotes}</span>
+                      <span className="text-red-600">
+                        {proposal.againstVotes}
+                      </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -129,7 +144,7 @@ const ProposalTable = ({ proposals, onViewDetails }) => {
                     </button>
                   </td>
                 </motion.tr>
-              )
+              );
             })}
           </tbody>
         </table>
@@ -138,11 +153,16 @@ const ProposalTable = ({ proposals, onViewDetails }) => {
       {/* Mobile Card View */}
       <div className="md:hidden grid grid-cols-1 gap-4">
         {proposals.map((proposal, index) => (
-          <ProposalCard key={proposal.id} proposal={proposal} onViewDetails={onViewDetails} index={index} />
+          <ProposalCard
+            key={proposal.id}
+            proposal={proposal}
+            onViewDetails={onViewDetails}
+            index={index}
+          />
         ))}
       </div>
     </>
-  )
-}
+  );
+};
 
-export default ProposalTable
+export default ProposalTable;

@@ -1,12 +1,15 @@
-"use client"
-import { formatCurrency } from "../../../utils/dao_helper"
+import { formatCurrency } from "../../../utils/dao_helper";
 
 const ProposalPreview = ({ proposal }) => {
   return (
     <div className="space-y-8">
       <div className="text-center mb-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-2">Preview Your Proposal</h3>
-        <p className="text-gray-600">Review your proposal before submitting to the DAO</p>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">
+          Preview Your Proposal
+        </h3>
+        <p className="text-gray-600">
+          Review your proposal before submitting to the DAO
+        </p>
       </div>
 
       <div className="space-y-6">
@@ -35,7 +38,9 @@ const ProposalPreview = ({ proposal }) => {
           </div>
           <div>
             <p className="text-sm text-gray-500">Funds Requested</p>
-            <p className="font-medium">{formatCurrency(proposal.fundsRequested)}</p>
+            <p className="font-medium">
+              {formatCurrency(proposal.fundsRequested)}
+            </p>
           </div>
         </div>
 
@@ -51,8 +56,8 @@ const ProposalPreview = ({ proposal }) => {
         <div className="p-4 bg-gray-50 rounded-lg">
           <h3 className="text-lg font-semibold mb-3">Voting Process</h3>
           <p className="text-gray-600 mb-4">
-            Once submitted, DAO members will be able to vote on your proposal. The voting period will last for the
-            duration you specified.
+            Once submitted, DAO members will be able to vote on your proposal.
+            The voting period will last for the duration you specified.
           </p>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -67,11 +72,13 @@ const ProposalPreview = ({ proposal }) => {
           <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
             <div className="bg-gray-400 h-2.5 rounded-full w-0"></div>
           </div>
-          <p className="text-xs text-gray-500 mt-1">0 total votes • Voting will begin after submission</p>
+          <p className="text-xs text-gray-500 mt-1">
+            0 total votes • Voting will begin after submission
+          </p>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProposalPreview
+export default ProposalPreview;

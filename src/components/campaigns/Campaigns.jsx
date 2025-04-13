@@ -1,77 +1,66 @@
-"use client";
-
 import { useState } from "react";
 import CampaignHeader from "./campaigns_components/CampaignHeader";
 import CampaignFilters from "./campaigns_components/CampaignFilters";
 import CampaignGrid from "./campaigns_components/CampaignGrid";
 import DonationSection from "./campaigns_components/DonationSection";
 import CampaignFooter from "./campaigns_components/CampaignFooter";
+import CampaignList from "../shared/campaignCard_components/CampaignList";
 
 // Sample campaign data (replace with real data from a contract or API)
 const campaigns = [
   {
-    id: 1,
+    id: "1",
+    title: "Clean Water Initiative",
+    description:
+      "Help us provide clean drinking water to communities affected by the recent drought. Your support will fund water purification systems and well construction in areas with limited access to clean water sources. Join us in making a difference!",
+    image:
+      "https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    status: "Urgent",
+    totalDonations: "15.5 ETH",
+    goal: "30 ETH",
+    progress: 52,
+    donors: 78,
+    volunteers: 24,
+    daysLeft: 12,
+    latitude: "37.7749",
+    longitude: "-122.4194",
+    radius: "10",
+  },
+  {
+    id: "2",
+    title: "Reforestation Project",
+    description:
+      "Join our effort to restore forest ecosystems damaged by wildfires. We're planting native trees and implementing sustainable land management practices to prevent future disasters and support local wildlife.",
+    image:
+      "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    status: "Active",
+    totalDonations: "22.3 ETH",
+    goal: "40 ETH",
+    progress: 56,
+    donors: 104,
+    volunteers: 37,
+    daysLeft: 25,
+    latitude: "34.0522",
+    longitude: "-118.2437",
+    radius: "15",
+  },
+  {
+    id: "3",
     title: "Hurricane Relief Fund",
     description:
-      "Support communities devastated by Hurricane X in the Caribbean. Immediate assistance needed for food, shelter, and medical supplies.",
-    totalDonations: 125000,
-    goal: 200000,
-    progress: 62.5,
-    status: "Active",
+      "Support families affected by Hurricane Maria with emergency supplies, temporary housing, and rebuilding assistance. Your donation provides immediate relief and long-term recovery support to devastated communities.",
     image:
-      "https://images.unsplash.com/photo-1542393545-10f5b85e14fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    daysLeft: 15,
-    donors: 1234,
-    location: "Caribbean",
-    category: "Hurricane Relief",
-  },
-  {
-    id: 2,
-    title: "Earthquake Recovery Initiative",
-    description:
-      "Aid rebuilding efforts after a 7.2 magnitude earthquake in Southeast Asia. Help provide temporary housing and essential supplies.",
-    totalDonations: 89500,
-    goal: 150000,
-    progress: 59.7,
+      "https://images.unsplash.com/photo-1603720999656-f4f9d7e186f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     status: "Urgent",
-    image:
-      "https://images.unsplash.com/photo-1610550603158-91f50474b235?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    daysLeft: 7,
-    donors: 892,
-    location: "Southeast Asia",
-    category: "Earthquake Recovery",
-  },
-  {
-    id: 3,
-    title: "Flood Relief Campaign",
-    description:
-      "Provide immediate relief to flood victims in Western Europe. Support evacuation efforts and emergency response teams.",
-    totalDonations: 47200,
-    goal: 100000,
-    progress: 47.2,
-    status: "Active",
-    image:
-      "https://images.unsplash.com/photo-1595854341625-fc2528d3b11e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    daysLeft: 21,
-    donors: 567,
-    location: "Western Europe",
-    category: "Flood Relief",
-  },
-  {
-    id: 4,
-    title: "Wildfire Support Network",
-    description:
-      "Help families displaced by wildfires in North America. Funding goes towards temporary housing and rebuilding efforts.",
-    totalDonations: 63800,
-    goal: 80000,
-    progress: 79.75,
-    status: "Completed",
-    image:
-      "https://images.unsplash.com/photo-1500994340878-40ce894df491?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-    daysLeft: 0,
-    donors: 945,
-    location: "North America",
-    category: "Wildfire Support",
+    totalDonations: "45.8 ETH",
+    goal: "50 ETH",
+    progress: 92,
+    donors: 215,
+    volunteers: 68,
+    daysLeft: 5,
+    latitude: "25.7617",
+    longitude: "-80.1918",
+    radius: "25",
   },
 ];
 
@@ -87,7 +76,7 @@ const CampaignsSection = () => {
     <div className="min-h-screen bg-gradient-to-br from-white to-green-50">
       <CampaignHeader />
       <CampaignFilters filter={filter} setFilter={setFilter} />
-      <CampaignGrid campaigns={filteredCampaigns} />
+      <CampaignList campaigns={filteredCampaigns} />
       <DonationSection campaigns={campaigns} />
       <CampaignFooter />
     </div>
