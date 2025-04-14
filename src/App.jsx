@@ -6,8 +6,7 @@ import DaoPage from "./pages/DAO/DaoPage";
 import AddProposalPage from "./pages/ADD_PROPOSAL/AddProposalPage";
 import "./index.css";
 import CampaignsPage from "./pages/CAMPAIGNS/CampaignsPage";
-import VictimRegistrationPage from "./components/victim_registration/VictimRegestration";
-
+import VictimRegistration from "./components/victim_registration/VictimRegestration";
 const App = () => {
   return (
     <Router>
@@ -18,7 +17,7 @@ const App = () => {
         <Route path="/dao" element={<DaoPage />} />
         <Route path="/dao/new-proposal" element={<AddProposalPage />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
-        <Route path="/victim-registration" element={<VictimRegistrationPage />} />
+        <Route path="/victim-registration" element={<VictimRegistration />} />
         {/* Add more routes as needed */}
       </Routes>
     </Router>
