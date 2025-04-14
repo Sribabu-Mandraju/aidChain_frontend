@@ -1,22 +1,29 @@
+"use client";
+
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import ProposalTable from "./dao_components/ProposalTable";
 import ProposalModal from "./dao_components/ProposalModal";
 import ProposalFilters from "./dao_components/ProposalFilters";
+import MemberManagement from "./dao_components/MemberManagement";
+import DAOStats from "./dao_components/DAOStats";
+import DAOHeader from "./dao_components/DAOHeader";
+import DAOActions from "./dao_components/DAOActions";
 import { formatAddress } from "../../utils/dao_helper";
-
 const DAO = () => {
   const [proposals, setProposals] = useState([]);
   const [filteredProposals, setFilteredProposals] = useState([]);
   const [selectedProposal, setSelectedProposal] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
+  const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [filter, setFilter] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const navigate = useNavigate();
+  const [members, setMembers] = useState([]);
+  const [daoStats, setDaoStats] = useState([]);
 
   // Mock data - in a real app, this would come from your blockchain connection
   useEffect(() => {
+    // Mock proposals data
     const mockProposals = [
       {
         id: 1,
@@ -95,8 +102,124 @@ const DAO = () => {
       },
     ];
 
+    // Mock members data
+    const mockMembers = [
+      {
+        address: "0x1234567890123456789012345678901234567890",
+        joinedAt: Date.now() - 90 * 24 * 60 * 60 * 1000, // 90 days ago
+        proposalsCreated: 3,
+        votesParticipated: 12,
+      },
+      {
+        address: "0x2345678901234567890123456789012345678901",
+        joinedAt: Date.now() - 60 * 24 * 60 * 60 * 1000, // 60 days ago
+        proposalsCreated: 1,
+        votesParticipated: 8,
+      },
+      {
+        address: "0x3456789012345678901234567890123456789012",
+        joinedAt: Date.now() - 30 * 24 * 60 * 60 * 1000, // 30 days ago
+        proposalsCreated: 0,
+        votesParticipated: 5,
+      },
+    ];
+
+    // Mock DAO stats
+    const mockStats = [
+      {
+        label: "Total Members",
+        value: mockMembers.length,
+        icon: (
+          <svg
+            className="w-6 h-6 text-blue-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 4a2 2 0 11-4 0 2 2 0 014 0z"
+            ></path>
+          </svg>
+        ),
+        bgColor: "bg-blue-100",
+        change: 12,
+      },
+      {
+        label: "Active Proposals",
+        value: mockProposals.filter((p) => p.state === "Active").length,
+        icon: (
+          <svg
+            className="w-6 h-6 text-green-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+        ),
+        bgColor: "bg-green-100",
+        change: 8,
+      },
+      {
+        label: "Treasury Balance",
+        value: "$1,250,000",
+        icon: (
+          <svg
+            className="w-6 h-6 text-yellow-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+        ),
+        bgColor: "bg-yellow-100",
+        change: 5,
+      },
+      {
+        label: "Total Funds Allocated",
+        value: "$850,000",
+        icon: (
+          <svg
+            className="w-6 h-6 text-purple-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"
+            ></path>
+          </svg>
+        ),
+        bgColor: "bg-purple-100",
+        change: -3,
+      },
+    ];
+
     setProposals(mockProposals);
     setFilteredProposals(mockProposals);
+    setMembers(mockMembers);
+    setDaoStats(mockStats);
   }, []);
 
   // Filter proposals based on state and search term
@@ -122,14 +245,22 @@ const DAO = () => {
     setFilteredProposals(result);
   }, [filter, searchTerm, proposals]);
 
-  const handleOpenModal = (proposal) => {
+  const handleOpenProposalModal = (proposal) => {
     setSelectedProposal(proposal);
-    setIsModalOpen(true);
+    setIsProposalModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseProposalModal = () => {
+    setIsProposalModalOpen(false);
     setSelectedProposal(null);
+  };
+
+  const handleOpenMemberModal = () => {
+    setIsMemberModalOpen(true);
+  };
+
+  const handleCloseMemberModal = () => {
+    setIsMemberModalOpen(false);
   };
 
   const handleVote = (proposalId, voteType) => {
@@ -152,6 +283,43 @@ const DAO = () => {
     );
   };
 
+  const handleAddMember = (address) => {
+    // In a real app, this would call a smart contract function
+    const newMember = {
+      address,
+      joinedAt: Date.now(),
+      proposalsCreated: 0,
+      votesParticipated: 0,
+    };
+
+    setMembers((prevMembers) => [...prevMembers, newMember]);
+
+    // Update stats
+    setDaoStats((prevStats) =>
+      prevStats.map((stat) =>
+        stat.label === "Total Members"
+          ? { ...stat, value: stat.value + 1 }
+          : stat
+      )
+    );
+  };
+
+  const handleRemoveMember = (address) => {
+    // In a real app, this would call a smart contract function
+    setMembers((prevMembers) =>
+      prevMembers.filter((member) => member.address !== address)
+    );
+
+    // Update stats
+    setDaoStats((prevStats) =>
+      prevStats.map((stat) =>
+        stat.label === "Total Members"
+          ? { ...stat, value: stat.value - 1 }
+          : stat
+      )
+    );
+  };
+
   return (
     <section className="relative py-16 sm:py-24 bg-gradient-to-br from-white to-green-50 overflow-hidden min-h-screen">
       {/* Background Decorative Elements */}
@@ -163,59 +331,16 @@ const DAO = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12 sm:mb-16"
-        >
-          <div className="inline-flex items-center px-4 py-1.5 bg-green-100 rounded-full mb-4">
-            <span className="animate-pulse w-2 h-2 bg-green-600 rounded-full mr-2"></span>
-            <span className="text-green-800 font-medium text-sm">
-              DAO Governance
-            </span>
-          </div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight mb-4">
-            Disaster Relief{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">
-              Proposals
-            </span>
-          </h2>
-          <p className="mt-4 text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
-            Vote on active proposals or create new ones to help communities in
-            need. Your participation shapes our collective response to disasters
-            worldwide.
-          </p>
-        </motion.div>
+        <DAOHeader
+          onManageMembers={handleOpenMemberModal}
+          totalMembers={members.length}
+        />
 
-        {/* New Proposal Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex justify-end mb-6"
-        >
-          <button
-            onClick={() => navigate("/dao/new-proposal")}
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-semibold hover:from-green-600 hover:to-emerald-700 transition-all duration-300 transform hover:scale-105 shadow-md"
-          >
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              ></path>
-            </svg>
-            New Proposal
-          </button>
-        </motion.div>
+        {/* DAO Stats */}
+        <DAOStats stats={daoStats} />
+
+        {/* Action Buttons */}
+        <DAOActions />
 
         {/* Filters */}
         <ProposalFilters
@@ -233,18 +358,63 @@ const DAO = () => {
         >
           <ProposalTable
             proposals={filteredProposals}
-            onViewDetails={handleOpenModal}
+            onViewDetails={handleOpenProposalModal}
           />
         </motion.div>
 
         {/* Proposal Details Modal */}
-        {isModalOpen && selectedProposal && (
-          <ProposalModal
-            proposal={selectedProposal}
-            onClose={handleCloseModal}
-            onVote={handleVote}
-          />
-        )}
+        <AnimatePresence>
+          {isProposalModalOpen && selectedProposal && (
+            <ProposalModal
+              proposal={selectedProposal}
+              onClose={handleCloseProposalModal}
+              onVote={handleVote}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Member Management Modal */}
+        <AnimatePresence>
+          {isMemberModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 overflow-y-auto"
+            >
+              <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+                <div
+                  className="fixed inset-0 transition-opacity"
+                  aria-hidden="true"
+                >
+                  <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+
+                <span
+                  className="hidden sm:inline-block sm:align-middle sm:h-screen"
+                  aria-hidden="true"
+                >
+                  &#8203;
+                </span>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.3 }}
+                  className="inline-block align-bottom sm:align-middle sm:max-w-2xl sm:w-full"
+                >
+                  <MemberManagement
+                    onClose={handleCloseMemberModal}
+                    currentMembers={members}
+                    onAddMember={handleAddMember}
+                    onRemoveMember={handleRemoveMember}
+                  />
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
