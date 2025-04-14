@@ -137,12 +137,28 @@ const About = () => {
                 {step.description}
               </p>
               <div className="mt-6">
-                <a
-                  href="#donate"
-                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-semibold text-sm sm:text-base shadow-md hover:from-green-400 hover:to-emerald-500 transition-all duration-300"
-                >
-                  Learn More
-                </a>
+                {index === 0 ? (
+                  <a
+                    href="/learn-more-wallet"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-semibold text-sm sm:text-base shadow-md hover:from-green-400 hover:to-emerald-500 transition-all duration-300"
+                  >
+                    Learn More
+                  </a>
+                ) : index === 1 ? (
+                  <a
+                    href="/learn-more-donate"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-semibold text-sm sm:text-base shadow-md hover:from-green-400 hover:to-emerald-500 transition-all duration-300"
+                  >
+                    Learn More
+                  </a>
+                ) : index === 2 ? (
+                  <a
+                    href="/learn-more-nft"
+                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-semibold text-sm sm:text-base shadow-md hover:from-green-400 hover:to-emerald-500 transition-all duration-300"
+                  >
+                    Learn More
+                  </a>
+                ) : null}
               </div>
             </motion.div>
           </div>

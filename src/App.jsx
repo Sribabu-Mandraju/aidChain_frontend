@@ -7,6 +7,10 @@ import AddProposalPage from "./pages/ADD_PROPOSAL/AddProposalPage";
 import "./index.css";
 import CampaignsPage from "./pages/CAMPAIGNS/CampaignsPage";
 import VictimRegistrationPage from "./components/victim_registration/VictimRegestration";
+import NFTDetails from "./components/nft/NFTDetails";
+import WalletDetails from "./components/wallet/WalletDetails";
+import DonateDetails from "./components/donate/DonateDetails";
+import LearnMoreDetails from "./components/learn-more/LearnMoreDetails";
 
 const App = () => {
   return (
@@ -19,6 +23,10 @@ const App = () => {
         <Route path="/dao/new-proposal" element={<AddProposalPage />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/victim-registration" element={<VictimRegistrationPage />} />
+        <Route path="/learn-more-nft" element={<NFTDetails />} />
+        <Route path="/learn-more-wallet" element={<WalletDetails />} />
+        <Route path="/learn-more-donate" element={<DonateDetails />} />
+        <Route path="/learn-more" element={<LearnMoreDetails />} />
         {/* Add more routes as needed */}
       </Routes>
     </Router>

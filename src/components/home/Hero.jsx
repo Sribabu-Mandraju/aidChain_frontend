@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import lottie from "lottie-web";
 import donation from "../../assets/lottie/donation.json";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
   const [isVisible, setIsVisible] = useState(false);
   const animationContainer = useRef(null); // Ref for Lottie container
+  const navigate = useNavigate();
 
   // Set visibility on mount and initialize Lottie animation
   useEffect(() => {
@@ -30,6 +32,10 @@ const Hero = () => {
   const handleDonateClick = () => {
     // Placeholder for donation functionality
     alert("Redirecting to donation page...");
+  };
+
+  const handleLearnMoreClick = () => {
+    navigate("/learn-more");
   };
 
   const stats = [
@@ -102,12 +108,12 @@ const Hero = () => {
                 </span>
               </button>
 
-              <a
-                href="#learn-more"
+              <button
+                onClick={handleLearnMoreClick}
                 className="inline-flex items-center px-6 py-3 text-base font-semibold text-green-600 bg-white border-2 border-green-200 rounded-full shadow-sm hover:border-green-300 hover:bg-green-50 transition-all duration-300 hover:scale-105"
               >
                 Learn More
-              </a>
+              </button>
             </div>
 
             {/* Stats Section */}

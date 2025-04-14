@@ -5,6 +5,7 @@ import CampaignGrid from "./campaigns_components/CampaignGrid";
 import DonationSection from "./campaigns_components/DonationSection";
 import CampaignFooter from "./campaigns_components/CampaignFooter";
 import CampaignList from "../shared/campaignCard_components/CampaignList";
+import { updateMetaTags } from "../../utils/metaTags";
 
 // Sample campaign data (replace with real data from a contract or API)
 const campaigns = [
@@ -14,7 +15,7 @@ const campaigns = [
     description:
       "Help us provide clean drinking water to communities affected by the recent drought. Your support will fund water purification systems and well construction in areas with limited access to clean water sources. Join us in making a difference!",
     image:
-      "https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80",
     status: "Urgent",
     totalDonations: "15.5 ETH",
     goal: "30 ETH",
@@ -32,7 +33,7 @@ const campaigns = [
     description:
       "Join our effort to restore forest ecosystems damaged by wildfires. We're planting native trees and implementing sustainable land management practices to prevent future disasters and support local wildlife.",
     image:
-      "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80",
     status: "Active",
     totalDonations: "22.3 ETH",
     goal: "40 ETH",
@@ -50,7 +51,7 @@ const campaigns = [
     description:
       "Support families affected by Hurricane Maria with emergency supplies, temporary housing, and rebuilding assistance. Your donation provides immediate relief and long-term recovery support to devastated communities.",
     image:
-      "https://images.unsplash.com/photo-1603720999656-f4f9d7e186f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1603720999656-f4f9d7e186f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=630&q=80",
     status: "Urgent",
     totalDonations: "45.8 ETH",
     goal: "50 ETH",
@@ -72,11 +73,40 @@ const CampaignsSection = () => {
       ? campaigns
       : campaigns.filter((campaign) => campaign.status === filter);
 
+  const handleShare = (campaign) => {
+    // Create the campaign URL
+    const campaignUrl = `${window.location.origin}/campaigns/${campaign.id}`;
+    
+    // Update meta tags for social sharing
+    updateMetaTags({
+      ...campaign,
+      url: campaignUrl
+    });
+
+    // Share on different platforms
+    if (navigator.share) {
+      navigator.share({
+        title: campaign.title,
+        text: campaign.description,
+        url: campaignUrl,
+      });
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      const text = `${campaign.title}\n${campaign.description}\n${campaignUrl}`;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Campaign link copied to clipboard!");
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-green-50">
       <CampaignHeader />
       <CampaignFilters filter={filter} setFilter={setFilter} />
-      <CampaignList campaigns={filteredCampaigns} />
+      <CampaignList 
+        campaigns={filteredCampaigns} 
+        onShare={handleShare}
+      />
       <DonationSection campaigns={campaigns} />
       <CampaignFooter />
     </div>

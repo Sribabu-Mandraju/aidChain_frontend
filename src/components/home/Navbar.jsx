@@ -55,7 +55,7 @@ const Navbar = () => {
                 <img
                   src={LogoImage}
                   alt="Relief Logo"
-                  className="w-[60px] h-[60px] rounded-xl  transform  duration-300 object-cover"
+                  className="w-[70px] h-[80px] rounded-xl  transform  duration-300 object-cover"
                 />
                 <span className="text-2xl font-extrabold text-gray-900 tracking-tight">
                   Relief
