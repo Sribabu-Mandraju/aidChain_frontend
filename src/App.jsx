@@ -30,7 +30,8 @@ const App = () => {
         <Route path="/learn-more-donate" element={<DonateDetails />} />
         <Route path="/learn-more" element={<LearnMoreDetails />} />
         <Route path="/proposals/:id" element={<ProposalPage />} />
-        {/* Add more routes as needed */}  dfdfs      rrrr
+      </Routes>
+    </Router>
   );
 };
 
