@@ -9,8 +9,10 @@ import MemberManagement from "./dao_components/MemberManagement";
 import DAOStats from "./dao_components/DAOStats";
 import DAOHeader from "./dao_components/DAOHeader";
 import DAOActions from "./dao_components/DAOActions";
+import { useNavigate } from "react-router-dom";
 import { formatAddress } from "../../utils/dao_helper";
 const DAO = () => {
+  const navigate = useNavigate()
   const [proposals, setProposals] = useState([]);
   const [filteredProposals, setFilteredProposals] = useState([]);
   const [selectedProposal, setSelectedProposal] = useState(null);
@@ -246,8 +248,9 @@ const DAO = () => {
   }, [filter, searchTerm, proposals]);
 
   const handleOpenProposalModal = (proposal) => {
-    setSelectedProposal(proposal);
-    setIsProposalModalOpen(true);
+    navigate(`/proposals/${proposal.id}`)
+    // setSelectedProposal(proposal);
+    // setIsProposalModalOpen(true);
   };
 
   const handleCloseProposalModal = () => {

@@ -29,10 +29,8 @@ const App = () => {
         <Route path="/learn-more-wallet" element={<WalletDetails />} />
         <Route path="/learn-more-donate" element={<DonateDetails />} />
         <Route path="/learn-more" element={<LearnMoreDetails />} />
-        <Route path="/proposal" element={<ProposalPage />} />
-        {/* Add more routes as needed */}
-      </Routes>
-    </Router>
+        <Route path="/proposals/:id" element={<ProposalPage />} />
+        {/* Add more routes as needed */}  dfdfs      rrrr
   );
 };
 
