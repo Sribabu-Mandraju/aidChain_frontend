@@ -45,7 +45,7 @@ const Hero = () => {
   ];
 
   return (
-    <section className="relative h-screen bg-gradient-to-br from-white to-green-50 overflow-hidden">
+    <section className="relative  mt-[65px] h-screen bg-gradient-to-br from-white to-green-50 overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute w-full h-full opacity-30">

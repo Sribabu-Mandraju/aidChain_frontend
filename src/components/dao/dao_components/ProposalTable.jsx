@@ -16,7 +16,7 @@ const ProposalTable = ({ onViewDetails }) => {
   useEffect(() => {
     const fetchProposals = async () => {
       setIsLoading(true);
-      const toastId = toast.loading('Fetching proposals...');
+      // const toastId = toast.loading('Fetching proposals...');
 
       try {
         const contract = await getReadDaoContract();

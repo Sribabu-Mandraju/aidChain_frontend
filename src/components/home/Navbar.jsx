@@ -10,7 +10,14 @@ import {
   FaBars,
   FaTimes,
   FaDonate,
+  FaBell,
+  FaHandHoldingUsd,
+  FaChartLine,
+  FaRocket,
+  FaUsers,
 } from "react-icons/fa";
+import { IoMdMegaphone } from "react-icons/io";
+
 import { Link } from "react-router-dom";
 import ConnectWalletComponent from "../shared/ConnectWallet";
 import LogoImage from "../../assets/about/logo.png"; // Import the logo
@@ -18,6 +25,7 @@ import LogoImage from "../../assets/about/logo.png"; // Import the logo
 const Navbar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -28,12 +36,66 @@ const Navbar = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+  const toggleNotification = () => {
+    setIsNotificationOpen(!isNotificationOpen);
+    if (isDropdownOpen) setIsDropdownOpen(false);
+  };
+
   const menuItems = [
     { label: "Home", link: "/", icon: FaHome },
     { label: "Campaigns", link: "/campaigns", icon: FaHeart },
     { label: "D.A.O", link: "/dao", icon: FaGlobe },
     { label: "About", link: "/about", icon: FaInfoCircle },
     { label: "Donation", link: "/donation", icon: FaDonate },
+  ];
+
+  // Sample notifications data with icons
+  const notifications = [
+    {
+      id: 1,
+      title: "New Campaign Started",
+      message: "Help support the education fund for underprivileged children",
+      time: "2 hours ago",
+      read: false,
+      icon: FaHandHoldingUsd,
+      iconColor: "text-blue-500"
+    },
+    {
+      id: 2,
+      title: "Donation Received",
+      message: "Your recent donation has been successfully processed",
+      time: "5 hours ago",
+      read: false,
+      icon: FaHandHoldingUsd,
+      iconColor: "text-green-500"
+    },
+    {
+      id: 3,
+      title: "Campaign Update",
+      message: "The medical relief campaign has reached 75% of its goal",
+      time: "1 day ago",
+      read: true,
+      icon: FaChartLine,
+      iconColor: "text-purple-500"
+    },
+    {
+      id: 4,
+      title: "New Feature Available",
+      message: "Check out our new donation tracking dashboard",
+      time: "2 days ago",
+      read: true,
+      icon: FaRocket,
+      iconColor: "text-orange-500"
+    },
+    {
+      id: 5,
+      title: "Community Milestone",
+      message: "We've helped over 10,000 people this month!",
+      time: "3 days ago",
+      read: true,
+      icon: FaUsers,
+      iconColor: "text-pink-500"
+    }
   ];
 
   return (
@@ -46,18 +108,18 @@ const Navbar = () => {
             <div className="flex items-center">
               <button
                 onClick={toggleSidebar}
-                className="p-2 rounded-lg text-gray-600 hover:bg-green-100 hover:text-green-700 transition-all duration-300 ease-in-out"
+                className="p-2 rounded-lg hidden sm:block text-gray-600 hover:bg-green-100 hover:text-green-700 transition-all duration-300 ease-in-out"
                 aria-label="Toggle sidebar"
               >
                 <FaBars className="w-6 h-6" />
               </button>
-              <a href="/" className="ml-4 flex items-center space-x-2">
+              <a href="/" className=" flex items-center space-x-2">
                 <img
                   src={LogoImage}
                   alt="Relief Logo"
                   className="w-[70px] h-[80px] rounded-xl  transform  duration-300 object-cover"
                 />
-                <span className="text-2xl font-extrabold text-gray-900 tracking-tight">
+                <span className="text-2xl hidden sm:block font-extrabold text-gray-900 tracking-tight">
                   Relief
                 </span>
               </a>
@@ -114,9 +176,97 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* Right side - Connect Wallet Button */}
-            <div>
-              <ConnectWalletComponent />
+            {/* Right side - Connect Wallet Button and Notifications */}
+            <div className="flex items-center space-x-4">
+              {/* Notification Bell */}
+              <div className="relative">
+                <button
+                  onClick={toggleNotification}
+                  className="p-2 rounded-lg text-gray-600 hover:bg-green-100 hover:text-green-700 transition-all duration-300 relative"
+                  aria-label="Notifications"
+                >
+                  <FaBell className="w-5 h-5" />
+                  <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+
+                {/* Notification Dropdown */}
+                {isNotificationOpen && (
+                  <div className="fixed sm:absolute top-16 right-0 sm:right-4 w-full sm:w-96 bg-white rounded-xl shadow-xl border border-green-100 overflow-hidden transform transition-all duration-300 ease-in-out z-[60]">
+                    <div className="p-4 border-b border-green-100 bg-gradient-to-r from-green-50 to-white">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-500">{notifications.filter(n => !n.read).length} unread</span>
+                          <button 
+                            onClick={() => setIsNotificationOpen(false)}
+                            className="sm:hidden p-1 rounded-lg hover:bg-green-100"
+                          >
+                            <FaTimes className="w-4 h-4 text-gray-500" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="max-h-[calc(100vh-8rem)] sm:max-h-96 overflow-y-auto">
+                      {notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={`p-4 border-b border-green-50 hover:bg-green-50/50 transition-all duration-200 ${
+                            !notification.read ? "bg-green-50/30" : ""
+                          }`}
+                        >
+                          <div className="flex items-start space-x-4">
+                            <div className={`p-2 rounded-lg text-green-400 bg-opacity-10`}>
+                              <IoMdMegaphone className="w-5 h-5" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-medium text-gray-900 truncate">{notification.title}</h4>
+                                {!notification.read && (
+                                  <span className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 mt-1 line-clamp-2">{notification.message}</p>
+                              <div className="flex items-center justify-between mt-2">
+                                <span className="text-xs text-gray-400">{notification.time}</span>
+                                {!notification.read && (
+                                  <button className="text-xs text-green-600 hover:text-green-700 font-medium px-2 py-1 rounded-lg hover:bg-green-50">
+                                    Mark as read
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="p-4 border-t border-green-100 bg-gradient-to-r from-white to-green-50">
+                      <div className="flex items-center justify-between">
+                        <a
+                          href="/notifications"
+                          className="text-sm font-medium text-green-600 hover:text-green-700 transition-colors duration-200 flex items-center"
+                        >
+                          View All Notifications
+                          <FaChevronRight className="w-3 h-3 ml-1" />
+                        </a>
+                        <button className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1 rounded-lg hover:bg-green-50">
+                          Mark all as read
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="hidden sm:block">
+                <ConnectWalletComponent />
+              </div>
+              <button
+                onClick={toggleSidebar}
+                className="p-2 rounded-lg sm:hidden text-gray-600 hover:bg-green-100 hover:text-green-700 transition-all duration-300 ease-in-out"
+                aria-label="Toggle sidebar"
+              >
+                <FaBars className="w-6 h-6" />
+              </button>
             </div>
           </div>
         </div>
@@ -175,7 +325,7 @@ const Navbar = () => {
                           isDropdownOpen ? "rotate-180" : ""
                         }`}
                       />
-                    </button>
+                    </button> 
                     {/* Dropdown in Sidebar */}
                     <div
                       className={`ml-8 mt-2 space-y-2 transition-all duration-300 ease-in-out ${
@@ -209,10 +359,25 @@ const Navbar = () => {
                 )}
               </div>
             ))}
+            {/* <div className="p-4">
+              <button
+                onClick={toggleNotification}
+                className="w-full flex items-center px-4 py-3 text-gray-600 hover:bg-green-100 hover:text-green-600 rounded-xl transition-all duration-300"
+              >
+                <div className="relative">
+                  <FaBell className="w-5 h-5 mr-3" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                </div>
+                Notifications
+                <span className="ml-auto text-sm text-gray-500">
+                  {notifications.filter(n => !n.read).length} unread
+                </span>
+              </button>
+            </div> */}
           </div>
 
           {/* Sidebar Footer */}
-          <div className="pt-6 border-t border-green-100">
+          <div className="pt-6 mb-[60px] border-t border-green-100">
             <ConnectWalletComponent />
           </div>
         </div>
