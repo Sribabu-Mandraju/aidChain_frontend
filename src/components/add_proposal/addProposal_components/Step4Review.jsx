@@ -4,34 +4,7 @@ import { motion } from 'framer-motion';
 import FormNavigation from './FormNavigation';
 import { Check, MapPin, DollarSign, ImageIcon, AlertTriangle, FileText } from 'lucide-react';
 
-const Step4Review = ({ formData, previousStep, currentStep }) => {
-  const handleSubmit = () => {
-    const successMessage = document.createElement('div');
-    successMessage.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50';
-    successMessage.innerHTML = `
-      <div class="bg-white rounded-xl p-8 shadow-xl max-w-md mx-auto">
-        <div class="flex flex-col items-center text-center">
-          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 class="text-2xl font-bold text-gray-800 mb-2">Proposal Submitted!</h2>
-          <p class="text-gray-600 mb-6">Your disaster relief proposal has been successfully submitted for review.</p>
-          <button class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-            Close
-          </button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(successMessage);
-
-    const closeButton = successMessage.querySelector('button');
-    closeButton.addEventListener('click', () => {
-      document.body.removeChild(successMessage);
-    });
-  };
-
+const Step4Review = ({ formData, previousStep, handleSubmitProposal, isSubmitting }) => {
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -151,12 +124,29 @@ const Step4Review = ({ formData, previousStep, currentStep }) => {
         </motion.div>
       </div>
 
-      <FormNavigation
-        onPrevious={previousStep}
-        onNext={handleSubmit}
-        nextLabel="Submit Proposal"
-        currentStep={currentStep}
-      />
+      <div className="mt-8 flex justify-between">
+        <button
+          onClick={previousStep}
+          disabled={isSubmitting}
+          className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+        >
+          Back
+        </button>
+        <button
+          onClick={handleSubmitProposal}
+          disabled={isSubmitting}
+          className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+        >
+          {isSubmitting ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white"></div>
+              Submitting...
+            </>
+          ) : (
+            'Submit Proposal'
+          )}
+        </button>
+      </div>
     </motion.div>
   );
 };
