@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { FaWallet } from "react-icons/fa";
+import { FaWallet, FaChevronDown, FaSignOutAlt } from "react-icons/fa";
 import { ConnectWallet } from "@coinbase/onchainkit/wallet";
 import { useAccount, useDisconnect } from "wagmi";
 import { base } from "wagmi/chains";
 
 // Import your logo at the top
-import WalletLogo from "../../assets/wallet/BaseLogo.png"; // Replace with your actual logo path, e.g., "../assets/wallet-logo.png"
+import WalletLogo from "../../assets/wallet/BaseLogo.png";
 
 // Animation variants
 const buttonVariants = {
@@ -22,6 +22,7 @@ const buttonVariants = {
 const ConnectWalletComponent = () => {
   const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Minimal custom styles for Coinbase OnchainKit
   const customStyles = {
@@ -29,8 +30,13 @@ const ConnectWalletComponent = () => {
     "--ock-fontFamily": "Inter, sans-serif",
   };
 
+  const handleDisconnect = () => {
+    disconnect();
+    setIsDropdownOpen(false);
+  };
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="relative">
       <style jsx global>{`
         .ock-button, /* Targeting Coinbase OnchainKit button */
         .ock-button * {
@@ -40,7 +46,7 @@ const ConnectWalletComponent = () => {
           color: #0052FF !important;
         }
         .ock-button:hover {
-          border-color: #22c55e !important;
+          border-color: #16a34a !important;
           color: #003bb5 !important;
         }
       `}</style>
@@ -50,102 +56,55 @@ const ConnectWalletComponent = () => {
         animate="visible"
         whileHover="hover"
         while={!isConnected ? "pulse" : undefined}
-        className="flex items-center"
       >
         {isConnected ? (
-          <div className="flex items-center gap-2">
-            {/* Connected Address Display */}
-            <div
-              style={{
-                background: "white",
-                border: "2px solid #22c55e",
-                color: "#0052FF",
-                borderRadius: "9999px",
-                padding: "0.375rem 0.75rem",
-                fontSize: "0.875rem",
-                fontWeight: "600",
-                boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-              }}
-              className="transition-all duration-300 hover:border-[#003bb5] hover:text-[#003bb5]"
-              title={address}
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#0052FF] bg-white border-2 border-[#22c55e] rounded-full hover:bg-gray-50 hover:border-[#16a34a] transition-colors duration-200"
             >
               <img
                 src={WalletLogo}
                 alt="Wallet Logo"
-                style={{ width: "24px", height: "24px", display: "inline-block" }}
+                className="w-7 h-7"
               />
-              <span
-                style={{ fontFamily: "monospace", maxWidth: "100px" }}
-                className="truncate"
-              >
+              <span className="font-mono">
                 {address.slice(0, 4)}...{address.slice(-4)}
               </span>
-            </div>
-            {/* Disconnect Button */}
-            <button
-              onClick={() => disconnect()}
-              style={{
-                background: "#fef2f2",
-                color: "#dc2626",
-                borderRadius: "9999px",
-                padding: "0.25rem 0.625rem",
-                fontSize: "0.75rem",
-                fontWeight: "600",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.25rem",
-              }}
-              className="transition-all duration-300 hover:bg-red-100"
-            >
-              <svg
-                style={{ width: "16px", height: "16px" }}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-              Disconnect
+              <FaChevronDown className="w-3 h-3" />
             </button>
+
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="py-1">
+                  <button
+                    onClick={handleDisconnect}
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+                  >
+                    <FaSignOutAlt className="w-4 h-4 mr-2" />
+                    Disconnect Wallet
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
-          <div
-            style={{
-              background: "white",
-              border: "2px solid #0052FF",
-              borderRadius: "9999px",
-              padding: "0.375rem 0.75rem",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              fontSize: "0.875rem",
-              fontWeight: "600",
-              color: "#0052FF",
-              boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-            }}
-            className="transition-all duration-300 hover:border-[#003bb5] hover:text-[#003bb5]"
-          >
+          <div className="flex items-center">
             <ConnectWallet
               chainId={base.id}
               style={customStyles}
               className="flex items-center gap-2 bg-transparent"
             >
-              <img
-                src={WalletLogo}
-                alt="Wallet Logo"
-                style={{ width: "24px", height: "24px", display: "inline-block" }}
-              />
-              <span className="hidden sm:inline">Connect Wallet</span>
-              <FaWallet className="text-lg sm:hidden" />
+              <div className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#0052FF] bg-white border-2 border-[#22c55e] rounded-full hover:bg-gray-50 hover:border-[#16a34a] transition-colors duration-200">
+                <img
+                  src={WalletLogo}
+                  alt="Wallet Logo"
+                  className="w-5 h-5"
+                />
+                <span className="hidden sm:inline">Connect Wallet</span>
+                <FaWallet className="text-lg sm:hidden" />
+              </div>
             </ConnectWallet>
           </div>
         )}
