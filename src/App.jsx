@@ -7,6 +7,7 @@ import AddProposalPage from "./pages/ADD_PROPOSAL/AddProposalPage";
 import "./index.css";
 import CampaignsPage from "./pages/CAMPAIGNS/CampaignsPage";
 import VictimRegistration from "./components/victim_registration/VictimRegestration";
+import ProposalPage from "./pages/PROPOSAL/ProposalPage";
 const App = () => {
   return (
     <Router>
@@ -18,6 +19,7 @@ const App = () => {
         <Route path="/dao/new-proposal" element={<AddProposalPage />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
         <Route path="/victim-registration" element={<VictimRegistration />} />
+        <Route path="/proposal" element={<ProposalPage />} />
         {/* Add more routes as needed */}
       </Routes>
     </Router>
