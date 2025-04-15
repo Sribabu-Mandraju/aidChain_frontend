@@ -266,19 +266,18 @@ const ProposalDetails = () => {
     return states[stateNumber] || "Unknown"
   }
 
-  // Vote percentage
+  // Calculate vote percentage
   const getVotePercentage = () => {
     if (!proposal) return 0
     const totalVotes = proposal.forVotes + proposal.againstVotes
     return totalVotes > 0 ? Math.round((proposal.forVotes / totalVotes) * 100) : 0
   }
 
-  // Approval status
+  // Get approval status
   const getApprovalStatus = () => {
     if (!proposal) return { status: "Pending", color: "bg-gray-500" }
 
     const totalVotes = proposal.forVotes + proposal.againstVotes
-    // Calculate required votes (60% of total members)
     const requiredVotes = Math.ceil((60 * proposal.totalDaoMembers) / 100)
 
     if (proposal.state !== "Active") {
@@ -362,7 +361,7 @@ const ProposalDetails = () => {
   const votePercentage = getVotePercentage()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-green-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen  bg-gradient-to-br from-white to-green-50 py-12 px-4 sm:px-6 lg:px-8">
       {loading && proposal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-xl">
