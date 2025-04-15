@@ -29,8 +29,7 @@ const App = () => {
         <Route path="/learn-more-wallet" element={<WalletDetails />} />
         <Route path="/learn-more-donate" element={<DonateDetails />} />
         <Route path="/learn-more" element={<LearnMoreDetails />} />
-        <Route path="/proposal" element={<ProposalPage />} />
-        {/* Add more routes as needed */}
+        <Route path="/proposals/:id" element={<ProposalPage />} />
       </Routes>
     </Router>
   );

@@ -1,58 +1,150 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { DollarSign, Gift } from "lucide-react";
+import { DollarSign, Wallet } from "lucide-react";
+import { useAccount, useConnect, useDisconnect, useWalletClient } from 'wagmi';
+import { coinbaseWallet } from '@wagmi/connectors'; // Updated import
+import { baseSepolia } from 'viem/chains';
+import { toast } from 'react-hot-toast';
+import { donate, getBalance, isDonor, publicClient } from '../../../providers/fund_escrow_provider';
 
 const DonationSection = ({ campaigns }) => {
   const [selectedCampaign, setSelectedCampaign] = useState("");
   const [donationAmount, setDonationAmount] = useState("");
-  const [donationType, setDonationType] = useState("campaign"); // "campaign" or "organization"
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [donationType, setDonationType] = useState("campaign");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [balance, setBalance] = useState(null);
+  const [isDonorStatus, setIsDonorStatus] = useState(null);
 
-  const handleDonate = () => {
-    setError("");
-    setSuccess("");
+  const { address, isConnected } = useAccount();
+  const { connect } = useConnect({
+    connector: coinbaseWallet({
+      appName: 'Disaster Relief',
+      chainId: baseSepolia.id,
+    }),
+  });
+  const { disconnect } = useDisconnect();
+  const { data: walletClient } = useWalletClient();
 
-    // Validate donation amount
-    if (!donationAmount || donationAmount <= 0) {
-      setError("Please enter a valid donation amount.");
-      return;
-    }
+  // Format amount to USDC decimals (6 decimals)
+  const formatAmount = (value) => {
+    return Math.floor(Number(value) * 1000000);
+  };
 
-    // Validate campaign selection if donating to a campaign
-    if (donationType === "campaign" && !selectedCampaign) {
-      setError("Please select a campaign to donate to.");
-      return;
-    }
-
-    // Simulate donation processing
+  // Handle wallet connection
+  const handleConnectWallet = async () => {
     try {
-      const donationDetails = {
-        type: donationType,
-        campaignId: donationType === "campaign" ? selectedCampaign : null,
-        campaignTitle:
-          donationType === "campaign"
-            ? campaigns.find((c) => c.id === parseInt(selectedCampaign))?.title
-            : "Organization",
-        amount: donationAmount,
-      };
-
-      // Log donation details (placeholder for future contract integration)
-      console.log("Donation submitted:", donationDetails);
-
-      // Set success message
-      setSuccess(
-        `Thank you for your ${donationAmount} ETH donation to ${donationDetails.campaignTitle}! Your support makes a difference.`
-      );
-
-      // Reset form
-      setDonationAmount("");
-      setSelectedCampaign("");
-    } catch (err) {
-      setError("Donation processing failed. Please try again.");
-      console.error("Donation error:", err);
+      setIsConnecting(true);
+      await connect();
+      toast.success('Wallet connected successfully');
+    } catch (error) {
+      console.error('Connection error:', error);
+      toast.error('Failed to connect wallet');
+    } finally {
+      setIsConnecting(false);
     }
   };
+
+  // Handle donation
+  const handleDonate = async () => {
+    if (!isConnected || !walletClient) {
+      toast.error('Please connect your wallet first');
+      return;
+    }
+
+    if (!donationAmount || Number(donationAmount) <= 0) {
+      toast.error('Please enter a valid donation amount');
+      return;
+    }
+
+    if (donationType === "campaign" && !selectedCampaign) {
+      toast.error('Please select a campaign to donate to');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const formattedAmount = formatAmount(donationAmount);
+      const txHash = await donate(formattedAmount, walletClient);
+
+      // Wait for transaction to be mined
+      toast.promise(
+        publicClient.waitForTransactionReceipt({ hash: txHash }),
+        {
+          loading: 'Processing donation...',
+          success: (receipt) => (
+            <div className="flex flex-col">
+              <span>Donation successful!</span>
+              <a
+                href={`https://sepolia.basescan.org/tx/${receipt.transactionHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-green-600 hover:underline"
+              >
+                View transaction
+              </a>
+            </div>
+          ),
+          error: 'Donation failed',
+        }
+      );
+
+      // Update donor status and balance
+      const [donorStatus, newBalance] = await Promise.all([
+        isDonor(address),
+        getBalance()
+      ]);
+
+      setIsDonorStatus(donorStatus);
+      setBalance(newBalance);
+      setDonationAmount("");
+      setSelectedCampaign("");
+
+    } catch (error) {
+      console.error('Donation error:', error);
+      toast.error(
+        error.message.includes('insufficient funds')
+          ? 'Insufficient USDC balance'
+          : error.message.includes('User rejected')
+          ? 'Transaction rejected by user'
+          : 'Donation failed. Please try again.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load initial data
+  const loadInitialData = async () => {
+    if (!address) return;
+
+    try {
+      const [donorStatus, currentBalance] = await Promise.all([
+        isDonor(address),
+        getBalance()
+      ]);
+      setIsDonorStatus(donorStatus);
+      setBalance(currentBalance);
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+    }
+  };
+
+  // Format balance for display
+  const formatBalance = (balance) => {
+    return (Number(balance) / 1000000).toFixed(2);
+  };
+
+  // Format address for display
+  const formatAddress = (addr) => {
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
+
+  useEffect(() => {
+    if (address) {
+      loadInitialData();
+    }
+  }, [address]);
 
   return (
     <section className="py-16 bg-white">
@@ -72,108 +164,139 @@ const DonationSection = ({ campaigns }) => {
             to fund ongoing relief efforts.
           </p>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setDonationType("campaign")}
-              className={`px-6 py-3 rounded-full font-semibold text-sm transition-all ${
-                donationType === "campaign"
-                  ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-green-50"
-              }`}
-            >
-              Donate to a Campaign
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setDonationType("organization")}
-              className={`px-6 py-3 rounded-full font-semibold text-sm transition-all ${
-                donationType === "organization"
-                  ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-green-50"
-              }`}
-            >
-              Donate to Organization
-            </motion.button>
-          </div>
-
-          <div className="max-w-lg mx-auto space-y-6">
-            {donationType === "campaign" && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Campaign
-                </label>
-                <select
-                  value={selectedCampaign}
-                  onChange={(e) => setSelectedCampaign(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-                >
-                  <option value="">Choose a campaign</option>
-                  {campaigns.map((campaign) => (
-                    <option key={campaign.id} value={campaign.id}>
-                      {campaign.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Donation Amount (ETH)
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <DollarSign size={18} className="text-gray-500" />
-                </div>
-                <input
-                  type="number"
-                  value={donationAmount}
-                  onChange={(e) => setDonationAmount(e.target.value)}
-                  placeholder="e.g., 0.01"
-                  step="0.01"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-                />
-              </div>
+          {!isConnected ? (
+            <div className="text-center">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleConnectWallet}
+                disabled={isConnecting}
+                className="w-full max-w-xs mx-auto flex items-center justify-center gap-2 py-3 px-6 rounded-full font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                {isConnecting ? (
+                  <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <>
+                    <Wallet size={20} />
+                    Connect Coinbase Smart Wallet
+                  </>
+                )}
+              </motion.button>
             </div>
-
-            {error && (
-              <div className="text-red-500 text-sm flex items-center gap-1">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+          ) : (
+            <>
+              <div className="mb-6 p-4 bg-white rounded-lg shadow-sm flex items-center justify-between">
+                <span className="text-sm text-gray-600">
+                  Connected: {formatAddress(address)}
+                </span>
+                <button
+                  onClick={() => disconnect()}
+                  className="text-sm text-red-600 hover:text-red-700"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                {error}
+                  Disconnect
+                </button>
               </div>
-            )}
 
-            {success && (
-              <div className="text-green-500 text-sm flex items-center gap-1">
-                <Gift size={16} />
-                {success}
+              <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setDonationType("campaign")}
+                  className={`px-6 py-3 rounded-full font-semibold text-sm transition-all ${
+                    donationType === "campaign"
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-green-50"
+                  }`}
+                >
+                  Donate to a Campaign
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setDonationType("organization")}
+                  className={`px-6 py-3 rounded-full font-semibold text-sm transition-all ${
+                    donationType === "organization"
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-green-50"
+                  }`}
+                >
+                  Donate to Organization
+                </motion.button>
               </div>
-            )}
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleDonate}
-              className="w-full py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:shadow-lg transition-all"
-            >
-              Donate Now
-            </motion.button>
-          </div>
+              <div className="max-w-lg mx-auto space-y-6">
+                {donationType === "campaign" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Campaign
+                    </label>
+                    <select
+                      value={selectedCampaign}
+                      onChange={(e) => setSelectedCampaign(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                    >
+                      <option value="">Choose a campaign</option>
+                      {campaigns.map((campaign) => (
+                        <option key={campaign.id} value={campaign.id}>
+                          {campaign.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Donation Amount (USDC)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <DollarSign size={18} className="text-gray-500" />
+                    </div>
+                    <input
+                      type="number"
+                      value={donationAmount}
+                      onChange={(e) => setDonationAmount(e.target.value)}
+                      placeholder="e.g., 10.00"
+                      step="0.01"
+                      min="0"
+                      disabled={isLoading}
+                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">
+                    Current Escrow Balance: {balance ? `${formatBalance(balance)} USDC` : 'Loading...'}
+                  </p>
+                  {isDonorStatus && (
+                    <p className="text-sm text-green-600 mt-1">
+                      You are a verified donor! Thank you for your support.
+                    </p>
+                  )}
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDonate}
+                  disabled={isLoading || !donationAmount || Number(donationAmount) <= 0}
+                  className={`w-full py-3 rounded-lg font-semibold text-white ${
+                    isLoading || !donationAmount || Number(donationAmount) <= 0
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:shadow-lg'
+                  }`}
+                >
+                  {isLoading ? (
+                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mx-auto" />
+                  ) : (
+                    'Donate Now'
+                  )}
+                </motion.button>
+              </div>
+            </>
+          )}
         </motion.div>
       </div>
     </section>
