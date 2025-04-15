@@ -6,9 +6,9 @@ import fundEscrowABI from '../abis/fundEscrow.json';
 const DAO_CONTRACT_ADDRESS = "0x1b105d0FcCF76aa7a5Aca51e1135DCC4F8Be2307";
 
 // Initialize public client for read operations
-export const publicClient = createPublicClient({
+const publicClient = createPublicClient({
   chain: baseSepolia,
-  transport: http(),
+  transport: http("https://base-sepolia.g.alchemy.com/v2/kBfhfjgaUbr1xz7I4QTPU7ZepOM6uMxK"),
 });
 
 // Initialize wallet client for write operations
@@ -150,6 +150,7 @@ export const createProposal = async (disasterName, location, fundAmount, image) 
   }
 };
 
+// dao_provider.js
 export const vote = async (proposalId, support) => {
   try {
     const contract = await getWriteDaoContract();
@@ -189,14 +190,33 @@ export const vote = async (proposalId, support) => {
       throw new Error("Voting period has ended");
     }
 
-    // Submit the vote transaction
+    // Estimate gas (optional, for debugging)
+    let gasEstimate;
+    try {
+      gasEstimate = await contract.publicClient.estimateContractGas({
+        address: contract.address,
+        abi: contract.abi,
+        functionName: 'vote',
+        args: [BigInt(proposalId), support],
+        account: address,
+      });
+      console.log("Estimated gas:", gasEstimate.toString());
+    } catch (gasError) {
+      console.warn("Gas estimation failed:", gasError.message);
+      // Fallback to a high gas limit
+      gasEstimate = BigInt(5000000);
+    }
+
+    // Submit the vote transaction with a high gas limit
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'vote',
       args: [BigInt(proposalId), support],
       account: address,
-      gas: 5000000, // Optional: Set a high gas limit to ensure the transaction goes through
+      gas: gasEstimate + BigInt(100000), // Add a buffer to the estimated gas
+      maxFeePerGas: BigInt(1000000000), // 1 gwei (adjust based on network conditions)
+      maxPriorityFeePerGas: BigInt(100000000), // 0.1 gwei
     });
 
     console.log("Vote transaction submitted:", hash);
@@ -204,7 +224,7 @@ export const vote = async (proposalId, support) => {
     return {
       hash,
       status: "success",
-      message: "Vote successful",
+      message: "Vote submitted",
     };
   } catch (error) {
     console.error("Error in vote:", error);

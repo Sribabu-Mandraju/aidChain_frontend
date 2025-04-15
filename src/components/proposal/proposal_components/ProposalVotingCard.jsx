@@ -5,9 +5,7 @@ import { useAccount } from "wagmi";
 import { toast } from "react-hot-toast";
 import { createPublicClient, http } from "viem";
 import { baseSepolia } from "viem/chains";
-import daoABI from "../../../abis/daoGovernance.json";
-import { vote, isDAOMember, getProposal, memberCount } from "../../../providers/dao_provider";
-// import ProposalVoteModal from "./ProposalVoteModal";
+import { vote, isDAOMember, getProposal, memberCount, hasVoted } from "../../../providers/dao_provider";
 
 // Initialize public client for transaction receipt
 const publicClient = createPublicClient({
@@ -15,54 +13,68 @@ const publicClient = createPublicClient({
   transport: http(),
 });
 
-// DAO contract address
-const DAO_CONTRACT_ADDRESS = "0x1b105d0FcCF76aa7a5Aca51e1135DCC4F8Be2307";
-
-const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercentage }) => {
+const ProposalVotingCard = ({ proposal, approvalStatus, votePercentage }) => {
   const [isVoteModalOpen, setIsVoteModalOpen] = useState(false);
   const [currentVoteType, setCurrentVoteType] = useState(null);
   const [isVoting, setIsVoting] = useState(false);
   const [error, setError] = useState(null);
   const [isUserDaoMember, setIsUserDaoMember] = useState(false);
+  const [hasUserVotedState, setHasUserVotedState] = useState(false);
   const [totalMembers, setTotalMembers] = useState(0);
   const [requiredVotes, setRequiredVotes] = useState(0);
 
-  // Use the existing wallet connection from navbar
   const { address: userAddress, isConnected } = useAccount();
+
+  // Validate proposal prop
+  if (!proposal || !proposal.id) {
+    console.error("Invalid proposal data:", proposal);
+    return <div className="text-red-600">Error: Invalid proposal data</div>;
+  }
 
   // Calculate required votes (60% of total members)
   useEffect(() => {
     const calculateRequiredVotes = async () => {
       try {
         const total = await memberCount();
-        setTotalMembers(total);
-        // Calculate 60% of total members, rounded up
-        const required = Math.ceil((60 * total) / 100);
+        const totalNum = Number(total) || 0;
+        setTotalMembers(totalNum);
+        const required = Math.ceil((60 * totalNum) / 100);
         setRequiredVotes(required);
       } catch (error) {
         console.error("Error calculating required votes:", error);
+        toast.error("Failed to fetch DAO member count");
       }
     };
 
     calculateRequiredVotes();
   }, []);
 
-  // Check DAO membership when user address changes
+  // Check DAO membership and voting status
   useEffect(() => {
-    const checkMembership = async () => {
-      if (userAddress) {
-        try {
-          const isMember = await isDAOMember(userAddress);
-          setIsUserDaoMember(isMember);
-        } catch (error) {
-          console.error("Error checking DAO membership:", error);
-          setIsUserDaoMember(false);
+    const checkMembershipAndVote = async () => {
+      if (!userAddress) {
+        setIsUserDaoMember(false);
+        setHasUserVotedState(false);
+        return;
+      }
+
+      try {
+        const isMember = await isDAOMember(userAddress);
+        setIsUserDaoMember(isMember);
+
+        if (isMember) {
+          const voted = await hasVoted(proposal.id, userAddress);
+          setHasUserVotedState(voted);
         }
+      } catch (error) {
+        console.error("Error checking DAO membership or vote status:", error);
+        toast.error("Failed to verify DAO membership");
+        setIsUserDaoMember(false);
       }
     };
 
-    checkMembership();
-  }, [userAddress]);
+    checkMembershipAndVote();
+  }, [userAddress, proposal.id]);
 
   // Handle vote initiation
   const handleVote = useCallback(
@@ -77,10 +89,15 @@ const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercen
         return;
       }
 
+      if (hasUserVotedState) {
+        toast.error("You have already voted on this proposal");
+        return;
+      }
+
       setCurrentVoteType(voteType);
       setIsVoteModalOpen(true);
     },
-    [isConnected, userAddress, isUserDaoMember]
+    [isConnected, userAddress, isUserDaoMember, hasUserVotedState]
   );
 
   // Handle vote submission
@@ -103,10 +120,10 @@ const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercen
 
     try {
       const result = await vote(proposal.id, currentVoteType === "for");
-      
+
       // Wait for transaction to be mined
       const receipt = await publicClient.waitForTransactionReceipt({ hash: result.hash });
-      
+
       if (receipt.status === "success") {
         toast.success(
           <div className="flex flex-col">
@@ -124,49 +141,31 @@ const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercen
         );
 
         // Refresh proposal data after successful vote
+        setHasUserVotedState(true);
         window.location.reload();
       } else {
-        throw new Error("Transaction failed");
+        throw new Error("Transaction reverted. Please check the contract state or try again.");
       }
     } catch (error) {
       console.error("Voting error:", error);
-      toast.error(error.message, { id: toastId });
-      setError(error.message);
+      let errorMessage = error.message || "An unexpected error occurred";
+      if (error.message.includes("Proposal is not active")) {
+        errorMessage = "This proposal is no longer active for voting.";
+      } else if (error.message.includes("Already voted")) {
+        errorMessage = "You have already voted on this proposal.";
+      } else if (error.message.includes("Insufficient funds in escrow")) {
+        errorMessage = "Not enough funds in the escrow to execute this proposal.";
+      } else if (error.message.includes("gas")) {
+        errorMessage = "Gas estimation failed. Try again or contact support.";
+      }
+      toast.error(errorMessage, { id: toastId });
+      setError(errorMessage);
     } finally {
       setIsVoting(false);
       setIsVoteModalOpen(false);
       setCurrentVoteType(null);
     }
   }, [isConnected, userAddress, currentVoteType, proposal.id, isUserDaoMember]);
-
-  // Helper function to encode the vote function call
-  function encodeVoteFunction(proposalId, support) {
-    // Find the vote function in the ABI
-    const voteFunction = daoABI.find(
-      item => item.type === "function" && item.name === "vote"
-    );
-    
-    if (!voteFunction) {
-      throw new Error("Vote function not found in ABI");
-    }
-    
-    // Create function signature
-    const functionSignature = `vote(uint256,bool)`;
-    
-    // Create function selector (first 4 bytes of the keccak256 hash of the function signature)
-    const selector = window.ethereum.utils?.keccak256(functionSignature).slice(0, 10) || 
-                    "0x0121b93f"; // Fallback to hardcoded selector if utils not available
-    
-    // Encode parameters
-    // Convert proposalId to hex and pad to 32 bytes
-    const encodedProposalId = BigInt(proposalId).toString(16).padStart(64, '0');
-    
-    // Encode boolean (0 for false, 1 for true) and pad to 32 bytes
-    const encodedSupport = support ? "1".padStart(64, '0') : "0".padStart(64, '0');
-    
-    // Combine selector and encoded parameters
-    return `${selector}${encodedProposalId}${encodedSupport}`;
-  }
 
   return (
     <motion.div
@@ -187,7 +186,7 @@ const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercen
           <>
             <div className="mb-6 p-4 bg-white rounded-lg shadow-sm flex items-center justify-between">
               <span className="text-sm text-gray-600">
-                Connected: {userAddress ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}` : ""}
+                Connected: {userAddress ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}` : "Not connected"}
               </span>
               {isUserDaoMember && (
                 <span className="text-sm text-green-600 font-medium">DAO Member</span>
@@ -205,10 +204,10 @@ const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercen
                   Required Votes to Pass: <span className="font-medium">{requiredVotes} (60%)</span>
                 </p>
                 <p className="text-sm text-gray-600">
-                  Current For Votes: <span className="font-medium">{proposal.forVotes}</span>
+                  Current For Votes: <span className="font-medium">{proposal.forVotes || 0}</span>
                 </p>
                 <p className="text-sm text-gray-600">
-                  Current Against Votes: <span className="font-medium">{proposal.againstVotes}</span>
+                  Current Against Votes: <span className="font-medium">{proposal.againstVotes || 0}</span>
                 </p>
               </div>
             </div>
@@ -218,19 +217,19 @@ const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercen
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Approval Status</span>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium text-white ${approvalStatus.color}`}
+                  className={`px-3 py-1 rounded-full text-xs font-medium text-white ${approvalStatus?.color || 'bg-gray-500'}`}
                 >
-                  {approvalStatus.status}
+                  {approvalStatus?.status || 'Unknown'}
                 </span>
               </div>
               <div className="bg-gray-200 rounded-full h-2.5 mb-1">
                 <div
                   className="bg-green-500 h-2.5 rounded-full"
-                  style={{ width: `${votePercentage}%` }}
+                  style={{ width: `${votePercentage || 0}%` }}
                 ></div>
               </div>
               <div className="flex justify-between text-xs text-gray-500">
-                <span>{votePercentage}% Approval</span>
+                <span>{votePercentage || 0}% Approval</span>
                 <span>60% Required</span>
               </div>
             </div>
@@ -238,19 +237,19 @@ const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercen
             {/* Vote Counts */}
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-green-50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-green-600">{proposal.forVotes}</div>
+                <div className="text-2xl font-bold text-green-600">{proposal.forVotes || 0}</div>
                 <div className="text-sm text-gray-600">For</div>
               </div>
               <div className="bg-red-50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-red-600">{proposal.againstVotes}</div>
+                <div className="text-2xl font-bold text-red-600">{proposal.againstVotes || 0}</div>
                 <div className="text-sm text-gray-600">Against</div>
               </div>
             </div>
 
             {/* Voting Actions */}
-            {proposal.state === "Active" && (
+            {true? (
               <div>
-                {hasUserVoted ? (
+                {hasUserVotedState ? (
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
                     <CheckCircle className="h-6 w-6 text-green-500 mx-auto mb-2" />
                     <p className="text-gray-600">You have already voted on this proposal</p>
@@ -288,17 +287,15 @@ const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercen
                   </div>
                 )}
               </div>
-            )}
-
-            {proposal.state !== "Active" && (
+            ) : (
               <div
                 className={`rounded-lg p-4 text-center ${
-                  proposal.state === "Passed" || proposal.state === "Executed"
+                  proposal.state === 1 || proposal.state === 3
                     ? "bg-green-50 border border-green-200"
                     : "bg-red-50 border border-red-200"
                 }`}
               >
-                {proposal.state === "Passed" || proposal.state === "Executed" ? (
+                {proposal.state === 1 || proposal.state === 3 ? (
                   <CheckCircle className="h-6 w-6 text-green-500 mx-auto mb-2" />
                 ) : (
                   <XCircle className="h-6 w-6 text-red-500 mx-auto mb-2" />
@@ -307,15 +304,15 @@ const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercen
                   This proposal has been{" "}
                   <span
                     className={
-                      proposal.state === "Passed" || proposal.state === "Executed"
+                      proposal.state === 1 || proposal.state === 3
                         ? "text-green-600 font-medium"
                         : "text-red-600 font-medium"
                     }
                   >
-                    {proposal.state.toLowerCase()}
+                    {["Active", "Passed", "Rejected", "Executed"][proposal.state] || "Unknown"}
                   </span>
                 </p>
-                {proposal.state === "Passed" && (
+                {(proposal.state === 1 || proposal.state === 3) && (
                   <p className="text-sm text-green-600 mt-2">
                     A new DisasterRelief contract has been deployed!
                   </p>
@@ -350,11 +347,13 @@ const ProposalVoteModal = ({ onClose, onConfirm, proposal, voteType, isLoading }
       <div className="bg-white rounded-xl p-6 max-w-md w-full">
         <h3 className="text-xl font-semibold mb-4">Confirm Your Vote</h3>
         <p className="mb-6">
-          You are voting <span className={voteType === "for" ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
+          You are voting{" "}
+          <span className={voteType === "for" ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
             {voteType === "for" ? "FOR" : "AGAINST"}
-          </span> the proposal:
+          </span>{" "}
+          the proposal:
           <br />
-          <span className="font-medium">{proposal.title || "Proposal #" + proposal.id}</span>
+          <span className="font-medium">{proposal.disasterName || `Proposal #${proposal.id}`}</span>
         </p>
         <div className="flex gap-3">
           <button
