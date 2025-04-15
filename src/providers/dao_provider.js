@@ -1,6 +1,7 @@
 import { createPublicClient, http, createWalletClient, custom } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import daoABI from '../abis/daoGovernance.json';
+import fundEscrowABI from '../abis/fundEscrow.json';
 
 const DAO_CONTRACT_ADDRESS = "0x1b105d0FcCF76aa7a5Aca51e1135DCC4F8Be2307";
 
@@ -152,49 +153,94 @@ export const createProposal = async (disasterName, location, fundAmount, image) 
 export const vote = async (proposalId, support) => {
   try {
     const contract = await getWriteDaoContract();
-    
+
     // Get the connected wallet address
     const [address] = await contract.walletClient.getAddresses();
     if (!address) {
       throw new Error("No wallet connected");
     }
 
-    // Estimate gas for the transaction
-    const gas = await contract.publicClient.estimateContractGas({
-      address: contract.address,
-      abi: contract.abi,
-      functionName: 'vote',
-      args: [BigInt(proposalId), support],
-      account: address,
-    });
+    // Check if user is a DAO member
+    const isMember = await isDAOMember(address);
+    if (!isMember) {
+      throw new Error("Only DAO members can vote");
+    }
 
-    // Prepare the transaction with gas settings
-    const transaction = {
-      address: contract.address,
-      abi: contract.abi,
-      functionName: 'vote',
-      args: [BigInt(proposalId), support],
-      account: address,
-      gas: gas,
-      maxFeePerGas: 1000000000n, // 1 Gwei
-      maxPriorityFeePerGas: 100000000n, // 0.1 Gwei
-    };
+    // Check if user has already voted
+    const hasVotedAlready = await hasVoted(proposalId, address);
+    if (hasVotedAlready) {
+      throw new Error("You have already voted on this proposal");
+    }
+
+    // Get current proposal details
+    const proposal = await getProposal(proposalId);
+    if (!proposal) {
+      throw new Error("Proposal not found");
+    }
+
+    // Check if proposal is still active
+    if (proposal.state !== 0) {
+      throw new Error("Proposal is not active");
+    }
+
+    // Check if voting period has ended
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (currentTime > proposal.endTime) {
+      throw new Error("Voting period has ended");
+    }
 
     // Submit the vote transaction
-    const hash = await contract.walletClient.writeContract(transaction);
+    const hash = await contract.walletClient.writeContract({
+      address: contract.address,
+      abi: contract.abi,
+      functionName: 'vote',
+      args: [BigInt(proposalId), support],
+      account: address,
+      gas: 5000000, // Optional: Set a high gas limit to ensure the transaction goes through
+    });
 
-    // Wait for transaction confirmation
-    const receipt = await contract.publicClient.waitForTransactionReceipt({ hash });
-    
-    if (receipt.status === "success") {
-      console.log("Vote transaction submitted successfully:", hash);
-      return hash;
-    } else {
-      throw new Error("Vote transaction failed");
-    }
+    console.log("Vote transaction submitted:", hash);
+
+    return {
+      hash,
+      status: "success",
+      message: "Vote successful",
+    };
   } catch (error) {
     console.error("Error in vote:", error);
     throw new Error(`Failed to vote: ${error.message}`);
+  }
+};
+
+// Add a function to monitor proposal status
+export const monitorProposalStatus = async (proposalId) => {
+  try {
+    const proposal = await getProposal(proposalId);
+    if (!proposal) {
+      throw new Error("Proposal not found");
+    }
+
+    const totalMembers = await memberCount();
+    const requiredVotes = Math.ceil(Number(totalMembers) * 0.6);
+    const totalVotes = proposal.votesFor + proposal.votesAgainst;
+    const votesFor = proposal.votesFor;
+    const votesAgainst = proposal.votesAgainst;
+    const proposalStatus = await getProposalStatus(proposalId);
+
+    return {
+      proposal,
+      totalMembers,
+      requiredVotes,
+      totalVotes,
+      votesFor,
+      votesAgainst,
+      proposalStatus,
+      hasReachedThreshold: totalVotes >= requiredVotes,
+      hasPassed: votesFor / totalVotes >= 0.6
+    };
+  } catch (error) {
+    console.error("Error monitoring proposal status:", error);
+    throw error;
   }
 };
 

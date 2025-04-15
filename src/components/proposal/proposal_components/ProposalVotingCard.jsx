@@ -102,26 +102,17 @@ const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercen
     const toastId = toast.loading("Submitting vote...");
 
     try {
-      const hash = await vote(proposal.id, currentVoteType === "for");
+      const result = await vote(proposal.id, currentVoteType === "for");
       
       // Wait for transaction to be mined
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      const receipt = await publicClient.waitForTransactionReceipt({ hash: result.hash });
       
       if (receipt.status === "success") {
-        // Check if proposal passed after vote
-        const updatedProposal = await getProposal(proposal.id);
-        const isPassed = updatedProposal.state === "Passed";
-        
         toast.success(
           <div className="flex flex-col">
             <span>Vote submitted successfully!</span>
-            {isPassed && (
-              <span className="text-green-600 font-semibold">
-                Proposal passed! A new DisasterRelief contract will be deployed.
-              </span>
-            )}
             <a
-              href={`https://sepolia.basescan.org/tx/${hash}`}
+              href={`https://sepolia.basescan.org/tx/${result.hash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-green-600 hover:underline"
@@ -139,26 +130,8 @@ const ProposalVotingCard = ({ proposal, hasUserVoted, approvalStatus, votePercen
       }
     } catch (error) {
       console.error("Voting error:", error);
-      let errorMessage = "Failed to submit vote";
-
-      if (error.message.includes("Already voted")) {
-        errorMessage = "You have already voted on this proposal";
-      } else if (error.message.includes("Proposal is not active")) {
-        errorMessage = "This proposal is no longer active";
-      } else if (error.message.includes("Voting period has ended")) {
-        errorMessage = "The voting period has ended";
-      } else if (error.message.includes("network")) {
-        errorMessage = "Network error, please try again";
-      } else if (error.message.includes("user rejected")) {
-        errorMessage = "Transaction rejected";
-      } else if (error.message.includes("chain ID")) {
-        errorMessage = "Please switch to Base Sepolia network";
-      } else if (error.message.includes("Only fund escrow can deploy")) {
-        errorMessage = "Only DAO members can vote on proposals";
-      }
-
-      toast.error(errorMessage, { id: toastId });
-      setError(errorMessage);
+      toast.error(error.message, { id: toastId });
+      setError(error.message);
     } finally {
       setIsVoting(false);
       setIsVoteModalOpen(false);

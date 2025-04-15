@@ -173,6 +173,7 @@ export const getBalance = async () => {
       ...contract,
       functionName: 'getBalance',
     });
+    console.log(balance)
     return balance;
   } catch (error) {
     console.error('Error in getBalance:', error);
