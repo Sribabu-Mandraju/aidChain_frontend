@@ -377,7 +377,7 @@ const CampaignCard = ({ campaign, index }) => {
           <div className="flex items-center justify-center gap-4 mt-4">
             <button
               onClick={() => setIsDonateModalOpen(true)}
-              className="w-[35%] px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:from-green-400 hover:to-emerald-500 transition-colors duration-300 shadow-md hover:shadow-lg"
+              className="w-[35%] px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:from-green-400 hover:to-emerald-500 transition-colors duration-300 shadow-md hover:shadow-lg ml-8"
             >
               Donate
             </button>
