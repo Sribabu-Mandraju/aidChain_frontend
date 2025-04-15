@@ -35,7 +35,7 @@ const Hero = () => {
   };
 
   const handleLearnMoreClick = () => {
-    navigate("/learn-more");
+    navigate("/about");
   };
 
   const stats = [

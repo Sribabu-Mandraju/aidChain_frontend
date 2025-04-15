@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DollarSign, Wallet } from "lucide-react";
 import { useAccount, useConnect, useDisconnect, useWalletClient } from 'wagmi';
-import { coinbaseWallet } from '@wagmi/connectors'; // Updated import
+import { coinbaseWallet } from '@wagmi/connectors';
 import { baseSepolia } from 'viem/chains';
 import { toast } from 'react-hot-toast';
-import { donate, getBalance, isDonor, publicClient } from '../../../providers/fund_escrow_provider';
+import { donate, getBalance, isDonor, publicClient, ensureUsdcApproval } from '../../../providers/fund_escrow_provider';
 
 const DonationSection = ({ campaigns }) => {
   const [selectedCampaign, setSelectedCampaign] = useState("");
@@ -28,7 +28,9 @@ const DonationSection = ({ campaigns }) => {
 
   // Format amount to USDC decimals (6 decimals)
   const formatAmount = (value) => {
-    return Math.floor(Number(value) * 1000000);
+    const num = Number(value);
+    if (isNaN(num) || num <= 0) return 0;
+    return Math.floor(num * 1000000);
   };
 
   // Handle wallet connection
@@ -39,7 +41,7 @@ const DonationSection = ({ campaigns }) => {
       toast.success('Wallet connected successfully');
     } catch (error) {
       console.error('Connection error:', error);
-      toast.error('Failed to connect wallet');
+      toast.error('Failed to connect wallet. Please try again.');
     } finally {
       setIsConnecting(false);
     }
@@ -65,10 +67,29 @@ const DonationSection = ({ campaigns }) => {
     setIsLoading(true);
     try {
       const formattedAmount = formatAmount(donationAmount);
-      const txHash = await donate(formattedAmount, walletClient);
+      
+      // Ensure USDC approval
+      await toast.promise(
+        ensureUsdcApproval(walletClient, formattedAmount),
+        {
+          loading: 'Checking USDC approval...',
+          success: 'USDC approved for donation',
+          error: 'Failed to approve USDC. Please try again.',
+        }
+      );
+
+      // Execute donation
+      const txHash = await toast.promise(
+        donate(formattedAmount, walletClient),
+        {
+          loading: 'Submitting donation...',
+          success: 'Donation submitted!',
+          error: (error) => `Donation failed: ${error.message}`,
+        }
+      );
 
       // Wait for transaction to be mined
-      toast.promise(
+      await toast.promise(
         publicClient.waitForTransactionReceipt({ hash: txHash }),
         {
           loading: 'Processing donation...',
@@ -85,14 +106,14 @@ const DonationSection = ({ campaigns }) => {
               </a>
             </div>
           ),
-          error: 'Donation failed',
+          error: 'Donation failed to confirm.',
         }
       );
 
       // Update donor status and balance
       const [donorStatus, newBalance] = await Promise.all([
         isDonor(address),
-        getBalance()
+        getBalance(),
       ]);
 
       setIsDonorStatus(donorStatus);
@@ -100,14 +121,18 @@ const DonationSection = ({ campaigns }) => {
       setDonationAmount("");
       setSelectedCampaign("");
 
+      toast.success('Donation completed successfully!');
     } catch (error) {
       console.error('Donation error:', error);
       toast.error(
-        error.message.includes('insufficient funds')
-          ? 'Insufficient USDC balance'
-          : error.message.includes('User rejected')
-          ? 'Transaction rejected by user'
-          : 'Donation failed. Please try again.'
+        error.message.includes('Unknown Ethereum address') ? 'Your wallet address is not registered. Please register with the platform or contact support.' :
+        error.message.includes('ABI encoding') ? 'Contract configuration error. Please contact support.' :
+        error.message.includes('rejected') ? 'Transaction rejected by user.' :
+        error.message.includes('insufficient') ? 'Insufficient USDC balance.' :
+        error.message.includes('network') ? 'Network error. Please try again.' :
+        error.message.includes('chain ID') ? 'Please switch to Base Sepolia network.' :
+        error.message.includes('SafeERC20') ? 'USDC transfer failed. Please approve the contract.' :
+        `Donation failed: ${error.message}`
       );
     } finally {
       setIsLoading(false);
@@ -121,22 +146,25 @@ const DonationSection = ({ campaigns }) => {
     try {
       const [donorStatus, currentBalance] = await Promise.all([
         isDonor(address),
-        getBalance()
+        getBalance(),
       ]);
       setIsDonorStatus(donorStatus);
       setBalance(currentBalance);
     } catch (error) {
       console.error('Error loading initial data:', error);
+      toast.error('Failed to load account data.');
     }
   };
 
   // Format balance for display
   const formatBalance = (balance) => {
+    if (!balance) return '0.00';
     return (Number(balance) / 1000000).toFixed(2);
   };
 
   // Format address for display
   const formatAddress = (addr) => {
+    if (!addr) return '';
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
 
@@ -185,7 +213,7 @@ const DonationSection = ({ campaigns }) => {
             </div>
           ) : (
             <>
-              <div className="mb-6 p-4 bg-white rounded-lg shadow-sm flex items-center justify-between">
+              {/* <div className="mb-6 p-4 bg-white rounded-lg shadow-sm flex items-center justify-between">
                 <span className="text-sm text-gray-600">
                   Connected: {formatAddress(address)}
                 </span>
@@ -195,7 +223,7 @@ const DonationSection = ({ campaigns }) => {
                 >
                   Disconnect
                 </button>
-              </div>
+              </div> */}
 
               <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
                 <motion.button
@@ -233,7 +261,8 @@ const DonationSection = ({ campaigns }) => {
                     <select
                       value={selectedCampaign}
                       onChange={(e) => setSelectedCampaign(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                      disabled={isLoading}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none disabled:bg-gray-100"
                     >
                       <option value="">Choose a campaign</option>
                       {campaigns.map((campaign) => (
@@ -261,7 +290,7 @@ const DonationSection = ({ campaigns }) => {
                       step="0.01"
                       min="0"
                       disabled={isLoading}
-                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                      className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none disabled:bg-gray-100"
                     />
                   </div>
                 </div>

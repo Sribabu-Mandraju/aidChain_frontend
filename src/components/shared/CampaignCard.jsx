@@ -10,7 +10,6 @@ import {
   Twitter,
   Facebook,
   MapPin,
-  Users,
 } from "lucide-react";
 import {
   WhatsappShareButton,
@@ -18,20 +17,15 @@ import {
   FacebookShareButton,
 } from "react-share";
 import CampaignMap from "./campaignCard_components/CampaignMap";
+
 const CampaignCard = ({ campaign, index }) => {
   const [hovered, setHovered] = useState(false);
   const [isDonateModalOpen, setIsDonateModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
-  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [donationAmount, setDonationAmount] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [registerData, setRegisterData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-  });
 
   // Share URL (adjust based on your domain)
   const shareUrl =
@@ -75,34 +69,6 @@ const CampaignCard = ({ campaign, index }) => {
     } catch (err) {
       setError("Donation processing failed. Please try again.");
       console.error("Donation error:", err);
-    }
-  };
-
-  // Handle Registration submission
-  const handleRegister = (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (!registerData.name || !registerData.email) {
-      setError("Please fill in all required fields.");
-      return;
-    }
-
-    try {
-      console.log("Registration submitted:", registerData);
-
-      setSuccess(
-        `Thank you for registering for ${campaign.title}! We'll be in touch soon.`
-      );
-      setRegisterData({ name: "", email: "", phone: "" });
-      setTimeout(() => {
-        setIsRegisterModalOpen(false);
-        setSuccess("");
-      }, 2000); // Close modal after 2 seconds
-    } catch (err) {
-      setError("Registration failed. Please try again.");
-      console.error("Registration error:", err);
     }
   };
 
@@ -311,118 +277,6 @@ const CampaignCard = ({ campaign, index }) => {
     </motion.div>
   );
 
-  // Register Modal
-  const RegisterModal = () => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      onClick={() => setIsRegisterModalOpen(false)}
-    >
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-900">
-            Register for {campaign.title}
-          </h3>
-          <button
-            onClick={() => setIsRegisterModalOpen(false)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X size={24} />
-          </button>
-        </div>
-        <p className="text-gray-600 mb-6">
-          Join this campaign and be part of the solution!
-        </p>
-        <form onSubmit={handleRegister} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name *
-            </label>
-            <input
-              type="text"
-              value={registerData.name}
-              onChange={(e) =>
-                setRegisterData({ ...registerData, name: e.target.value })
-              }
-              placeholder="John Doe"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email Address *
-            </label>
-            <input
-              type="email"
-              value={registerData.email}
-              onChange={(e) =>
-                setRegisterData({ ...registerData, email: e.target.value })
-              }
-              placeholder="john@example.com"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              value={registerData.phone}
-              onChange={(e) =>
-                setRegisterData({ ...registerData, phone: e.target.value })
-              }
-              placeholder="+1 (123) 456-7890"
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-            />
-          </div>
-          {error && (
-            <div className="text-red-500 text-sm flex items-center gap-1">
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="text-green-500 text-sm flex items-center gap-1">
-              <Users size={16} />
-              {success}
-            </div>
-          )}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="submit"
-            className="w-full py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:shadow-lg transition-all"
-          >
-            Register Now
-          </motion.button>
-        </form>
-      </motion.div>
-    </motion.div>
-  );
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -500,41 +354,30 @@ const CampaignCard = ({ campaign, index }) => {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-2 mb-4 text-center">
-              <div className="bg-green-50 rounded-lg p-2">
-                <div className="text-green-600 font-semibold">
+            <div className="flex items-center justify-between mb-4">
+              <div className="bg-green-50 rounded-lg p-2 w-[40%] text-center">
+                <div className="text-green-600 font-semibold text-lg">
                   {campaign.donors}
                 </div>
                 <div className="text-xs text-gray-500">Donors</div>
               </div>
-              <div className="bg-green-50 rounded-lg p-2">
-                <div className="text-green-600 font-semibold">
+              <div className="w-[20%]"></div> {/* Gap in middle */}
+              <div className="bg-green-50 rounded-lg p-2 w-[40%] text-center">
+                <div className="text-green-600 font-semibold text-lg">
                   {campaign.daysLeft > 0 ? `${campaign.daysLeft}` : "0"}
                 </div>
                 <div className="text-xs text-gray-500">
                   {campaign.daysLeft > 0 ? "Days Left" : "Completed"}
                 </div>
               </div>
-              <div className="bg-green-50 rounded-lg p-2">
-                <div className="text-green-600 font-semibold">
-                  {campaign.volunteers}
-                </div>
-                <div className="text-xs text-gray-500">Volunteers</div>
-              </div>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setIsRegisterModalOpen(true)}
-              className="flex-1 px-3 py-2 text-sm font-semibold text-green-600 bg-green-50 rounded-full hover:bg-green-100 transition-colors duration-300"
-            >
-              Register
-            </button>
+          <div className="flex items-center justify-center gap-4 mt-4">
             <button
               onClick={() => setIsDonateModalOpen(true)}
-              className="flex-1 px-3 py-2 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-full hover:from-green-400 hover:to-emerald-500 transition-colors duration-300"
+              className="w-[35%] px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg hover:from-green-400 hover:to-emerald-500 transition-colors duration-300 shadow-md hover:shadow-lg"
             >
               Donate
             </button>
@@ -542,7 +385,7 @@ const CampaignCard = ({ campaign, index }) => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => setIsShareModalOpen(true)}
-              className="px-3 py-2 text-sm font-semibold text-gray-600 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors duration-300"
+              className="p-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-300"
             >
               <Share2 size={16} />
             </motion.button>
@@ -555,7 +398,6 @@ const CampaignCard = ({ campaign, index }) => {
         {isDonateModalOpen && <DonationModal />}
         {isShareModalOpen && <ShareModal />}
         {isMapModalOpen && <MapModal />}
-        {isRegisterModalOpen && <RegisterModal />}
       </AnimatePresence>
     </motion.div>
   );

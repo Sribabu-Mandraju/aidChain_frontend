@@ -148,7 +148,7 @@ const DAO = () => {
           </svg>
         ),
         bgColor: "bg-blue-100",
-        change: 12,
+        // change: 12,
       },
       {
         label: "Active Proposals",
@@ -170,7 +170,7 @@ const DAO = () => {
           </svg>
         ),
         bgColor: "bg-green-100",
-        change: 8,
+        // change: 8,
       },
       {
         label: "Treasury Balance",
@@ -192,7 +192,7 @@ const DAO = () => {
           </svg>
         ),
         bgColor: "bg-yellow-100",
-        change: 5,
+        // change: 5,
       },
       {
         label: "Total Funds Allocated",
@@ -214,7 +214,7 @@ const DAO = () => {
           </svg>
         ),
         bgColor: "bg-purple-100",
-        change: -3,
+        // change: -3,
       },
     ];
 
