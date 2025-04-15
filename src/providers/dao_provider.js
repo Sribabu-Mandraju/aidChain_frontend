@@ -3,7 +3,7 @@ import { baseSepolia } from 'viem/chains';
 import daoABI from '../abis/daoGovernance.json';
 import fundEscrowABI from '../abis/fundEscrow.json';
 
-const DAO_CONTRACT_ADDRESS = "0x1b105d0FcCF76aa7a5Aca51e1135DCC4F8Be2307";
+const DAO_CONTRACT_ADDRESS = "0x28C883CD0D075E2080d1fdC99d07D56f5fDf765b";
 
 // Initialize public client for read operations
 const publicClient = createPublicClient({
@@ -62,12 +62,13 @@ export const getWriteDaoContract = async () => {
 export const setDisasterReliefFactory = async (factoryAddress) => {
   try {
     const contract = await getWriteDaoContract();
+    const [account] = await contract.walletClient.getAddresses();
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'setDisasterReliefFactory',
       args: [factoryAddress],
-      account: contract.address,
+      account,
     });
     console.log("Set disaster relief factory transaction submitted:", hash);
     return hash;
@@ -80,12 +81,13 @@ export const setDisasterReliefFactory = async (factoryAddress) => {
 export const setFundEscrow = async (fundEscrowAddress) => {
   try {
     const contract = await getWriteDaoContract();
+    const [account] = await contract.walletClient.getAddresses();
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'setFundEscrow',
       args: [fundEscrowAddress],
-      account: contract.address,
+      account,
     });
     console.log("Set fund escrow transaction submitted:", hash);
     return hash;
@@ -98,12 +100,13 @@ export const setFundEscrow = async (fundEscrowAddress) => {
 export const addDAOMember = async (memberAddress) => {
   try {
     const contract = await getWriteDaoContract();
+    const [account] = await contract.walletClient.getAddresses();
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'addDAOMember',
       args: [memberAddress],
-      account: contract.address,
+      account,
     });
     console.log("Add DAO member transaction submitted:", hash);
     return hash;
@@ -116,12 +119,13 @@ export const addDAOMember = async (memberAddress) => {
 export const removeDAOMember = async (memberAddress) => {
   try {
     const contract = await getWriteDaoContract();
+    const [account] = await contract.walletClient.getAddresses();
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'removeDAOMember',
       args: [memberAddress],
-      account: contract.address,
+      account,
     });
     console.log("Remove DAO member transaction submitted:", hash);
     return hash;
@@ -135,12 +139,25 @@ export const removeDAOMember = async (memberAddress) => {
 export const createProposal = async (disasterName, location, fundAmount, image) => {
   try {
     const contract = await getWriteDaoContract();
+    const [account] = await contract.walletClient.getAddresses();
+    
+    // Ensure location is properly formatted as a struct
+    const locationStruct = {
+      country: location.country,
+      state: location.state || "",
+      city: location.city || "",
+      coordinates: {
+        latitude: location.coordinates?.latitude || 0,
+        longitude: location.coordinates?.longitude || 0
+      }
+    };
+
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'createProposal',
-      args: [disasterName, location, BigInt(fundAmount), image],
-      account: contract.address,
+      args: [disasterName, locationStruct, BigInt(fundAmount), image],
+      account,
     });
     console.log("Create proposal transaction submitted:", hash);
     return hash;
@@ -150,12 +167,9 @@ export const createProposal = async (disasterName, location, fundAmount, image) 
   }
 };
 
-// dao_provider.js
 export const vote = async (proposalId, support) => {
   try {
     const contract = await getWriteDaoContract();
-
-    // Get the connected wallet address
     const [address] = await contract.walletClient.getAddresses();
     if (!address) {
       throw new Error("No wallet connected");
@@ -175,7 +189,7 @@ export const vote = async (proposalId, support) => {
 
     // Get current proposal details
     const proposal = await getProposal(proposalId);
-    if (!proposal) {
+    if (!proposal.id) {
       throw new Error("Proposal not found");
     }
 
@@ -190,7 +204,7 @@ export const vote = async (proposalId, support) => {
       throw new Error("Voting period has ended");
     }
 
-    // Estimate gas (optional, for debugging)
+    // Estimate gas
     let gasEstimate;
     try {
       gasEstimate = await contract.publicClient.estimateContractGas({
@@ -203,20 +217,19 @@ export const vote = async (proposalId, support) => {
       console.log("Estimated gas:", gasEstimate.toString());
     } catch (gasError) {
       console.warn("Gas estimation failed:", gasError.message);
-      // Fallback to a high gas limit
       gasEstimate = BigInt(5000000);
     }
 
-    // Submit the vote transaction with a high gas limit
+    // Submit the vote transaction
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'vote',
       args: [BigInt(proposalId), support],
       account: address,
-      gas: gasEstimate + BigInt(100000), // Add a buffer to the estimated gas
-      maxFeePerGas: BigInt(1000000000), // 1 gwei (adjust based on network conditions)
-      maxPriorityFeePerGas: BigInt(100000000), // 0.1 gwei
+      gas: gasEstimate + BigInt(100000),
+      maxFeePerGas: BigInt(1000000000),
+      maxPriorityFeePerGas: BigInt(100000000),
     });
 
     console.log("Vote transaction submitted:", hash);
@@ -232,19 +245,48 @@ export const vote = async (proposalId, support) => {
   }
 };
 
-// Add a function to monitor proposal status
+export const executeProposal = async (proposalId) => {
+  try {
+    const contract = await getWriteDaoContract();
+    const [account] = await contract.walletClient.getAddresses();
+    
+    // Check if user is the operator
+    const isOperator = await contract.publicClient.readContract({
+      address: contract.address,
+      abi: contract.abi,
+      functionName: 'operator',
+    }) === account;
+    
+    if (!isOperator) {
+      throw new Error("Only the operator can execute proposals");
+    }
+
+    const hash = await contract.walletClient.writeContract({
+      address: contract.address,
+      abi: contract.abi,
+      functionName: 'executeProposal',
+      args: [BigInt(proposalId)],
+      account,
+    });
+    console.log("Execute proposal transaction submitted:", hash);
+    return hash;
+  } catch (error) {
+    console.error("Error in executeProposal:", error);
+    throw new Error(`Failed to execute proposal: ${error.message}`);
+  }
+};
+
+// Monitoring functions
 export const monitorProposalStatus = async (proposalId) => {
   try {
     const proposal = await getProposal(proposalId);
-    if (!proposal) {
+    if (!proposal.id) {
       throw new Error("Proposal not found");
     }
 
     const totalMembers = await memberCount();
     const requiredVotes = Math.ceil(Number(totalMembers) * 0.6);
-    const totalVotes = proposal.votesFor + proposal.votesAgainst;
-    const votesFor = proposal.votesFor;
-    const votesAgainst = proposal.votesAgainst;
+    const totalVotes = Number(proposal.forVotes) + Number(proposal.againstVotes);
     const proposalStatus = await getProposalStatus(proposalId);
 
     return {
@@ -252,11 +294,11 @@ export const monitorProposalStatus = async (proposalId) => {
       totalMembers,
       requiredVotes,
       totalVotes,
-      votesFor,
-      votesAgainst,
+      votesFor: Number(proposal.forVotes),
+      votesAgainst: Number(proposal.againstVotes),
       proposalStatus,
       hasReachedThreshold: totalVotes >= requiredVotes,
-      hasPassed: votesFor / totalVotes >= 0.6
+      hasPassed: proposal.state === 1 // ProposalState.Passed
     };
   } catch (error) {
     console.error("Error monitoring proposal status:", error);
@@ -393,5 +435,20 @@ export const getVotingPeriod = async () => {
   } catch (error) {
     console.error("Error in getVotingPeriod:", error);
     throw new Error(`Failed to get voting period: ${error.message}`);
+  }
+};
+
+export const isProposalPassed = async (proposalId) => {
+  try {
+    const contract = getReadDaoContract();
+    const result = await contract.publicClient.readContract({
+      ...contract,
+      functionName: 'isProposalPassed',
+      args: [BigInt(proposalId)],
+    });
+    return result;
+  } catch (error) {
+    console.error("Error in isProposalPassed:", error);
+    throw new Error(`Failed to check if proposal passed: ${error.message}`);
   }
 };
