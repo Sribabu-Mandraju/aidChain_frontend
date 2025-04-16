@@ -177,14 +177,25 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
         toast.error("Voting is closed")
         return
       }
-      if (Date.now() > currentProposal.endTime) {
+
+      // Convert blockchain timestamps (in seconds) to milliseconds
+      const currentTimeMs = Date.now()
+      const startTimeMs = Number(currentProposal.startTime) * 1000
+      const endTimeMs = Number(currentProposal.endTime) * 1000
+
+      if (currentTimeMs < startTimeMs) {
+        toast.error("Voting period has not started yet")
+        return
+      }
+      if (currentTimeMs > endTimeMs) {
         toast.error("Voting period has ended")
         return
       }
+
       setCurrentVoteType(voteType)
       setIsVoteModalOpen(true)
     },
-    [isConnected, userAddress, isUserDaoMember, hasUserVoted, currentProposal.state, currentProposal.endTime]
+    [isConnected, userAddress, isUserDaoMember, hasUserVoted, currentProposal.state, currentProposal.startTime, currentProposal.endTime]
   )
 
   // Submit vote
@@ -333,7 +344,7 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
       currentProposal.state === 0
         ? currentProposal.forVotes >= requiredVotes
           ? "Passing"
-          : Date.now() > currentProposal.endTime
+          : Date.now() > (Number(currentProposal.endTime) * 1000)
           ? "Pending Finalization"
           : "Pending"
         : currentProposal.state === 1
@@ -343,16 +354,13 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
       currentProposal.state === 0
         ? currentProposal.forVotes >= requiredVotes
           ? "bg-green-500"
-          : Date.now() > currentProposal.endTime
+          : Date.now() > (Number(currentProposal.endTime) * 1000)
           ? "bg-gray-500"
           : "bg-yellow-500"
         : currentProposal.state === 1
         ? "bg-green-500"
-        : "bg-red-500",
+        : "bg-red-500"
   }
-
-
-  console.log(currentProposal)
 
   return (
     <motion.div
