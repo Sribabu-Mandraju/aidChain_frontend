@@ -436,91 +436,35 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
               </div>
             </div>
 
-            {currentProposal.state === 0 ? (
-              <div>
-                {hasUserVoted ? (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-                    <CheckCircle className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                    <p className="text-gray-600">You have already voted</p>
-                  </div>
-                ) : Date.now() > currentProposal.endTime ? (
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-                    <XCircle className="h-6 w-6 text-gray-500 mx-auto mb-2" />
-                    <p className="text-gray-600">Voting period has ended</p>
-                  </div>
-                ) : (
-                  <div className="flex gap-3">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleVote("for")}
-                      disabled={isVoting || !isUserDaoMember}
-                      className={`flex-1 py-3 rounded-lg font-semibold text-white flex items-center justify-center gap-2 ${
-                        isVoting || !isUserDaoMember
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-gradient-to-r from-green-500 to-emerald-600 hover:shadow-lg"
-                      }`}
-                    >
-                      <ThumbsUp className="h-5 w-5" />
-                      Vote For
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleVote("against")}
-                      disabled={isVoting || !isUserDaoMember}
-                      className={`flex-1 py-3 rounded-lg font-semibold text-white flex items-center justify-center gap-2 ${
-                        isVoting || !isUserDaoMember
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-gradient-to-r from-red-500 to-red-600 hover:shadow-lg"
-                      }`}
-                    >
-                      <ThumbsDown className="h-5 w-5" />
-                      Vote Against
-                    </motion.button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div
-                className={`rounded-lg p-4 text-center ${
-                  currentProposal.state === 1
-                    ? "bg-green-50 border border-green-200"
-                    : "bg-red-50 border border-red-200"
-                }`}
+            <div className="flex gap-3">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleVote("for")}
+                className="flex-1 py-3 rounded-lg font-semibold text-white flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:shadow-lg"
               >
-                {currentProposal.state === 1 ? (
-                  <CheckCircle className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                ) : (
-                  <XCircle className="h-6 w-6 text-red-500 mx-auto mb-2" />
-                )}
-                <p className="text-gray-700">
-                  This proposal is{" "}
-                  <span
-                    className={
-                      currentProposal.state === 1
-                        ? "text-green-600 font-medium"
-                        : "text-red-600 font-medium"
-                    }
-                  >
-                    {currentProposal.state === 1 ? "Passed" : "Rejected"}
-                  </span>
-                </p>
-                {currentProposal.state === 1 && (
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsExecuteModalOpen(true)}
-                    disabled={isExecuting}
-                    className={`mt-4 py-2 px-4 rounded-lg font-semibold text-white ${
-                      isExecuting ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                    }`}
-                  >
-                    Approve Proposal
-                  </motion.button>
-                )}
-              </div>
-            )}
+                <ThumbsUp className="h-5 w-5" />
+                Vote For
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleVote("against")}
+                className="flex-1 py-3 rounded-lg font-semibold text-white flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:shadow-lg"
+              >
+                <ThumbsDown className="h-5 w-5" />
+                Vote Against
+              </motion.button>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsExecuteModalOpen(true)}
+              className="mt-4 py-2 px-4 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700"
+            >
+              Approve Proposal
+            </motion.button>
           </>
         )}
       </div>
