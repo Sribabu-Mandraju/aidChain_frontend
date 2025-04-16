@@ -2,7 +2,7 @@ import { createPublicClient, http, createWalletClient, custom } from 'viem'
 import { baseSepolia } from 'viem/chains'
 import daoABI from '../abis/daoGovernance.json'
 
-const DAO_CONTRACT_ADDRESS = "0x28C883CD0D075E2080d1fdC99d07D56f5fDf765b"
+const DAO_CONTRACT_ADDRESS = "0x4f29fac9891892e0D1f6B9FBE3b0148CF575F2bb"
 
 const publicClient = createPublicClient({
   chain: baseSepolia,

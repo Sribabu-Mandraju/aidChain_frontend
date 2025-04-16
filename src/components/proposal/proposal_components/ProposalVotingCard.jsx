@@ -78,7 +78,7 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
         for (let attempt = 1; attempt <= 3; attempt++) {
           try {
             operator = await publicClient.readContract({
-              address: "0x28C883CD0D075E2080d1fdC99d07D56f5fDf765b",
+              address: "0x4f29fac9891892e0D1f6B9FBE3b0148CF575F2bb",
               abi: [
                 {
                   name: "operator",
@@ -348,8 +348,11 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
           : "bg-yellow-500"
         : currentProposal.state === 1
         ? "bg-green-500"
-        : "bg-red-500"
+        : "bg-red-500",
   }
+
+
+  console.log(currentProposal)
 
   return (
     <motion.div
@@ -359,7 +362,7 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
       transition={{ duration: 0.6 }}
       className="bg-white rounded-xl shadow-md overflow-hidden sticky top-[75px]"
     >
-      <div className="p-6 ">
+      <div className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Proposal Voting</h2>
 
         {!isConnected ? (
@@ -503,7 +506,7 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
                     {currentProposal.state === 1 ? "Passed" : "Rejected"}
                   </span>
                 </p>
-                {true && (
+                {currentProposal.state === 1 && (
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
