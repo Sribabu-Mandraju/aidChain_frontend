@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import CampaignList from "../shared/campaignCard_components/CampaignList";
 import { getAllDisasterReliefContracts } from "../../providers/disasterReliefFactory_provider";
-import { getState, getTotalFunds, getDonorCount, getVictimCount, getLocationDetails, getDisasterName, getDonationEndTime, getAmountPerVictim } from "../../providers/disasterRelief_provider";
+import { 
+  getCampaignDetails, 
+  getDonationEndTime, 
+  getAmountPerVictim 
+} from "../../providers/disasterRelief_provider";
 
 const Campaigns = () => {
   const [filter, setFilter] = useState("All");
@@ -18,25 +22,16 @@ const Campaigns = () => {
         const contractAddresses = await getAllDisasterReliefContracts();
         console.log("Fetched contract addresses:", contractAddresses);
 
-        // Fetch details for each contract
+        // Fetch details for each contract using the new getCampaignDetails function
         const campaignPromises = contractAddresses.map(async (address) => {
           try {
+            // Get all campaign details in parallel
             const [
-              state,
-              totalFunds,
-              donorCount,
-              victimCount,
-              locationDetails,
-              disasterName,
+              campaignDetails,
               donationEndTime,
               amountPerVictim
             ] = await Promise.all([
-              getState(address),
-              getTotalFunds(address),
-              getDonorCount(address),
-              getVictimCount(address),
-              getLocationDetails(address),
-              getDisasterName(address),
+              getCampaignDetails(address),
               getDonationEndTime(address),
               getAmountPerVictim(address)
             ]);
@@ -51,28 +46,38 @@ const Campaigns = () => {
             };
 
             // Calculate days left based on donation end time
-            const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+            const currentTime = Math.floor(Date.now() / 1000);
             const secondsLeft = Number(donationEndTime) - currentTime;
             const daysLeft = secondsLeft > 0 ? Math.ceil(secondsLeft / (24 * 60 * 60)) : 0;
 
-            // Construct campaign object using locationDetails as per the Location struct
+            // Format location string
+            const locationString = [
+              campaignDetails.location.country,
+              campaignDetails.location.state,
+              campaignDetails.location.city
+            ]
+              .filter(Boolean)
+              .join(", ");
+
+            // Construct campaign object using the new campaignDetails structure
             const campaign = {
               id: address,
-              title: disasterName || `Disaster Relief #${address.slice(0, 6)}`,
-              description: `Location: ${locationDetails.country || 'Unknown'}${locationDetails.state ? `, ${locationDetails.state}` : ''}${locationDetails.city ? `, ${locationDetails.city}` : ''}`,
-              image: locationDetails.image || "https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-              status: statusMap[Number(state)] || "Unknown",
-              totalDonations: `${(Number(totalFunds) / 1e6).toFixed(2)} USDC`, // USDC with 6 decimals
-              goal: "N/A", // No goal in contract
-              progress: 0, // No goal, so progress is not applicable
-              donors: Number(donorCount),
-              victimsCount: Number(victimCount), // Using victumes count 
+              title: campaignDetails.disasterName,
+              description: `Location: ${locationString || 'Unknown'}`,
+              image: campaignDetails.image || campaignDetails.location.image || "https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+              status: statusMap[campaignDetails.state] || "Unknown",
+              totalDonations: `${(Number(campaignDetails.totalFunds) / 1e6).toFixed(2)} USDC`,
+              goal: "N/A",
+              progress: 0,
+              donors: campaignDetails.totalDonors,
+              victimsCount: campaignDetails.totalVictimsRegistered,
               daysLeft: daysLeft,
-              latitude: locationDetails.latitude || "0", // Direct access to latitude string
-              longitude: locationDetails.longitude || "0", // Direct access to longitude string
-              radius: locationDetails.radius || "10", // Direct access to radius string
+              latitude: campaignDetails.location.latitude || "0",
+              longitude: campaignDetails.location.longitude || "0",
+              radius: campaignDetails.location.radius || "10",
               contractAddress: address,
-              amountPerVictim: `${(Number(amountPerVictim) / 1e6).toFixed(2)} USDC`
+              amountPerVictim: `${(Number(amountPerVictim) / 1e6).toFixed(2)} USDC`,
+              disasterId: campaignDetails.disasterId // New field from campaign details
             };
 
             return campaign;

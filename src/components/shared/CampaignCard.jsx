@@ -24,6 +24,7 @@ import { useAccount, useConnect, useDisconnect, useWalletClient } from 'wagmi';
 import { coinbaseWallet } from '@wagmi/connectors';
 import { baseSepolia } from 'viem/chains';
 import { toast } from 'react-hot-toast';
+import CampaignDetailsModal from "./campaignCard_components/CampaignDetailsModal";
 
 const CampaignCard = ({ campaign, index }) => {
   const [hovered, setHovered] = useState(false);
@@ -39,6 +40,7 @@ const CampaignCard = ({ campaign, index }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [balance, setBalance] = useState(null);
   const [isDonorStatus, setIsDonorStatus] = useState(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const { address, isConnected } = useAccount();
   const { connect } = useConnect({
@@ -553,52 +555,98 @@ const CampaignCard = ({ campaign, index }) => {
         className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-900">
-            Share {campaign.title}
-          </h3>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">
+              Share {campaign.title}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Help spread the word about this campaign
+            </p>
+          </div>
           <button
             onClick={() => setIsShareModalOpen(false)}
-            className="text-gray-500 hover:text-gray-700"
+            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
-        <p className="text-gray-600 mb-6">
-          Spread the word about this campaign to help reach more supporters!
-        </p>
-        <div className="grid grid-cols-2 gap-4">
-          <WhatsappShareButton
-            url={shareUrl}
-            title={shareTitle}
-            className="flex items-center justify-center px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
-          >
-            <MessageCircle size={20} className="mr-2" />
-            WhatsApp
-          </WhatsappShareButton>
-          <TwitterShareButton
-            url={shareUrl}
-            title={shareTitle}
-            className="flex items-center justify-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-          >
-            <Twitter size={20} className="mr-2" />
-            Twitter
-          </TwitterShareButton>
-          <FacebookShareButton
-            url={shareUrl}
-            quote={shareTitle}
-            className="flex items-center justify-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-          >
-            <Facebook size={20} className="mr-2" />
-            Facebook
-          </FacebookShareButton>
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            <Link size={20} className="mr-2" />
-            Copy Link
-          </button>
+
+        <div className="space-y-4">
+          {/* Social Share Buttons */}
+          <div className="grid grid-cols-2 gap-4">
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <WhatsappShareButton
+                url={shareUrl}
+                title={shareTitle}
+                className="w-full"
+              >
+                <div className="flex items-center justify-center gap-2 px-4 py-3 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors">
+                  <MessageCircle size={20} />
+                  <span className="font-medium">WhatsApp</span>
+                </div>
+              </WhatsappShareButton>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <TwitterShareButton
+                url={shareUrl}
+                title={shareTitle}
+                className="w-full"
+              >
+                <div className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
+                  <Twitter size={20} />
+                  <span className="font-medium">Twitter</span>
+                </div>
+              </TwitterShareButton>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <FacebookShareButton
+                url={shareUrl}
+                quote={shareTitle}
+                className="w-full"
+              >
+                <div className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
+                  <Facebook size={20} />
+                  <span className="font-medium">Facebook</span>
+                </div>
+              </FacebookShareButton>
+            </motion.div>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleCopyLink}
+              className="w-full"
+            >
+              <div className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors">
+                <Link size={20} />
+                <span className="font-medium">Copy Link</span>
+              </div>
+            </motion.button>
+          </div>
+
+          {/* Campaign Link Preview */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-600 mb-2">Campaign Link:</p>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={shareUrl}
+                readOnly
+                className="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleCopyLink}
+                className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Copy
+              </motion.button>
+            </div>
+          </div>
         </div>
       </motion.div>
     </motion.div>
@@ -651,8 +699,19 @@ const CampaignCard = ({ campaign, index }) => {
       transition={{ duration: 0.5, delay: index * 0.1 }}
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
-      className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden"
+      className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-all duration-300 overflow-hidden relative"
     >
+      {/* Share Button - Moved to top right */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setIsShareModalOpen(true)}
+        className="absolute top-4 right-4 p-2 text-gray-600 bg-white/90 hover:bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 z-10"
+        title="Share Campaign"
+      >
+        <Share2 size={20} />
+      </motion.button>
+
       <div className="flex flex-col md:flex-row">
         {/* Card Image */}
         <div className="relative h-[300px] overflow-hidden md:w-2/5 md:min-h-[250px]">
@@ -666,7 +725,7 @@ const CampaignCard = ({ campaign, index }) => {
             <h3 className="text-xl font-bold text-white">{campaign.title}</h3>
           </div>
           <span
-            className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold ${
+            className={`absolute top-4 right-16 px-3 py-1 rounded-full text-xs font-semibold ${
               campaign.status === "Active"
                 ? "bg-green-500 text-white"
                 : campaign.status === "Closed"
@@ -698,7 +757,7 @@ const CampaignCard = ({ campaign, index }) => {
                 `Location: Lat ${campaign.latitude}, Lon ${campaign.longitude}, Radius ${campaign.radius}`
               )}
               <button
-                onClick={() => window.location.href = `/campaigns/${campaign.id}`}
+                onClick={() => setIsDetailsModalOpen(true)}
                 className="ml-1 text-green-600 hover:text-green-700 font-medium"
               >
                 Know more
@@ -744,14 +803,6 @@ const CampaignCard = ({ campaign, index }) => {
             >
               Register as Victim
             </button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setIsShareModalOpen(true)}
-              className="p-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-300"
-            >
-              <Share2 size={16} />
-            </motion.button>
           </div>
         </div>
       </div>
@@ -762,6 +813,12 @@ const CampaignCard = ({ campaign, index }) => {
         {isVictimModalOpen && <VictimRegistrationModal />}
         {isShareModalOpen && <ShareModal />}
         {isMapModalOpen && <MapModal />}
+        {isDetailsModalOpen && (
+          <CampaignDetailsModal
+            campaign={campaign}
+            onClose={() => setIsDetailsModalOpen(false)}
+          />
+        )}
       </AnimatePresence>
     </motion.div>
   );

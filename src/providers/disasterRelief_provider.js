@@ -441,3 +441,46 @@ export const hasWithdrawn = async (contractAddress, address) => {
     throw new Error(`Failed to check withdrawal status: ${error.message}`);
   }
 };
+
+// Add this new function after the other read functions
+export const getCampaignDetails = async (contractAddress) => {
+  try {
+    const contract = getReadDisasterReliefContract(contractAddress);
+    const result = await contract.publicClient.readContract({
+      ...contract,
+      functionName: 'getCampaginDetails',
+    });
+
+    // Transform the returned data into a more usable format
+    // The contract returns a DisasterDetails struct with the following fields:
+    // - disasterId: uint256
+    // - disasterName: string
+    // - image: string
+    // - location: LocationDetails.Location
+    // - totalFunds: uint256
+    // - totalDonors: uint256
+    // - totalVictimsRegistered: uint256
+    // - state: ContractState
+    return {
+      disasterId: Number(result.disasterId),
+      disasterName: result.disasterName,
+      image: result.image,
+      location: {
+        country: result.location.country,
+        state: result.location.state,
+        city: result.location.city,
+        latitude: result.location.latitude,
+        longitude: result.location.longitude,
+        radius: result.location.radius,
+        image: result.location.image
+      },
+      totalFunds: result.totalFunds,
+      totalDonors: Number(result.totalDonors),
+      totalVictimsRegistered: Number(result.totalVictimsRegistered),
+      state: Number(result.state)
+    };
+  } catch (error) {
+    console.error("Error in getCampaignDetails:", error);
+    throw new Error(`Failed to get campaign details: ${error.message}`);
+  }
+};
