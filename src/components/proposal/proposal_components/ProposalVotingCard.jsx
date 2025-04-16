@@ -78,7 +78,7 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
         for (let attempt = 1; attempt <= 3; attempt++) {
           try {
             operator = await publicClient.readContract({
-              address: "0x4f29fac9891892e0D1f6B9FBE3b0148CF575F2bb",
+              address: import.meta.env.VITE_DAO_GOVERNANCE,
               abi: [
                 {
                   name: "operator",

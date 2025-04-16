@@ -2,7 +2,7 @@ import { createPublicClient, http, createWalletClient, custom } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import disasterReliefFactoryABI from '../abis/disasterReliefFactory.json';
 
-const DISASTER_RELIEF_FACTORY_ADDRESS = "0x6F2dA9b816F80811A4dA21e511cb6235167a33Af";
+const DISASTER_RELIEF_FACTORY_ADDRESS = import.meta.env.VITE_DISASTER_RELIEF_FACTORY;
 
 // Initialize public client for read operations
 export const publicClient = createPublicClient({

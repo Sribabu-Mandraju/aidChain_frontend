@@ -2,8 +2,7 @@ import { createPublicClient, http, createWalletClient, custom } from 'viem'
 import { baseSepolia } from 'viem/chains'
 import daoABI from '../abis/daoGovernance.json'
 
-const DAO_CONTRACT_ADDRESS = "0x4f29fac9891892e0D1f6B9FBE3b0148CF575F2bb"
-
+const DAO_CONTRACT_ADDRESS = import.meta.env.VITE_DAO_GOVERNANCE
 const publicClient = createPublicClient({
   chain: baseSepolia,
   transport: http("https://base-sepolia.g.alchemy.com/v2/kBfhfjgaUbr1xz7I4QTPU7ZepOM6uMxK"),

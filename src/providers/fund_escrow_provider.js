@@ -6,7 +6,7 @@ import erc20ABI from '../abis/ierc20.json'
 // Minimal ERC-20 ABI for USDC approval
 
 
-const FUND_ESCROW_CONTRACT_ADDRESS = "0xE9FEfb23Ae5382390c54697EFD9E9d4AC3Cf1bdF";
+const FUND_ESCROW_CONTRACT_ADDRESS = import.meta.env.VITE_FUND_ESCROW;
 
 // Initialize public client for read operations
 export const publicClient = createPublicClient({
