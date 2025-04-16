@@ -1,6 +1,7 @@
 import { createPublicClient, http, createWalletClient, custom } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import disasterReliefABI from '../abis/disasterRelief.json'
+import usdcABI from '../abis/ierc20.json'
 
 // Initialize public client for read operations
 export const publicClient = createPublicClient({
@@ -18,6 +19,12 @@ export const walletClient = createWalletClient({
 export const getDisasterReliefContract = (address) => ({
   address,
   abi: disasterReliefABI,
+});
+
+// USDC contract configuration
+export const getUSDCContract = (address) => ({
+  address,
+  abi: usdcABI,
 });
 
 // Read contract configuration
@@ -55,9 +62,37 @@ export const getWriteDisasterReliefContract = async (address) => {
   }
 };
 
-// Disaster Relief functions
-export const donate = async (contractAddress, amount) => {
+// Approve USDC spending
+export const approveUSDC = async (usdcAddress, spenderAddress, amount) => {
   try {
+    const contract = {
+      address: usdcAddress,
+      abi: usdcABI,
+      walletClient,
+    };
+
+    const hash = await contract.walletClient.writeContract({
+      address: contract.address,
+      abi: contract.abi,
+      functionName: 'approve',
+      args: [spenderAddress, BigInt(amount)],
+      account: contract.address,
+    });
+    console.log("USDC approval transaction submitted:", hash);
+    return hash;
+  } catch (error) {
+    console.error("Error in approveUSDC:", error);
+    throw new Error(`Failed to approve USDC: ${error.message}`);
+  }
+};
+
+// Disaster Relief functions
+export const donate = async (contractAddress, usdcAddress, amount) => {
+  try {
+    // First approve the contract to spend USDC
+    await approveUSDC(usdcAddress, contractAddress, amount);
+
+    // Then proceed with donation
     const contract = await getWriteDisasterReliefContract(contractAddress);
     const hash = await contract.walletClient.writeContract({
       address: contract.address,

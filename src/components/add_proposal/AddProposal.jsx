@@ -68,7 +68,7 @@ const ProposalForm = () => {
       }
 
       // Convert funds to proper format (assuming input is in ETH, convert to wei)
-      const fundsInWei = BigInt(parseFloat(formData.fundsRequested) * 1e18);
+      const fundsInWei = BigInt(parseFloat(formData.fundsRequested) * 1e6);
 
       // Prepare location data according to LocationDetails.Location struct
       const locationData = {
