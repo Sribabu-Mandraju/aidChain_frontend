@@ -1,17 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import CampaignCard from "../shared/CampaignCard";
-import flood from "../../assets/campaigns/floods.webp";
 import CampaignList from "../shared/campaignCard_components/CampaignList";
-import { getAllDisasterReliefContracts, getDisasterReliefContract } from "../../providers/disasterReliefFactory_provider";
-import { getState, getTotalFunds, getDonorCount, getVictimCount, getLocationDetails } from "../../providers/disasterRelief_provider";
-
-const campaignImages = [
-  "https://images.unsplash.com/photo-1542393545-10f5b85e14fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1610550603158-91f50474b235?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1595854341625-fc2528d3b11e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1500994340878-40ce894df491?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-];
+import { getAllDisasterReliefContracts } from "../../providers/disasterReliefFactory_provider";
+import { getState, getTotalFunds, getDonorCount, getVictimCount, getLocationDetails, getDisasterName, getDonationEndTime, getAmountPerVictim } from "../../providers/disasterRelief_provider";
 
 const Campaigns = () => {
   const [filter, setFilter] = useState("All");
@@ -23,7 +14,7 @@ const Campaigns = () => {
     const fetchCampaigns = async () => {
       try {
         setLoading(true);
-        // Get all disaster relief contract addresses
+        // Fetch all disaster relief contract addresses
         const contractAddresses = await getAllDisasterReliefContracts();
         console.log("Fetched contract addresses:", contractAddresses);
 
@@ -35,41 +26,56 @@ const Campaigns = () => {
               totalFunds,
               donorCount,
               victimCount,
-              locationDetails
+              locationDetails,
+              disasterName,
+              donationEndTime,
+              amountPerVictim
             ] = await Promise.all([
               getState(address),
               getTotalFunds(address),
               getDonorCount(address),
               getVictimCount(address),
-              getLocationDetails(address)
+              getLocationDetails(address),
+              getDisasterName(address),
+              getDonationEndTime(address),
+              getAmountPerVictim(address)
             ]);
 
-            // Convert state to status
+            // Map state to status
             const statusMap = {
               0: "Active",
               1: "Registration",
               2: "Waiting",
               3: "Distribution",
-              4: "Completed"
+              4: "Closed"
             };
 
-            return {
+            // Calculate days left based on donation end time
+            const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+            const secondsLeft = Number(donationEndTime) - currentTime;
+            const daysLeft = secondsLeft > 0 ? Math.ceil(secondsLeft / (24 * 60 * 60)) : 0;
+
+            // Construct campaign object using locationDetails as per the Location struct
+            const campaign = {
               id: address,
-              title: locationDetails.disasterName || `Disaster Relief #${address.slice(0, 6)}`,
-              description: `Location: ${locationDetails.country}, ${locationDetails.state || ''} ${locationDetails.city || ''}`,
-              image: "https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // Default image
+              title: disasterName || `Disaster Relief #${address.slice(0, 6)}`,
+              description: `Location: ${locationDetails.country || 'Unknown'}${locationDetails.state ? `, ${locationDetails.state}` : ''}${locationDetails.city ? `, ${locationDetails.city}` : ''}`,
+              image: locationDetails.image || "https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
               status: statusMap[Number(state)] || "Unknown",
-              totalDonations: `${Number(totalFunds) / 1e18} ETH`,
-              goal: "50 ETH", // You might want to fetch this from the contract
-              progress: Math.min((Number(totalFunds) / (50 * 1e18)) * 100, 100),
+              totalDonations: `${(Number(totalFunds) / 1e6).toFixed(2)} USDC`, // USDC with 6 decimals
+              goal: "N/A", // No goal in contract
+              progress: 0, // No goal, so progress is not applicable
               donors: Number(donorCount),
-              volunteers: Number(victimCount),
-              daysLeft: 30, // You might want to calculate this based on contract periods
-              latitude: locationDetails.coordinates?.latitude || "0",
-              longitude: locationDetails.coordinates?.longitude || "0",
-              radius: "10",
-              contractAddress: address
+              victimsCount: Number(victimCount), // Using victumes count 
+              daysLeft: daysLeft,
+              latitude: locationDetails.latitude || "0", // Direct access to latitude string
+              longitude: locationDetails.longitude || "0", // Direct access to longitude string
+              radius: locationDetails.radius || "10", // Direct access to radius string
+              contractAddress: address,
+              amountPerVictim: `${(Number(amountPerVictim) / 1e6).toFixed(2)} USDC`
             };
+
+            return campaign;
           } catch (err) {
             console.error(`Error fetching details for contract ${address}:`, err);
             return null;
@@ -78,6 +84,9 @@ const Campaigns = () => {
 
         const campaignsData = (await Promise.all(campaignPromises)).filter(Boolean);
         setCampaigns(campaignsData);
+
+        // Log all campaign details
+        console.log("All campaign details:", campaignsData);
       } catch (err) {
         console.error("Error fetching campaigns:", err);
         setError("Failed to load campaigns. Please try again later.");
@@ -89,7 +98,7 @@ const Campaigns = () => {
     fetchCampaigns();
   }, []);
 
-  const filterOptions = ["All", "Active", "Registration", "Waiting", "Distribution", "Completed"];
+  const filterOptions = ["All", "Active", "Registration", "Waiting", "Distribution", "Closed"];
   const filteredCampaigns =
     filter === "All"
       ? campaigns

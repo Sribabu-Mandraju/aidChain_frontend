@@ -1,18 +1,12 @@
-import { createPublicClient, http, createWalletClient, custom } from 'viem';
+import { createPublicClient, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
-import disasterReliefABI from '../abis/disasterRelief.json'
-import usdcABI from '../abis/ierc20.json'
+import disasterReliefABI from '../abis/disasterRelief.json';
+import usdcABI from '../abis/ierc20.json';
 
 // Initialize public client for read operations
 export const publicClient = createPublicClient({
   chain: baseSepolia,
   transport: http(),
-});
-
-// Initialize wallet client for write operations
-export const walletClient = createWalletClient({
-  chain: baseSepolia,
-  transport: custom(window.ethereum),
 });
 
 // Base contract configuration
@@ -34,14 +28,14 @@ export const getReadDisasterReliefContract = (address) => ({
 });
 
 // Write contract configuration
-export const getWriteDisasterReliefContract = async (address) => {
+export const getWriteDisasterReliefContract = async (address, walletClient) => {
   try {
-    if (!window.ethereum) {
-      throw new Error("No wallet provider found. Please install a wallet like MetaMask.");
+    if (!walletClient) {
+      throw new Error("No wallet client provided. Please connect your wallet.");
     }
 
-    const [userAddress] = await walletClient.getAddresses();
-    if (!userAddress) {
+    const accounts = await walletClient.getAddresses();
+    if (!accounts || accounts.length === 0) {
       throw new Error("No account connected. Please connect your wallet.");
     }
 
@@ -55,6 +49,7 @@ export const getWriteDisasterReliefContract = async (address) => {
       abi: disasterReliefABI,
       walletClient,
       publicClient,
+      account: accounts[0],
     };
   } catch (error) {
     console.error("Error initializing write contract:", error);
@@ -63,61 +58,206 @@ export const getWriteDisasterReliefContract = async (address) => {
 };
 
 // Approve USDC spending
-export const approveUSDC = async (usdcAddress, spenderAddress, amount) => {
+export const approveUSDC = async (walletClient, usdcAddress, spenderAddress, amount) => {
   try {
-    const contract = {
+    if (!walletClient) {
+      throw new Error("No wallet client provided. Please connect your wallet.");
+    }
+
+    const accounts = await walletClient.getAddresses();
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No account connected for USDC approval.");
+    }
+
+    // First check if approval is needed
+    const currentAllowance = await publicClient.readContract({
+      address: usdcAddress,
+      abi: [
+        {
+          inputs: [
+            { name: "owner", type: "address" },
+            { name: "spender", type: "address" }
+          ],
+          name: "allowance",
+          outputs: [{ name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function"
+        }
+      ],
+      functionName: "allowance",
+      args: [accounts[0], spenderAddress]
+    });
+
+    // If current allowance is sufficient, no need to approve
+    if (BigInt(currentAllowance) >= BigInt(amount)) {
+      return null;
+    }
+
+    // Estimate gas for approval
+    const gasEstimate = await publicClient.estimateContractGas({
       address: usdcAddress,
       abi: usdcABI,
-      walletClient,
-    };
+      functionName: "approve",
+      args: [spenderAddress, BigInt(amount)],
+      account: accounts[0]
+    });
 
-    const hash = await contract.walletClient.writeContract({
+    const contract = getUSDCContract(usdcAddress);
+    const hash = await walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'approve',
       args: [spenderAddress, BigInt(amount)],
-      account: contract.address,
+      account: accounts[0],
+      gas: gasEstimate
     });
     console.log("USDC approval transaction submitted:", hash);
     return hash;
   } catch (error) {
     console.error("Error in approveUSDC:", error);
+    if (error.message.includes("insufficient funds")) {
+      throw new Error("Insufficient funds for gas fee");
+    }
+    if (error.message.includes("user rejected")) {
+      throw new Error("Transaction rejected by user");
+    }
     throw new Error(`Failed to approve USDC: ${error.message}`);
   }
 };
 
-// Disaster Relief functions
-export const donate = async (contractAddress, usdcAddress, amount) => {
+// Ensure USDC approval for campaign donation
+export const ensureUsdcApproval = async (walletClient, usdcAddress, campaignAddress, amount) => {
   try {
-    // First approve the contract to spend USDC
-    await approveUSDC(usdcAddress, contractAddress, amount);
+    if (!walletClient) {
+      throw new Error("No wallet client provided. Please connect your wallet.");
+    }
+
+    const accounts = await walletClient.getAddresses();
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No account connected for USDC approval.");
+    }
+
+    // Check current allowance
+    const allowance = await publicClient.readContract({
+      address: usdcAddress,
+      abi: [
+        {
+          inputs: [
+            { name: "owner", type: "address" },
+            { name: "spender", type: "address" }
+          ],
+          name: "allowance",
+          outputs: [{ name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function"
+        }
+      ],
+      functionName: "allowance",
+      args: [accounts[0], campaignAddress]
+    });
+
+    if (BigInt(allowance) < BigInt(amount)) {
+      console.log("Approving USDC for campaign:", { amount, userAddress: accounts[0] });
+      const hash = await approveUSDC(walletClient, usdcAddress, campaignAddress, amount);
+      if (hash) {
+        await publicClient.waitForTransactionReceipt({ hash });
+        console.log("USDC approval confirmed");
+      }
+    } else {
+      console.log("Sufficient USDC allowance already exists");
+    }
+  } catch (error) {
+    console.error("Error in ensureUsdcApproval:", error);
+    throw new Error(`USDC approval failed: ${error.message}`);
+  }
+};
+
+// Get USDC balance
+export const getUSDCBalance = async (usdcAddress, userAddress) => {
+  try {
+    if (!userAddress) {
+      throw new Error("No user address provided.");
+    }
+    const contract = getUSDCContract(usdcAddress);
+    const balance = await publicClient.readContract({
+      address: contract.address,
+      abi: contract.abi,
+      functionName: 'balanceOf',
+      args: [userAddress],
+    });
+    return balance;
+  } catch (error) {
+    console.error("Error in getUSDCBalance:", error);
+    return BigInt(0); // Return 0 balance on error to prevent UI blocking
+  }
+};
+
+// Disaster Relief functions
+export const donate = async (contractAddress, usdcAddress, amount, walletClient) => {
+  try {
+    if (!walletClient) {
+      throw new Error("No wallet client provided. Please connect your wallet.");
+    }
+
+    const accounts = await walletClient.getAddresses();
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No account connected for donation.");
+    }
+
+    // Check if user has sufficient USDC balance
+    const balance = await getUSDCBalance(usdcAddress, accounts[0]);
+    if (BigInt(balance) < BigInt(amount)) {
+      throw new Error("Insufficient USDC balance");
+    }
+
+    // Ensure USDC approval
+    await ensureUsdcApproval(walletClient, usdcAddress, contractAddress, amount);
+
+    // Estimate gas for donation
+    const gasEstimate = await publicClient.estimateContractGas({
+      address: contractAddress,
+      abi: disasterReliefABI,
+      functionName: 'donate',
+      args: [BigInt(amount)],
+      account: accounts[0]
+    });
 
     // Then proceed with donation
-    const contract = await getWriteDisasterReliefContract(contractAddress);
+    const contract = await getWriteDisasterReliefContract(contractAddress, walletClient);
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'donate',
       args: [BigInt(amount)],
-      account: contract.address,
+      account: contract.account,
+      gas: gasEstimate
     });
     console.log("Donation transaction submitted:", hash);
     return hash;
   } catch (error) {
     console.error("Error in donate:", error);
+    if (error.message.includes("insufficient funds")) {
+      throw new Error("Insufficient funds for gas fee");
+    }
+    if (error.message.includes("user rejected")) {
+      throw new Error("Transaction rejected by user");
+    }
+    if (error.message.includes("SafeERC20")) {
+      throw new Error("USDC transfer failed. Please approve the contract first.");
+    }
     throw new Error(`Failed to donate: ${error.message}`);
   }
 };
 
-export const registerAsVictim = async (contractAddress, zkProof) => {
+export const registerAsVictim = async (contractAddress, zkProof, walletClient) => {
   try {
-    const contract = await getWriteDisasterReliefContract(contractAddress);
+    const contract = await getWriteDisasterReliefContract(contractAddress, walletClient);
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'registerAsVictim',
       args: [zkProof],
-      account: contract.address,
+      account: contract.account,
     });
     console.log("Victim registration transaction submitted:", hash);
     return hash;
@@ -127,14 +267,14 @@ export const registerAsVictim = async (contractAddress, zkProof) => {
   }
 };
 
-export const withdrawFunds = async (contractAddress) => {
+export const withdrawFunds = async (contractAddress, walletClient) => {
   try {
-    const contract = await getWriteDisasterReliefContract(contractAddress);
+    const contract = await getWriteDisasterReliefContract(contractAddress, walletClient);
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'withdrawFunds',
-      account: contract.address,
+      account: contract.account,
     });
     console.log("Withdraw funds transaction submitted:", hash);
     return hash;
@@ -215,6 +355,48 @@ export const getLocationDetails = async (contractAddress) => {
   }
 };
 
+export const getDisasterName = async (contractAddress) => {
+  try {
+    const contract = getReadDisasterReliefContract(contractAddress);
+    const result = await contract.publicClient.readContract({
+      ...contract,
+      functionName: 'disasterName',
+    });
+    return result;
+  } catch (error) {
+    console.error("Error in getDisasterName:", error);
+    throw new Error(`Failed to get disaster name: ${error.message}`);
+  }
+};
+
+export const getDonationEndTime = async (contractAddress) => {
+  try {
+    const contract = getReadDisasterReliefContract(contractAddress);
+    const result = await contract.publicClient.readContract({
+      ...contract,
+      functionName: 'donationEndTime',
+    });
+    return result;
+  } catch (error) {
+    console.error("Error in getDonationEndTime:", error);
+    throw new Error(`Failed to get donation end time: ${error.message}`);
+  }
+};
+
+export const getAmountPerVictim = async (contractAddress) => {
+  try {
+    const contract = getReadDisasterReliefContract(contractAddress);
+    const result = await contract.publicClient.readContract({
+      ...contract,
+      functionName: 'amountPerVictim',
+    });
+    return result;
+  } catch (error) {
+    console.error("Error in getAmountPerVictim:", error);
+    throw new Error(`Failed to get amount per victim: ${error.message}`);
+  }
+};
+
 export const isDonor = async (contractAddress, address) => {
   try {
     const contract = getReadDisasterReliefContract(contractAddress);
@@ -258,4 +440,4 @@ export const hasWithdrawn = async (contractAddress, address) => {
     console.error("Error in hasWithdrawn:", error);
     throw new Error(`Failed to check withdrawal status: ${error.message}`);
   }
-}; 
+};
