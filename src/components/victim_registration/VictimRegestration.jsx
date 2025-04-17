@@ -1,15 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useParams } from "react-router-dom";
 import WalletConnection from "./regis_components/WalletConnection";
 import AadharVerification from "./regis_components/AadharVerification";
 import Registration from "./regis_components/Registration";
 import InfoModal from "./regis_components/InfoModal";
 import SuccessModal from "./regis_components/SuccessModal";
 import ThemeToggle from "./regis_components/ThemeToggle";
+import { getCampaignDetails, getDonationEndTime, getAmountPerVictim } from "../../providers/disasterRelief_provider";
 
 const VictimRegistration = () => {
+  // Get campaign ID from URL params
+  const { id } = useParams();
+  
   // State management
   const [currentStep, setCurrentStep] = useState(1);
   const [walletAddress, setWalletAddress] = useState("");
@@ -20,7 +25,137 @@ const VictimRegistration = () => {
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const contractAddress = "0x6B93a13b8D08Cd5893141DF090e2e53A1B7c08d9"; // Replace with actual contract address
+  const [campaign, setCampaign] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch campaign details
+  useEffect(() => {
+    const fetchCampaignDetails = async () => {
+      try {
+        setIsLoading(true);
+        // Get all campaign details in parallel
+        const [
+          campaignDetails,
+          donationEndTime,
+          amountPerVictim
+        ] = await Promise.all([
+          getCampaignDetails(id),
+          getDonationEndTime(id),
+          getAmountPerVictim(id)
+        ]);
+
+        // Map state to status
+        const statusMap = {
+          0: "Active",
+          1: "Registration",
+          2: "Waiting",
+          3: "Distribution",
+          4: "Closed"
+        };
+
+        // Calculate days left based on donation end time
+        const currentTime = Math.floor(Date.now() / 1000);
+        const secondsLeft = Number(donationEndTime) - currentTime;
+        const daysLeft = secondsLeft > 0 ? Math.ceil(secondsLeft / (24 * 60 * 60)) : 0;
+
+        // Format location string
+        const locationString = [
+          campaignDetails.location.country,
+          campaignDetails.location.state,
+          campaignDetails.location.city
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+        // Construct campaign object using the campaignDetails structure
+        const campaign = {
+          id: id,
+          title: campaignDetails.disasterName,
+          description: `Location: ${locationString || 'Unknown'}`,
+          image: campaignDetails.image || campaignDetails.location.image || "https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+          status: statusMap[campaignDetails.state] || "Unknown",
+          totalDonations: `${(Number(campaignDetails.totalFunds) / 1e6).toFixed(2)} USDC`,
+          goal: "N/A",
+          progress: 0,
+          donors: campaignDetails.totalDonors,
+          victimsCount: campaignDetails.totalVictimsRegistered,
+          daysLeft: daysLeft,
+          latitude: campaignDetails.location.latitude || "0",
+          longitude: campaignDetails.location.longitude || "0",
+          radius: campaignDetails.location.radius || "10",
+          contractAddress: id,
+          amountPerVictim: `${(Number(amountPerVictim) / 1e6).toFixed(2)} USDC`,
+          disasterId: campaignDetails.disasterId
+        };
+
+        setCampaign(campaign);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching campaign details:", err);
+        setError("Failed to load campaign details. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchCampaignDetails();
+    }
+  }, [id]);
+
+  // Function to calculate distance between two points using Haversine formula
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const toRadians = (degrees) => degrees * (Math.PI / 180);
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+    const lat1Rad = toRadians(lat1);
+    const lat2Rad = toRadians(lat2);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1Rad) * Math.cos(lat2Rad) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const R = 6371; // Earth's radius in kilometers
+    return R * c;
+  };
+
+  // Function to verify location against campaign coordinates
+  const verifyLocation = async (userLat, userLon) => {
+    if (!campaign) return false;
+
+    try {
+      // Get campaign coordinates and radius
+      const campaignLat = Number.parseFloat(campaign.latitude);
+      const campaignLon = Number.parseFloat(campaign.longitude);
+      const campaignRadius = Number.parseFloat(campaign.radius);
+
+      if (isNaN(campaignLat) || isNaN(campaignLon) || isNaN(campaignRadius)) {
+        return false;
+      }
+
+      // Calculate distance from campaign center
+      const distance = calculateDistance(userLat, userLon, campaignLat, campaignLon);
+
+      // Add a small buffer (2% of radius) to account for GPS inaccuracy
+      const buffer = Math.max(0.1, campaignRadius * 0.02);
+
+      // Check if user is within the affected area
+      const isInside = distance <= campaignRadius + buffer;
+
+      console.log("\n=== LOCATION VERIFICATION ===");
+      console.log("Campaign Center:", { lat: campaignLat, lon: campaignLon });
+      console.log("User Location:", { lat: userLat, lon: userLon });
+      console.log("Distance:", distance.toFixed(2), "km");
+      console.log("Allowed Radius:", campaignRadius + buffer, "km");
+      console.log("Status:", isInside ? "INSIDE ✅" : "OUTSIDE ❌");
+
+      return isInside;
+    } catch (error) {
+      console.error("Location verification error:", error);
+      return false;
+    }
+  };
 
   // Animation variants for page transitions
   const pageVariants = {
@@ -41,6 +176,46 @@ const VictimRegistration = () => {
     window.location.reload(); // Reload to reset Anon Aadhaar state
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">{error}</div>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!campaign) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-gray-500 mb-4">Campaign not found</div>
+          <button
+            onClick={() => window.location.href = "/campaigns"}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Back to Campaigns
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`min-h-screen ${
@@ -60,7 +235,7 @@ const VictimRegistration = () => {
               isDarkMode ? "text-white" : "text-gray-900"
             } mb-2`}
           >
-            Disaster Relief Registration
+            {campaign.title} - Victim Registration
           </h1>
           <p
             className={`${
@@ -183,7 +358,8 @@ const VictimRegistration = () => {
                   status={status}
                   setStatus={setStatus}
                   setIsInfoModalOpen={setIsInfoModalOpen}
-                  contractAddress={contractAddress}
+                  contractAddress={id}
+                  verifyLocation={verifyLocation}
                 />
               </motion.div>
             )}
@@ -205,6 +381,9 @@ const VictimRegistration = () => {
                   status={status}
                   setStatus={setStatus}
                   setLocation={setLocation}
+                  verifyLocation={verifyLocation}
+                  isAadhaarVerified={isAadhaarVerified}
+                  walletAddress={walletAddress}
                 />
               </motion.div>
             )}

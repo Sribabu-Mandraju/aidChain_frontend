@@ -27,12 +27,15 @@ function AadharVerificationContent({
   setStatus,
   setIsInfoModalOpen,
   contractAddress,
+  verifyLocation,
   onVerificationComplete,
 }) {
   const [anonAadhaar] = useAnonAadhaar()
   const [, latestProof] = useProver()
   const [verificationStatus, setVerificationStatus] = useState('idle')
   const [error, setError] = useState(null)
+  const [locationVerified, setLocationVerified] = useState(false)
+  const [userLocation, setUserLocation] = useState(null)
   const { address, isConnected } = useAccount()
   const { connect } = useConnect({
     connector: injected(),
@@ -42,6 +45,55 @@ function AadharVerificationContent({
     }
   })
   const { disconnect } = useDisconnect()
+
+  // Function to verify current location
+  const verifyCurrentLocation = () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Geolocation is not supported by your browser"))
+        return
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const userLat = position.coords.latitude
+            const userLon = position.coords.longitude
+            setUserLocation({ latitude: userLat, longitude: userLon })
+
+            // Verify location against campaign coordinates
+            const isInside = await verifyLocation(userLat, userLon)
+            setLocationVerified(isInside)
+            resolve(isInside)
+          } catch (error) {
+            reject(error)
+          }
+        },
+        (error) => {
+          let errorMessage = "Unable to retrieve your location. "
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage += "Please enable location services in your browser settings."
+              break
+            case error.POSITION_UNAVAILABLE:
+              errorMessage += "Location information is unavailable."
+              break
+            case error.TIMEOUT:
+              errorMessage += "Location request timed out. Please try again."
+              break
+            default:
+              errorMessage += "Please ensure location services are enabled."
+          }
+          reject(new Error(errorMessage))
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      )
+    })
+  }
 
   useEffect(() => {
     const existingProof = localStorage.getItem('anon-aadhaar-proof')
@@ -101,25 +153,42 @@ function AadharVerificationContent({
                       const coordinates = await getCoordinatesFromPincode(pincode, state);
                       console.log('Retrieved coordinates:', coordinates);
 
+                      // Verify location using both methods
+                      const [isPincodeValid, isCurrentLocationValid] = await Promise.all([
+                        verifyLocation(coordinates.latitude, coordinates.longitude),
+                        verifyCurrentLocation()
+                      ]);
+
+                      if (!isPincodeValid || !isCurrentLocationValid) {
+                        setError("Location verification failed. Please ensure you are in the affected area.");
+                        setVerificationStatus('error');
+                        setLocationVerified(false);
+                        return;
+                      }
+
+                      setLocationVerified(true);
                       // Store location details in localStorage
                       localStorage.setItem('victim-location', JSON.stringify({
                         state,
                         pincode,
                         coordinates,
+                        currentLocation: userLocation,
                         source: 'aadhaar'
                       }));
                     } catch (error) {
-                      console.error('Error getting coordinates:', error);
-                      // Still store the pincode and state even if coordinates fetch fails
-                      localStorage.setItem('victim-location', JSON.stringify({
-                        state,
-                        pincode,
-                        source: 'aadhaar'
-                      }));
+                      console.error('Error verifying location:', error);
+                      setError("Location verification failed. Please ensure you are in the affected area.");
+                      setVerificationStatus('error');
+                      setLocationVerified(false);
+                      return;
                     }
                   }
                 } catch (e) {
                   console.error('Error parsing PCD:', e)
+                  setError("Error processing Aadhaar data. Please try again.");
+                  setVerificationStatus('error');
+                  setLocationVerified(false);
+                  return;
                 }
               }
 
@@ -157,18 +226,21 @@ function AadharVerificationContent({
                 setError('Verification failed: No nullifier found')
                 setVerificationStatus('error')
                 setIsAadhaarVerified(false)
+                setLocationVerified(false)
               }
             } catch (error) {
               console.error('Error processing proof:', error)
               setError('Error processing proof. Please try again.')
               setVerificationStatus('error')
               setIsAadhaarVerified(false)
+              setLocationVerified(false)
             }
           } else {
             console.error('No proof found in logged-in state')
             setError('Verification failed: No proof found')
             setVerificationStatus('error')
             setIsAadhaarVerified(false)
+            setLocationVerified(false)
           }
         } else if (anonAadhaar?.status === 'error') {
           console.error('Verification error:', anonAadhaar.error)
@@ -176,27 +248,31 @@ function AadharVerificationContent({
           setError(anonAadhaar.error || 'Verification failed. Please try again.')
           setStatus(anonAadhaar.error || 'Verification failed. Please try again.')
           setIsAadhaarVerified(false)
+          setLocationVerified(false)
         } else if (anonAadhaar?.status === 'logging-in') {
           setVerificationStatus('processing')
           setError(null)
           setStatus('Generating proof...')
           setIsAadhaarVerified(false)
+          setLocationVerified(false)
         } else if (anonAadhaar?.status === 'logged-out') {
           setVerificationStatus('idle')
           setError(null)
           setStatus('Please complete Aadhaar verification')
           setIsAadhaarVerified(false)
+          setLocationVerified(false)
         }
       } catch (error) {
         console.error('Error during verification:', error)
         setError('Verification failed. Please try again.')
         setStatus('Verification failed. Please try again.')
         setIsAadhaarVerified(false)
+        setLocationVerified(false)
       }
     }
 
     handleVerification()
-  }, [anonAadhaar, setIsAadhaarVerified, setNullifier, setStatus, onVerificationComplete, address, isConnected, setCurrentStep])
+  }, [anonAadhaar, setIsAadhaarVerified, setNullifier, setStatus, onVerificationComplete, address, isConnected, setCurrentStep, verifyLocation])
 
   const handleWalletConnect = async () => {
     try {
@@ -235,15 +311,51 @@ function AadharVerificationContent({
               />
             </div>
 
-            {verificationStatus === 'success' && (
+            {verificationStatus === 'success' && locationVerified && (
               <div className="space-y-4">
                 <div className="text-green-600 flex items-center justify-center">
                   <CheckCircle className="mr-2" /> Aadhaar Verified Successfully
                 </div>
+                <div className="text-green-600 flex items-center justify-center">
+                  <CheckCircle className="mr-2" /> Location Verified Successfully
+                </div>
                 <div className="flex justify-center">
                   <button
                     onClick={() => setCurrentStep(3)}
-                    className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center"
+                  >
+                    Proceed to Registration
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="ml-2"
+                    >
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {verificationStatus === 'success' && !locationVerified && (
+              <div className="space-y-4">
+                <div className="text-green-600 flex items-center justify-center">
+                  <CheckCircle className="mr-2" /> Aadhaar Verified Successfully
+                </div>
+                <div className="text-red-600 flex items-center justify-center">
+                  <AlertCircle className="mr-2" /> Location verification failed. You must be in the affected area to register.
+                </div>
+                <div className="flex justify-center">
+                  <button
+                    disabled
+                    className="bg-gray-400 cursor-not-allowed text-white px-6 py-3 rounded-lg transition-colors flex items-center"
                   >
                     Proceed to Registration
                     <svg
@@ -272,8 +384,32 @@ function AadharVerificationContent({
             )}
 
             {verificationStatus === 'error' && (
-              <div className="text-red-600 flex items-center justify-center">
-                <AlertCircle className="mr-2" /> {error}
+              <div className="space-y-4">
+                <div className="text-red-600 flex items-center justify-center">
+                  <AlertCircle className="mr-2" /> {error}
+                </div>
+                <div className="flex justify-center">
+                  <button
+                    disabled
+                    className="bg-gray-400 cursor-not-allowed text-white px-6 py-3 rounded-lg transition-colors flex items-center"
+                  >
+                    Proceed to Registration
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="ml-2"
+                    >
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </div>
               </div>
             )}
           </div>
