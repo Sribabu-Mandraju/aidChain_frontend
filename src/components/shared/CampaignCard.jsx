@@ -12,6 +12,7 @@ import {
   MapPin,
   UserPlus,
   Wallet,
+  Coins,
 } from "lucide-react";
 import {
   WhatsappShareButton,
@@ -34,6 +35,7 @@ const CampaignCard = ({ campaign, index }) => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [isVictimModalOpen, setIsVictimModalOpen] = useState(false);
+  const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
   const [donationAmount, setDonationAmount] = useState("");
   const [zkProof, setZkProof] = useState("");
   const [error, setError] = useState("");
@@ -44,6 +46,7 @@ const CampaignCard = ({ campaign, index }) => {
   const [isDonorStatus, setIsDonorStatus] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [isClaiming, setIsClaiming] = useState(false);
 
   const { address, isConnected } = useAccount();
   const { connect } = useConnect({
@@ -191,15 +194,34 @@ const CampaignCard = ({ campaign, index }) => {
     }
   };
 
-  // Handle victim registration
-  const handleVictimRegister = (campaign) => {
-    setSelectedCampaign(campaign);
-    setIsVictimModalOpen(true);
+  // Handle victim registration redirect
+  const handleVictimRegister = () => {
+    window.location.href = `/victim-registration/${campaign.id}`;
   };
 
-  const handleCloseVictimModal = () => {
-    setIsVictimModalOpen(false);
-    setSelectedCampaign(null);
+  // Handle claim fund
+  const handleClaimFund = async () => {
+    if (!isConnected || !walletClient) {
+      toast.error('Please connect your wallet first');
+      return;
+    }
+
+    setIsClaiming(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      // Add your claim fund logic here
+      // This is a placeholder - implement the actual claim functionality
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulated delay
+      toast.success('Funds claimed successfully!');
+      setIsClaimModalOpen(false);
+    } catch (error) {
+      console.error('Claim error:', error);
+      setError('Failed to claim funds. Please try again.');
+    } finally {
+      setIsClaiming(false);
+    }
   };
 
   // Load initial data
@@ -371,13 +393,6 @@ const CampaignCard = ({ campaign, index }) => {
     </motion.div>
   );
 
-  // Victim Registration Modal
-  const VictimRegistrationModalWrapper = ({ campaign, onClose }) => (
-    <AnonAadhaarProvider>
-      <VictimRegistrationModal campaign={campaign} onClose={onClose} />
-    </AnonAadhaarProvider>
-  );
-
   // Share Modal
   const ShareModal = () => (
     <motion.div
@@ -530,6 +545,106 @@ const CampaignCard = ({ campaign, index }) => {
     </motion.div>
   );
 
+  // Claim Fund Modal
+  const ClaimFundModal = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      onClick={() => setIsClaimModalOpen(false)}
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-bold text-gray-900">
+            Claim Funds
+          </h3>
+          <button
+            onClick={() => setIsClaimModalOpen(false)}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <p className="text-gray-600 mb-6">
+          Claim your allocated funds from {campaign.title}. Make sure you have completed the verification process.
+        </p>
+        {!isConnected ? (
+          <div className="text-center">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleConnectWallet}
+              disabled={isConnecting}
+              className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-full font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
+            >
+              {isConnecting ? (
+                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+              ) : (
+                <>
+                  <Wallet size={20} />
+                  Connect Coinbase Smart Wallet
+                </>
+              )}
+            </motion.button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="mb-4 p-4 bg-green-50 rounded-lg">
+              <p className="text-sm text-gray-600">
+                Wallet: {formatAddress(address)}
+              </p>
+              <p className="text-sm text-gray-600">
+                Amount to Claim: {campaign.amountPerVictim} USDC
+              </p>
+            </div>
+            {error && (
+              <div className="text-red-500 text-sm flex items-center gap-1">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                {error}
+              </div>
+            )}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleClaimFund}
+              disabled={isClaiming}
+              className={`w-full py-3 rounded-lg font-semibold text-white ${
+                isClaiming
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:shadow-lg'
+              }`}
+            >
+              {isClaiming ? (
+                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mx-auto" />
+              ) : (
+                'Claim Funds'
+              )}
+            </motion.button>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -545,10 +660,21 @@ const CampaignCard = ({ campaign, index }) => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsShareModalOpen(true)}
-        className="absolute top-4 right-4 p-2 text-gray-600 bg-white/90 hover:bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 z-10"
+        className="absolute top-4 right-16 p-2 text-gray-600 bg-white/90 hover:bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 z-10"
         title="Share Campaign"
       >
         <Share2 size={20} />
+      </motion.button>
+
+      {/* Claim Fund Button */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={() => setIsClaimModalOpen(true)}
+        className="absolute top-4 right-4 p-2 text-gray-600 bg-white/90 hover:bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 z-10"
+        title="Claim Funds"
+      >
+        <Coins size={20} />
       </motion.button>
 
       <div className="flex flex-col md:flex-row">
@@ -637,7 +763,7 @@ const CampaignCard = ({ campaign, index }) => {
               Donate
             </button>
             <button
-              onClick={() => handleVictimRegister(campaign)}
+              onClick={handleVictimRegister}
               className="w-[35%] px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-400 hover:to-blue-500 transition-colors duration-300 shadow-md hover:shadow-lg"
             >
               Register as Victim
@@ -649,12 +775,6 @@ const CampaignCard = ({ campaign, index }) => {
       {/* Modals */}
       <AnimatePresence>
         {isDonateModalOpen && <DonationModal />}
-        {isVictimModalOpen && selectedCampaign && (
-          <VictimRegistrationModalWrapper
-            campaign={selectedCampaign}
-            onClose={handleCloseVictimModal}
-          />
-        )}
         {isShareModalOpen && <ShareModal />}
         {isMapModalOpen && <MapModal />}
         {isDetailsModalOpen && (
@@ -663,6 +783,7 @@ const CampaignCard = ({ campaign, index }) => {
             onClose={() => setIsDetailsModalOpen(false)}
           />
         )}
+        {isClaimModalOpen && <ClaimFundModal />}
       </AnimatePresence>
     </motion.div>
   );
