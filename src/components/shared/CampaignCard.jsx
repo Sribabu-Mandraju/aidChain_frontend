@@ -25,6 +25,8 @@ import { coinbaseWallet } from '@wagmi/connectors';
 import { baseSepolia } from 'viem/chains';
 import { toast } from 'react-hot-toast';
 import CampaignDetailsModal from "./campaignCard_components/CampaignDetailsModal";
+import { AnonAadhaarProvider } from '@anon-aadhaar/react';
+import VictimRegistrationModal from './campaignCard_components/VictimRegistrationModal';
 
 const CampaignCard = ({ campaign, index }) => {
   const [hovered, setHovered] = useState(false);
@@ -41,6 +43,7 @@ const CampaignCard = ({ campaign, index }) => {
   const [balance, setBalance] = useState(null);
   const [isDonorStatus, setIsDonorStatus] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
 
   const { address, isConnected } = useAccount();
   const { connect } = useConnect({
@@ -189,69 +192,14 @@ const CampaignCard = ({ campaign, index }) => {
   };
 
   // Handle victim registration
-  const handleVictimRegister = async () => {
-    if (!isConnected || !walletClient) {
-      toast.error('Please connect your wallet first');
-      return;
-    }
+  const handleVictimRegister = (campaign) => {
+    setSelectedCampaign(campaign);
+    setIsVictimModalOpen(true);
+  };
 
-    if (!zkProof) {
-      toast.error('Please provide a valid zero-knowledge proof');
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const txHash = await toast.promise(
-        registerAsVictim(campaign.contractAddress, zkProof, walletClient),
-        {
-          loading: 'Submitting victim registration...',
-          success: 'Registration submitted!',
-          error: (error) => `Registration failed: ${error.message}`,
-        }
-      );
-
-      await toast.promise(
-        publicClient.waitForTransactionReceipt({ hash: txHash }),
-        {
-          loading: 'Processing registration...',
-          success: (receipt) => (
-            <div className="flex flex-col">
-              <span>Registration successful!</span>
-              <a
-                href={`https://sepolia.basescan.org/tx/${receipt.transactionHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-green-600 hover:underline"
-              >
-                View transaction
-              </a>
-            </div>
-          ),
-          error: 'Registration failed to confirm.',
-        }
-      );
-
-      setZkProof("");
-      setSuccess(`Successfully registered as a victim for ${campaign.title}!`);
-      setTimeout(() => {
-        setIsVictimModalOpen(false);
-        setSuccess("");
-      }, 3000);
-    } catch (error) {
-      console.error('Victim registration error:', error);
-      setError(
-        error.message.includes('rejected') ? 'Transaction rejected by user.' :
-        error.message.includes('network') ? 'Network error. Please try again.' :
-        error.message.includes('chain ID') ? 'Please switch to Base Sepolia network.' :
-        `Registration failed: ${error.message}`
-      );
-    } finally {
-      setIsLoading(false);
-    }
+  const handleCloseVictimModal = () => {
+    setIsVictimModalOpen(false);
+    setSelectedCampaign(null);
   };
 
   // Load initial data
@@ -424,119 +372,10 @@ const CampaignCard = ({ campaign, index }) => {
   );
 
   // Victim Registration Modal
-  const VictimRegistrationModal = () => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      onClick={() => setIsVictimModalOpen(false)}
-    >
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-900">
-            Register as Victim for {campaign.title}
-          </h3>
-          <button
-            onClick={() => setIsVictimModalOpen(false)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X size={24} />
-          </button>
-        </div>
-        <p className="text-gray-600 mb-6">
-          Submit your zero-knowledge proof to register as a victim for this campaign.
-        </p>
-        {!isConnected ? (
-          <div className="text-center">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleConnectWallet}
-              disabled={isConnecting}
-              className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-full font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
-            >
-              {isConnecting ? (
-                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-              ) : (
-                <>
-                  <Wallet size={20} />
-                  Connect Coinbase Smart Wallet
-                </>
-              )}
-            </motion.button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="mb-4 p-4 bg-green-50 rounded-lg">
-              <p className="text-sm text-gray-600">
-                Wallet: {formatAddress(address)}
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Zero-Knowledge Proof
-              </label>
-              <input
-                type="text"
-                value={zkProof}
-                onChange={(e) => setZkProof(e.target.value)}
-                placeholder="Enter ZK proof"
-                disabled={isLoading}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none disabled:bg-gray-100"
-              />
-            </div>
-            {error && (
-              <div className="text-red-500 text-sm flex items-center gap-1">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                {error}
-              </div>
-            )}
-            {success && (
-              <div className="text-green-500 text-sm flex items-center gap-1">
-                <Gift size={16} />
-                {success}
-              </div>
-            )}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleVictimRegister}
-              disabled={isLoading || !zkProof}
-              className={`w-full py-3 rounded-lg font-semibold text-white ${
-                isLoading || !zkProof
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:shadow-lg'
-              }`}
-            >
-              {isLoading ? (
-                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mx-auto" />
-              ) : (
-                'Register Now'
-              )}
-            </motion.button>
-          </div>
-        )}
-      </motion.div>
-    </motion.div>
+  const VictimRegistrationModalWrapper = ({ campaign, onClose }) => (
+    <AnonAadhaarProvider>
+      <VictimRegistrationModal campaign={campaign} onClose={onClose} />
+    </AnonAadhaarProvider>
   );
 
   // Share Modal
@@ -798,7 +637,7 @@ const CampaignCard = ({ campaign, index }) => {
               Donate
             </button>
             <button
-              onClick={() => setIsVictimModalOpen(true)}
+              onClick={() => handleVictimRegister(campaign)}
               className="w-[35%] px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg hover:from-blue-400 hover:to-blue-500 transition-colors duration-300 shadow-md hover:shadow-lg"
             >
               Register as Victim
@@ -810,7 +649,12 @@ const CampaignCard = ({ campaign, index }) => {
       {/* Modals */}
       <AnimatePresence>
         {isDonateModalOpen && <DonationModal />}
-        {isVictimModalOpen && <VictimRegistrationModal />}
+        {isVictimModalOpen && selectedCampaign && (
+          <VictimRegistrationModalWrapper
+            campaign={selectedCampaign}
+            onClose={handleCloseVictimModal}
+          />
+        )}
         {isShareModalOpen && <ShareModal />}
         {isMapModalOpen && <MapModal />}
         {isDetailsModalOpen && (
