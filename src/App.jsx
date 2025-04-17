@@ -12,6 +12,7 @@ import WalletDetails from "./components/wallet/WalletDetails";
 import DonateDetails from "./components/donate/DonateDetails";
 import LearnMoreDetails from "./components/learn-more/LearnMoreDetails";
 import ProposalPage from "./pages/PROPOSAL/ProposalPage";
+import SimpleAadhaarLogin from "./components/victim_registration/SS";
 
 const App = () => {
   return (
@@ -30,6 +31,7 @@ const App = () => {
         <Route path="/learn-more-donate" element={<DonateDetails />} />
         <Route path="/learn-more" element={<LearnMoreDetails />} />
         <Route path="/proposals/:id" element={<ProposalPage />} />
+        <Route path="/sal" element={<SimpleAadhaarLogin />} />
       </Routes>
     </Router>
   );
