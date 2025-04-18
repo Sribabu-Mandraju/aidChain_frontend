@@ -1,7 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
+import { useAccount, useWalletClient } from "wagmi"
+import { registerAsVictim, getState } from "../../../providers/disasterRelief_provider"
+import toast from "react-hot-toast"
 
 const Registration = ({ 
   isDarkMode, 
@@ -12,13 +15,36 @@ const Registration = ({
   setLocation, 
   verifyLocation,
   isAadhaarVerified,
-  walletAddress
+  walletAddress,
+  nullifier,
+  contractAddress
 }) => {
   const [isRegistering, setIsRegistering] = useState(false)
   const [userLocation, setUserLocation] = useState(null)
+  const { address, isConnected } = useAccount()
+  const { data: walletClient } = useWalletClient()
 
   // Check if all verifications are complete
   const isAllVerified = isAadhaarVerified && walletAddress;
+
+  // Add state for contract state
+  const [contractState, setContractState] = useState(null)
+
+  // Fetch contract state on mount and when contractAddress changes
+  useEffect(() => {
+    const fetchContractState = async () => {
+      try {
+        if (contractAddress) {
+          const state = await getState(contractAddress)
+          setContractState(Number(state))
+        }
+      } catch (error) {
+        console.error("Error fetching contract state:", error)
+      }
+    }
+
+    fetchContractState()
+  }, [contractAddress])
 
   // Get user's geolocation
   const getGeolocation = () => {
@@ -49,10 +75,14 @@ const Registration = ({
 
   // Handle registration
   const handleRegistration = async () => {
-    if (!isAllVerified) return;
+    if (!walletClient) {
+      toast.error("Please connect your wallet first")
+      return
+    }
 
     setIsRegistering(true)
     setStatus("Processing registration...")
+    const toastId = toast.loading("Processing registration...")
 
     try {
       // Get geolocation
@@ -60,21 +90,105 @@ const Registration = ({
       setUserLocation(geoData)
       setLocation(geoData)
 
-      // Log registration data to console
-      console.log("Registration Data:", {
-        location: geoData,
-        walletAddress,
-        isAadhaarVerified
-      })
+      // Get the stored Aadhaar proof from localStorage
+      const storedProof = localStorage.getItem('anon-aadhaar-proof')
+      if (!storedProof) {
+        throw new Error("Aadhaar proof not found. Please complete Aadhaar verification again.")
+      }
 
-      // Simulate registration process
-      setTimeout(() => {
-        setShowSuccessModal(true)
-        setStatus("Registration successful!")
-      }, 1500)
+      const proof = JSON.parse(storedProof)
+      const pcdData = JSON.parse(proof.pcd)
+
+      // Prepare data for registration
+      const nullifierSeed = pcdData.proof.nullifierSeed
+      const nullifier = pcdData.proof.nullifier
+      
+      // Extract data from proof
+      const ageAbove18 = parseInt(pcdData.proof.ageAbove18)
+      const gender = parseInt(pcdData.proof.gender)
+      const pincode = 1 // Since we have pincode in proof
+      const state = 1 // Since we have state in proof
+      
+      const dataToReveal = [ageAbove18, gender, pincode, state]
+      
+      // Access each element individually for groth16Proof
+      const groth16Proof = [
+        BigInt(pcdData.proof.groth16Proof.pi_a[0]), // First element from pi_a
+        BigInt(pcdData.proof.groth16Proof.pi_a[1]), // Second element from pi_a
+        BigInt(pcdData.proof.groth16Proof.pi_a[2]), // Third element from pi_a
+        BigInt(pcdData.proof.groth16Proof.pi_b[0][0]), // First element from pi_b[0]
+        BigInt(pcdData.proof.groth16Proof.pi_b[0][1]), // Second element from pi_b[0]
+        BigInt(pcdData.proof.groth16Proof.pi_b[1][0]), // First element from pi_b[1]
+        BigInt(pcdData.proof.groth16Proof.pi_b[1][1]), // Second element from pi_b[1]
+        BigInt(pcdData.proof.groth16Proof.pi_c[0]) // First element from pi_c
+      ]
+      
+      // Call the contract
+      const txHash = await registerAsVictim(
+        contractAddress,
+        nullifierSeed,
+        nullifier,
+        Number(pcdData.proof.timestamp),
+        dataToReveal,
+        groth16Proof,
+        walletClient
+      )
+
+      toast.success(
+        <div>
+          <p>Registration successful!</p>
+          <div className="flex items-center gap-2 mt-2">
+            <a
+              href={`https://sepolia.basescan.org/tx/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm underline"
+            >
+              View Transaction
+            </a>
+          </div>
+        </div>,
+        { id: toastId, duration: 5000 }
+      )
+      setShowSuccessModal(true)
+      setStatus("Registration successful!")
     } catch (error) {
       console.error("Registration error:", error)
-      setStatus(`Registration failed: ${error.message}`)
+      
+      // Format the error message based on the contract revert reason
+      let errorMessage = error.message
+      
+      // Handle specific contract revert messages
+      if (error.message.includes("Registrations Not started")) {
+        errorMessage = "Registration period has not started yet. Please wait for the donation period to end."
+      } else if (error.message.includes("Already registered")) {
+        errorMessage = "You have already registered as a victim"
+      } else if (error.message.includes("Invalid proof")) {
+        errorMessage = "Invalid Aadhaar proof provided. Please try verifying your Aadhaar again."
+      } else if (error.message.includes("user rejected")) {
+        errorMessage = "Transaction was rejected by user"
+      } else if (error.message.includes("insufficient funds")) {
+        errorMessage = "Insufficient funds for gas fee"
+      }
+
+      // Show error toast with appropriate styling
+      toast.error(
+        <div className="flex flex-col gap-1">
+          <p className="font-medium">{errorMessage}</p>
+        </div>,
+        { 
+          id: toastId,
+          duration: 5000,
+          style: {
+            background: '#FEE2E2',
+            color: '#991B1B',
+            border: '1px solid #FECACA',
+            padding: '1rem',
+            borderRadius: '0.5rem'
+          }
+        }
+      )
+      setStatus(errorMessage)
     } finally {
       setIsRegistering(false)
     }

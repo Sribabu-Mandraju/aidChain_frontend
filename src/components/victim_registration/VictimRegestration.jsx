@@ -384,6 +384,8 @@ const VictimRegistration = () => {
                   verifyLocation={verifyLocation}
                   isAadhaarVerified={isAadhaarVerified}
                   walletAddress={walletAddress}
+                  nullifier={nullifier}
+                  contractAddress={id}
                 />
               </motion.div>
             )}
