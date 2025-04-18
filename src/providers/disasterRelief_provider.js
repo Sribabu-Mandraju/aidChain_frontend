@@ -259,7 +259,7 @@ export const registerAsVictim = async (
   walletClient
 ) => {
   try {
-    const contract = await getWriteDisasterReliefContract(contractAddress, walletClient);
+    const writeContract = await getWriteDisasterReliefContract(contractAddress, walletClient);
     
     // Prepare the arguments array in the correct order
     const args = [
@@ -270,28 +270,36 @@ export const registerAsVictim = async (
       groth16Proof
     ];
 
-    const hash = await contract.walletClient.writeContract({
-      address: contract.address,
-      abi: contract.abi,
+    console.log("Registration arguments:", {
+      nullifierSeed,
+      nullifier: nullifier.toString(),
+      timestamp,
+      dataToReveal,
+      groth16Proof: groth16Proof.map(x => x.toString())
+    });
+
+    // Simulate the transaction first to get any revert reasons
+    const { request } = await publicClient.simulateContract({
+      address: contractAddress,
+      abi: disasterReliefABI,
       functionName: 'registerAsVictim',
       args: args,
-      account: contract.account,
+      account: writeContract.account,
     });
+
+    // If simulation succeeds, proceed with the actual transaction
+    const hash = await writeContract.walletClient.writeContract(request);
 
     console.log("Victim registration transaction submitted:", hash);
     return hash;
   } catch (error) {
     console.error("Error in registerAsVictim:", error);
-    // Handle specific contract errors
-    if (error.message.includes("Registrations Not started")) {
-      throw new Error("Registration period has not started yet");
-    } else if (error.message.includes("Already registered")) {
-      throw new Error("You have already registered as a victim");
-    } else if (error.message.includes("Invalid proof")) {
-      throw new Error("Invalid Aadhaar proof provided");
-    } else {
-      throw new Error(`Failed to register as victim: ${error.message}`);
-    }
+
+    // Extract revert reason if available
+    const revertReason = error.message.match(/execution reverted: (.*?)(?:\n|$)/)?.[1];
+    
+    // Pass the error up with the revert reason if available
+    throw new Error(revertReason || error.message);
   }
 };
 
