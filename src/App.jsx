@@ -24,13 +24,13 @@ const App = () => {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/dao" element={<DaoPage />} />
         <Route path="/dao/new-proposal" element={<AddProposalPage />} />
+        <Route path="/dao/treasury" element={<TreasuryDetails />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
 
         <Route path="/victim-registration/:id" element={<VictimRegistrationPage />} />
         <Route path="/learn-more-nft" element={<NFTDetails />} />
         <Route path="/learn-more-wallet" element={<WalletDetails />} />
         <Route path="/learn-more-donate" element={<DonateDetails />} />
-        <Route path="/treasury" element={<TreasuryDetails />} />
         <Route path="/proposals/:id" element={<ProposalPage />} />
         <Route path="/sal" element={<SimpleAadhaarLogin />} />
         <Route path="/test" element={<TestLocation />} />
