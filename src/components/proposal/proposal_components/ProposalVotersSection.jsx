@@ -14,7 +14,7 @@ const ProposalVotersSection = ({ voters, showAllVoters, setShowAllVoters }) => {
           </button>
         </div>
 
-        <ProposalVotersList voters={showAllVoters ? voters : voters.slice(0, 3)} showAll={showAllVoters} />
+        {/* <ProposalVotersList voters={showAllVoters ? voters : voters.slice(0, 3)} showAll={showAllVoters} /> */}
       </div>
     </div>
   )

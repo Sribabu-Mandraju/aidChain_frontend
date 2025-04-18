@@ -39,10 +39,13 @@ const ProposalDetails = () => {
   const [userAddress, setUserAddress] = useState(null)
   const [voters, setVoters] = useState([])
 
+
   // Get proposals from Redux store
   const proposals = useSelector((state) => state.proposalsList.proposals)
   const proposalsLoading = useSelector((state) => state.proposalsList.loading)
   const proposalsError = useSelector((state) => state.proposalsList.error)
+
+  console.log(proposals)
 
   // Connect wallet
   useEffect(() => {
@@ -104,51 +107,89 @@ const ProposalDetails = () => {
     }
   }
 
+  // Parse area string to get location data
+  const parseAreaString = (areaString) => {
+    if (!areaString) return { latitude: 0, longitude: 0, radius: 10 };
+    
+    try {
+      // Extract coordinates and radius using regex
+      const match = areaString.match(/([\d.-]+),\s*([\d.-]+)\s*\(Radius:\s*(\d+)\)/);
+      if (match) {
+        return {
+          latitude: parseFloat(match[1]),
+          longitude: parseFloat(match[2]),
+          radius: parseInt(match[3])
+        };
+      }
+    } catch (error) {
+      console.error('Error parsing area string:', error);
+    }
+    
+    return { latitude: 0, longitude: 0, radius: 10 };
+  };
+
+  // Fetch proposal description from backend
+  const fetchProposalDescription = async (proposalId) => {
+    try {
+      const response = await fetch(`https://aidchain-backend.onrender.com/api/proposals/${proposalId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch proposal description');
+      }
+      const data = await response.json();
+      return data.description || "Disaster Relief Proposal";
+    } catch (error) {
+      console.error('Error fetching proposal description:', error);
+      return "Disaster Relief Proposal";
+    }
+  };
+
   // Fetch proposal data from Redux
   useEffect(() => {
     const fetchProposalFromRedux = async () => {
-      if (!id) return
+      if (!id) return;
 
-      setLoading(true)
+      setLoading(true);
       try {
         // If proposals are not in Redux, fetch them
         if (!proposals.length && !proposalsLoading) {
-          await dispatch(fetchProposals()).unwrap()
+          await dispatch(fetchProposals()).unwrap();
         }
 
         // Find the proposal in Redux store
-        const proposalData = proposals.find(p => p.id === Number(id))
+        const proposalData = proposals.find(p => p.id === Number(id));
         
         if (!proposalData) {
-          throw new Error("Proposal not found")
+          throw new Error("Proposal not found");
         }
 
-        const startTimeMs = Number(proposalData.startTime) * 1000
-        const endTimeMs = Number(proposalData.endTime) * 1000
-        const registrationPeriodDuration = 1 * 60 * 60 * 1000
-        const waitingPeriodDuration = 30 * 60 * 1000
-        const claimingPeriodDuration = 24 * 60 * 60 * 1000
+        // Fetch description from backend
+        const description = await fetchProposalDescription(id);
+
+        const startTimeMs = Number(proposalData.startTime) * 1000;
+        const endTimeMs = Number(proposalData.endTime) * 1000;
+        const registrationPeriodDuration = 1 * 60 * 60 * 1000;
+        const waitingPeriodDuration = 30 * 60 * 1000;
+        const claimingPeriodDuration = 24 * 60 * 60 * 1000;
 
         const registrationPeriod = {
           start: endTimeMs,
           end: endTimeMs + registrationPeriodDuration,
-        }
+        };
         const claimingPeriod = {
           start: registrationPeriod.end + waitingPeriodDuration,
           end: registrationPeriod.end + waitingPeriodDuration + claimingPeriodDuration,
-        }
+        };
+
+        // Parse the area string to get location data
+        const locationData = parseAreaString(proposalData.area);
 
         const transformedProposal = {
           id: Number(proposalData.id),
           proposer: proposalData.proposer,
           disasterName: proposalData.disasterName,
-          description: proposalData.description || "Disaster Relief Proposal",
+          description: description,
           area: proposalData.area,
-          location: {
-            latitude: Number(proposalData.location?.latitude) || 0,
-            longitude: Number(proposalData.location?.longitude) || 0,
-            radius: Number(proposalData.location?.radius) || 10,
-          },
+          location: locationData,
           fundsRequested: Number(proposalData.fundsRequested),
           startTime: startTimeMs,
           endTime: endTimeMs,
@@ -160,19 +201,19 @@ const ProposalDetails = () => {
           image: proposalData.image || "https://images.unsplash.com/photo-1542393545-10f5b85e14fc",
           state: proposalData.state,
           eligibilityCriteria: proposalData.eligibilityCriteria || DEFAULT_ELIGIBILITY_CRITERIA,
-        }
+        };
 
-        setProposal(transformedProposal)
-        await fetchVoters(id)
-        setLoading(false)
+        setProposal(transformedProposal);
+        await fetchVoters(id);
+        setLoading(false);
       } catch (err) {
-        console.error("Error fetching proposal:", err)
-        setError("Failed to load proposal details")
-        setLoading(false)
+        console.error("Error fetching proposal:", err);
+        setError("Failed to load proposal details");
+        setLoading(false);
       }
-    }
-    fetchProposalFromRedux()
-  }, [id, proposals, proposalsLoading, dispatch])
+    };
+    fetchProposalFromRedux();
+  }, [id, proposals, proposalsLoading, dispatch]);
 
   // Poll proposal state every 30 seconds
   useEffect(() => {
@@ -246,6 +287,9 @@ const ProposalDetails = () => {
       </div>
     )
   }
+
+
+  console.log(proposal)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-green-50 py-12 px-4 sm:px-6 lg:px-8">

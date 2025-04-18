@@ -13,10 +13,12 @@ import DonateDetails from "./components/donate/DonateDetails";
 import ProposalPage from "./pages/PROPOSAL/ProposalPage";
 import SimpleAadhaarLogin from "./components/victim_registration/SS";
 import DonationPage from "./pages/DONATION/DonationPage";
+import ChatBot from "./components/chatbot/ChatBot";
 
 import TestLocation from "./components/shared/campaignCard_components/TestLocation";
 const App = () => {
   return (
+    <>
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -36,6 +38,8 @@ const App = () => {
         <Route path="/donation" element={<DonationPage />} />
       </Routes>
     </Router>
+    <ChatBot />
+    </>
   );
 };
 
