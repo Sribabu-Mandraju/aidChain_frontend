@@ -11,6 +11,9 @@ import DAOHeader from "./dao_components/DAOHeader";
 import DAOActions from "./dao_components/DAOActions";
 import { useNavigate } from "react-router-dom";
 import { formatAddress } from "../../utils/dao_helper";
+import { useSelector } from "react-redux";
+
+
 const DAO = () => {
   const navigate = useNavigate()
   const [proposals, setProposals] = useState([]);
@@ -22,6 +25,8 @@ const DAO = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [members, setMembers] = useState([]);
   const [daoStats, setDaoStats] = useState([]);
+  const proposalsData = useSelector((state) => state.proposalsList.proposals)
+  console.log(proposalsData)
 
   // Mock data - in a real app, this would come from your blockchain connection
   useEffect(() => {

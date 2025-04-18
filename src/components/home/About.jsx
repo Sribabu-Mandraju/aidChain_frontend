@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import lottie from "lottie-web";
+import { useSelector } from "react-redux";
+
 
 // Lottie animation files
 import connectWallet from "../../assets/lottie/wallet.json";
@@ -8,6 +10,8 @@ import selectDonate from "../../assets/lottie/donation.json";
 import nftBadge from "../../assets/lottie/nft.json";
 
 const About = () => {
+  const campaigns = useSelector((state) => state.campaigns.campaigns);
+
   // Animation variants for text
   const textVariants = {
     hidden: { opacity: 0, y: 50 },

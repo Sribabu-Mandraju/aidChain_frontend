@@ -1,113 +1,41 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
 import CampaignList from "../shared/campaignCard_components/CampaignList";
-import { getAllDisasterReliefContracts } from "../../providers/disasterReliefFactory_provider";
 import { 
-  getCampaignDetails, 
-  getDonationEndTime, 
-  getAmountPerVictim 
-} from "../../providers/disasterRelief_provider";
+  fetchCampaigns, 
+  setFilter,
+  clearCampaigns,
+  selectFilteredCampaigns,
+  selectCampaignsLoading,
+  selectCampaignsError,
+  selectCurrentFilter,
+  selectLastFetchTime,
+  selectHasCampaigns
+} from "../../store/slices/campaignSlice";
 
 const Campaigns = () => {
-  const [filter, setFilter] = useState("All");
-  const [campaigns, setCampaigns] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const filteredCampaigns = useSelector(selectFilteredCampaigns);
+  const loading = useSelector(selectCampaignsLoading);
+  const error = useSelector(selectCampaignsError);
+  const filter = useSelector(selectCurrentFilter);
+  const lastFetchTime = useSelector(selectLastFetchTime);
+  const hasCampaigns = useSelector(selectHasCampaigns);
 
+  // Only fetch campaigns if there's no existing data
   useEffect(() => {
-    const fetchCampaigns = async () => {
-      try {
-        setLoading(true);
-        // Fetch all disaster relief contract addresses
-        const contractAddresses = await getAllDisasterReliefContracts();
-        console.log("Fetched contract addresses:", contractAddresses);
+    if (!hasCampaigns) {
+      dispatch(fetchCampaigns());
+    }
+  }, [dispatch, hasCampaigns]);
 
-        // Fetch details for each contract using the new getCampaignDetails function
-        const campaignPromises = contractAddresses.map(async (address) => {
-          try {
-            // Get all campaign details in parallel
-            const [
-              campaignDetails,
-              donationEndTime,
-              amountPerVictim
-            ] = await Promise.all([
-              getCampaignDetails(address),
-              getDonationEndTime(address),
-              getAmountPerVictim(address)
-            ]);
-
-            // Map state to status
-            const statusMap = {
-              0: "Active",
-              1: "Registration",
-              2: "Waiting",
-              3: "Distribution",
-              4: "Closed"
-            };
-
-            // Calculate days left based on donation end time
-            const currentTime = Math.floor(Date.now() / 1000);
-            const secondsLeft = Number(donationEndTime) - currentTime;
-            const daysLeft = secondsLeft > 0 ? Math.ceil(secondsLeft / (24 * 60 * 60)) : 0;
-
-            // Format location string
-            const locationString = [
-              campaignDetails.location.country,
-              campaignDetails.location.state,
-              campaignDetails.location.city
-            ]
-              .filter(Boolean)
-              .join(", ");
-
-            // Construct campaign object using the new campaignDetails structure
-            const campaign = {
-              id: address,
-              title: campaignDetails.disasterName,
-              description: `Location: ${locationString || 'Unknown'}`,
-              image: campaignDetails.image || campaignDetails.location.image || "https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-              status: statusMap[campaignDetails.state] || "Unknown",
-              totalDonations: `${(Number(campaignDetails.totalFunds) / 1e6).toFixed(2)} USDC`,
-              goal: "N/A",
-              progress: 0,
-              donors: campaignDetails.totalDonors,
-              victimsCount: campaignDetails.totalVictimsRegistered,
-              daysLeft: daysLeft,
-              latitude: campaignDetails.location.latitude || "0",
-              longitude: campaignDetails.location.longitude || "0",
-              radius: campaignDetails.location.radius || "10",
-              contractAddress: address,
-              amountPerVictim: `${(Number(amountPerVictim) / 1e6).toFixed(2)} USDC`,
-              disasterId: campaignDetails.disasterId // New field from campaign details
-            };
-
-            return campaign;
-          } catch (err) {
-            console.error(`Error fetching details for contract ${address}:`, err);
-            return null;
-          }
-        });
-
-        const campaignsData = (await Promise.all(campaignPromises)).filter(Boolean);
-        setCampaigns(campaignsData);
-
-        // Log all campaign details
-        console.log("All campaign details:", campaignsData);
-      } catch (err) {
-        console.error("Error fetching campaigns:", err);
-        setError("Failed to load campaigns. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCampaigns();
-  }, []);
+  const handleRefresh = () => {
+    dispatch(clearCampaigns());
+    dispatch(fetchCampaigns());
+  };
 
   const filterOptions = ["All", "Active", "Registration", "Waiting", "Distribution", "Closed"];
-  const filteredCampaigns =
-    filter === "All"
-      ? campaigns
-      : campaigns.filter((campaign) => campaign.status === filter);
 
   if (loading) {
     return (
@@ -121,9 +49,17 @@ const Campaigns = () => {
     return (
       <div className="text-center py-12">
         <p className="text-red-600">{error}</p>
+        <button
+          onClick={handleRefresh}
+          className="mt-4 px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
+
+  console.log(filteredCampaigns);
 
   return (
     <section className="relative py-16 sm:py-24 bg-gradient-to-br from-white to-green-50 overflow-hidden">
@@ -143,11 +79,32 @@ const Campaigns = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12 sm:mb-16"
         >
-          <div className="inline-flex items-center px-4 py-1.5 bg-green-100 rounded-full mb-4">
-            <span className="animate-pulse w-2 h-2 bg-green-600 rounded-full mr-2"></span>
-            <span className="text-green-800 font-medium text-sm">
-              Live Campaigns
-            </span>
+          <div className="inline-flex items-center justify-center gap-4">
+            <div className="inline-flex items-center px-4 py-1.5 bg-green-100 rounded-full mb-4">
+              <span className="animate-pulse w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+              <span className="text-green-800 font-medium text-sm">
+                Live Campaigns
+              </span>
+            </div>
+            <button
+              onClick={handleRefresh}
+              className="inline-flex items-center px-4 py-1.5 bg-white text-green-600 border border-green-200 rounded-full mb-4 hover:bg-green-50 transition-colors"
+            >
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              Refresh
+            </button>
           </div>
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight mb-4">
             Support Our{" "}
@@ -167,7 +124,7 @@ const Campaigns = () => {
             {filterOptions.map((option) => (
               <button
                 key={option}
-                onClick={() => setFilter(option)}
+                onClick={() => dispatch(setFilter(option))}
                 className={`px-6 py-2.5 rounded-full font-semibold text-sm transition-all duration-300 ${
                   filter === option
                     ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md"
