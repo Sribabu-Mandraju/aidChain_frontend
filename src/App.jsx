@@ -10,7 +10,7 @@ import VictimRegistrationPage from "./components/victim_registration/VictimReges
 import NFTDetails from "./components/nft/NFTDetails";
 import WalletDetails from "./components/wallet/WalletDetails";
 import DonateDetails from "./components/donate/DonateDetails";
-import LearnMoreDetails from "./components/learn-more/LearnMoreDetails";
+import TreasuryDetails from "./components/treasury/TreasuryDetails";
 import ProposalPage from "./pages/PROPOSAL/ProposalPage";
 import SimpleAadhaarLogin from "./components/victim_registration/SS";
 
@@ -30,7 +30,7 @@ const App = () => {
         <Route path="/learn-more-nft" element={<NFTDetails />} />
         <Route path="/learn-more-wallet" element={<WalletDetails />} />
         <Route path="/learn-more-donate" element={<DonateDetails />} />
-        <Route path="/learn-more" element={<LearnMoreDetails />} />
+        <Route path="/treasury" element={<TreasuryDetails />} />
         <Route path="/proposals/:id" element={<ProposalPage />} />
         <Route path="/sal" element={<SimpleAadhaarLogin />} />
         <Route path="/test" element={<TestLocation />} />
