@@ -13,6 +13,7 @@ import DonateDetails from "./components/donate/DonateDetails";
 import TreasuryDetails from "./components/treasury/TreasuryDetails";
 import ProposalPage from "./pages/PROPOSAL/ProposalPage";
 import SimpleAadhaarLogin from "./components/victim_registration/SS";
+import DonationPage from "./pages/DONATION/DonationPage";
 
 import TestLocation from "./components/shared/campaignCard_components/TestLocation";
 const App = () => {
@@ -34,6 +35,7 @@ const App = () => {
         <Route path="/proposals/:id" element={<ProposalPage />} />
         <Route path="/sal" element={<SimpleAadhaarLogin />} />
         <Route path="/test" element={<TestLocation />} />
+        <Route path="/donation" element={<DonationPage />} />
       </Routes>
     </Router>
   );
