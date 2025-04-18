@@ -4,7 +4,7 @@ import { useAccount } from 'wagmi';
 
 // Async thunk to fetch DAO members
 export const fetchDAOMembers = createAsyncThunk(
-  'daoMembers/fetchMembers',
+  'daoMembers/fetchDAOMembers',
   async (_, { rejectWithValue }) => {
     try {
       const contract = getReadDaoContract();
@@ -26,7 +26,7 @@ export const fetchDAOMembers = createAsyncThunk(
 
       return memberAddressesResult.map(address => ({
         address: address,
-        joinedAt: new Date().toISOString()
+        joinedAt: new Date().toISOString() // Placeholder join date
       }));
     } catch (error) {
       console.error("Error fetching DAO members:", error);
@@ -35,12 +35,12 @@ export const fetchDAOMembers = createAsyncThunk(
   }
 );
 
-// Async thunk to add a new member
+// Async thunk to add a new DAO member
 export const addDAOMember = createAsyncThunk(
-  'daoMembers/addMember',
+  'daoMembers/addDAOMember',
   async ({ address, connectedAddress }, { rejectWithValue }) => {
     try {
-      const contract = await getWriteDaoContract();
+      const contract = getWriteDaoContract();
       if (!contract || !contract.publicClient || !contract.walletClient) {
         throw new Error("DAO contract, public client, or wallet client not available");
       }
@@ -52,7 +52,7 @@ export const addDAOMember = createAsyncThunk(
       });
 
       if (!isAdmin) {
-        throw new Error('Only admins can add members');
+        throw new Error("Only admins can add members");
       }
 
       const hash = await contract.walletClient.writeContract({
@@ -62,7 +62,12 @@ export const addDAOMember = createAsyncThunk(
         account: connectedAddress,
       });
 
-      await contract.publicClient.waitForTransactionReceipt({ hash });
+      const receipt = await contract.publicClient.waitForTransactionReceipt({ hash });
+
+      if (receipt.status !== 'success') {
+        throw new Error(`Transaction failed. Status: ${receipt.status}`);
+      }
+
       return { address, hash };
     } catch (error) {
       console.error("Error adding DAO member:", error);
@@ -71,12 +76,12 @@ export const addDAOMember = createAsyncThunk(
   }
 );
 
-// Async thunk to remove a member
+// Async thunk to remove a DAO member
 export const removeDAOMember = createAsyncThunk(
-  'daoMembers/removeMember',
+  'daoMembers/removeDAOMember',
   async ({ address, connectedAddress }, { rejectWithValue }) => {
     try {
-      const contract = await getWriteDaoContract();
+      const contract = getWriteDaoContract();
       if (!contract || !contract.publicClient || !contract.walletClient) {
         throw new Error("DAO contract, public client, or wallet client not available");
       }
@@ -88,7 +93,7 @@ export const removeDAOMember = createAsyncThunk(
       });
 
       if (!isAdmin) {
-        throw new Error('Only admins can remove members');
+        throw new Error("Only admins can remove members");
       }
 
       const hash = await contract.walletClient.writeContract({
@@ -98,7 +103,12 @@ export const removeDAOMember = createAsyncThunk(
         account: connectedAddress,
       });
 
-      await contract.publicClient.waitForTransactionReceipt({ hash });
+      const receipt = await contract.publicClient.waitForTransactionReceipt({ hash });
+
+      if (receipt.status !== 'success') {
+        throw new Error(`Transaction failed. Status: ${receipt.status}`);
+      }
+
       return { address, hash };
     } catch (error) {
       console.error("Error removing DAO member:", error);
@@ -124,12 +134,13 @@ const daoMembersSlice = createSlice({
     },
     clearMembers: (state) => {
       state.members = [];
+      state.loading = false;
+      state.error = null;
       state.hasData = false;
     }
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Members
       .addCase(fetchDAOMembers.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -144,34 +155,16 @@ const daoMembersSlice = createSlice({
         state.error = action.payload;
         state.hasData = false;
       })
-      // Add Member
-      .addCase(addDAOMember.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(addDAOMember.fulfilled, (state, action) => {
-        state.loading = false;
         state.members.push({
           address: action.payload.address,
           joinedAt: new Date().toISOString()
         });
-      })
-      .addCase(addDAOMember.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      // Remove Member
-      .addCase(removeDAOMember.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.hasData = true;
       })
       .addCase(removeDAOMember.fulfilled, (state, action) => {
-        state.loading = false;
         state.members = state.members.filter(member => member.address !== action.payload.address);
-      })
-      .addCase(removeDAOMember.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        state.hasData = state.members.length > 0;
       });
   }
 });
@@ -179,16 +172,20 @@ const daoMembersSlice = createSlice({
 export const { setSearchTerm, clearMembers } = daoMembersSlice.actions;
 
 // Selectors
-export const selectAllMembers = (state) => state.daoMembers.members;
-export const selectFilteredMembers = (state) => {
-  const { members, searchTerm } = state.daoMembers;
-  return members.filter(member => 
-    member.address.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-};
+export const selectMembers = (state) => state.daoMembers.members;
 export const selectMembersLoading = (state) => state.daoMembers.loading;
 export const selectMembersError = (state) => state.daoMembers.error;
 export const selectSearchTerm = (state) => state.daoMembers.searchTerm;
 export const selectHasMembers = (state) => state.daoMembers.hasData;
+
+export const selectFilteredMembers = (state) => {
+  const { members, searchTerm } = state.daoMembers;
+  if (!searchTerm) return members;
+  
+  const searchLower = searchTerm.toLowerCase();
+  return members.filter(member => 
+    member.address.toLowerCase().includes(searchLower)
+  );
+};
 
 export default daoMembersSlice.reducer;
