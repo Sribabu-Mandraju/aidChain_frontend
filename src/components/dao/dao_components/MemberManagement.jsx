@@ -6,6 +6,7 @@ import { formatAddress } from "../../../utils/dao_helper"
 import { Toaster, toast } from "react-hot-toast"
 import { useAccount } from 'wagmi'
 import { useDispatch, useSelector } from 'react-redux'
+import { getWriteDaoContract } from "../../../providers/dao_provider"
 import {
   fetchDAOMembers,
   addDAOMember,
@@ -114,17 +115,78 @@ const MemberManagement = ({ onClose }) => {
 
   const handleRemoveMember = async () => {
     if (!isConnected) {
-      toast.error('Please connect your wallet first')
-      return
+      toast.error('Please connect your wallet first');
+      return;
     }
 
-    if (!selectedMember) return
+    if (!selectedMember) {
+      toast.error('No member selected');
+      return;
+    }
 
-    const toastId = toast.loading('Removing member...')
+    const toastId = toast.loading('Removing member...');
     try {
-      const result = await dispatch(removeDAOMember({ address: selectedMember.address, connectedAddress })).unwrap()
+      // First check if the contract is available
+      let contract;
+      try {
+        contract = await getWriteDaoContract();
+      } catch (error) {
+        console.error("Error getting contract:", error);
+        toast.error('Failed to initialize contract. Please try again.', { id: toastId });
+        return;
+      }
+
+      if (!contract || !contract.walletClient || !contract.publicClient) {
+        toast.error('Contract not available. Please try again.', { id: toastId });
+        return;
+      }
+
+      // Check if the connected address is an admin
+      let isAdmin;
+      try {
+        isAdmin = await contract.publicClient.readContract({
+          address: contract.address,
+          abi: contract.abi,
+          functionName: 'isAdmin',
+          args: [connectedAddress],
+        });
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        toast.error('Failed to check admin status', { id: toastId });
+        return;
+      }
+
+      if (!isAdmin) {
+        toast.error('Only admins can remove members', { id: toastId });
+        return;
+      }
+
+      // Check if the member exists
+      let isMember;
+      try {
+        isMember = await contract.publicClient.readContract({
+          address: contract.address,
+          abi: contract.abi,
+          functionName: 'isDAOMember',
+          args: [selectedMember.address],
+        });
+      } catch (error) {
+        console.error("Error checking member status:", error);
+        toast.error('Failed to check member status', { id: toastId });
+        return;
+      }
+
+      if (!isMember) {
+        toast.error('Address is not a DAO member', { id: toastId });
+        return;
+      }
+
+      const result = await dispatch(removeDAOMember({ 
+        address: selectedMember.address, 
+        connectedAddress 
+      })).unwrap();
       
-      toast.loading('Waiting for transaction confirmation...', { id: toastId })
+      toast.loading('Waiting for transaction confirmation...', { id: toastId });
       
       toast.success(
         <div>
@@ -139,17 +201,17 @@ const MemberManagement = ({ onClose }) => {
           </a>
         </div>,
         { id: toastId, duration: 5000 }
-      )
+      );
       
-      setIsRemoveModalOpen(false)
-      setSelectedMember(null)
-      await dispatch(fetchDAOMembers()).unwrap()
+      setIsRemoveModalOpen(false);
+      setSelectedMember(null);
+      await dispatch(fetchDAOMembers()).unwrap();
     } catch (error) {
-      console.error("Error removing member:", error)
-      const errorMessage = error?.shortMessage || error?.message || 'An unknown error occurred'
-      toast.error(`Failed to remove member: ${errorMessage}`, { id: toastId })
+      console.error("Error removing member:", error);
+      const errorMessage = error?.message || 'An unknown error occurred';
+      toast.error(`Failed to remove member: ${errorMessage}`, { id: toastId });
     }
-  }
+  };
 
   return (
     <div className="relative bg-white/80 backdrop-blur-sm rounded-xl shadow-md overflow-hidden max-w-2xl mx-auto my-8">

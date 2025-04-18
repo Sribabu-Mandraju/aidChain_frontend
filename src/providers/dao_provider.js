@@ -3,50 +3,92 @@ import { baseSepolia } from 'viem/chains'
 import daoABI from '../abis/daoGovernance.json'
 
 const DAO_CONTRACT_ADDRESS = import.meta.env.VITE_DAO_GOVERNANCE
-const publicClient = createPublicClient({
-  chain: baseSepolia,
-  transport: http("https://base-sepolia.g.alchemy.com/v2/kBfhfjgaUbr1xz7I4QTPU7ZepOM6uMxK"),
-})
 
-export const walletClient = createWalletClient({
-  chain: baseSepolia,
-  transport: custom(window.ethereum),
-})
+// Initialize clients with proper error handling
+let publicClient;
+let walletClient;
 
-export const getDaoContract = () => ({
-  address: DAO_CONTRACT_ADDRESS,
-  abi: daoABI,
-})
+const initializeClients = () => {
+  try {
+    publicClient = createPublicClient({
+      chain: baseSepolia,
+      transport: http("https://base-sepolia.g.alchemy.com/v2/kBfhfjgaUbr1xz7I4QTPU7ZepOM6uMxK"),
+    });
 
-export const getReadDaoContract = () => ({
-  publicClient,
-  ...getDaoContract(),
-})
+    if (window.ethereum) {
+      walletClient = createWalletClient({
+        chain: baseSepolia,
+        transport: custom(window.ethereum),
+      });
+    }
+  } catch (error) {
+    console.error("Error initializing clients:", error);
+    throw new Error("Failed to initialize clients");
+  }
+};
+
+// Initialize clients on first import
+initializeClients();
+
+export const getDaoContract = () => {
+  if (!DAO_CONTRACT_ADDRESS) {
+    throw new Error("DAO contract address not configured");
+  }
+  return {
+    address: DAO_CONTRACT_ADDRESS,
+    abi: daoABI,
+  };
+};
+
+export const getReadDaoContract = () => {
+  if (!publicClient) {
+    try {
+      initializeClients();
+    } catch (error) {
+      throw new Error("Public client not initialized");
+    }
+  }
+  return {
+    publicClient,
+    ...getDaoContract(),
+  };
+};
 
 export const getWriteDaoContract = async () => {
   try {
     if (!window.ethereum) {
-      throw new Error("No wallet provider found")
+      throw new Error("No wallet provider found. Please install MetaMask or another Web3 wallet.");
     }
-    const [address] = await walletClient.getAddresses()
+
+    if (!walletClient) {
+      try {
+        initializeClients();
+      } catch (error) {
+        throw new Error("Wallet client not initialized");
+      }
+    }
+
+    const [address] = await walletClient.getAddresses();
     if (!address) {
-      throw new Error("No account connected")
+      throw new Error("No account connected. Please connect your wallet.");
     }
-    const chainId = await walletClient.getChainId()
+
+    const chainId = await walletClient.getChainId();
     if (chainId !== baseSepolia.id) {
-      throw new Error(`Please switch to Base Sepolia (chain ID: ${baseSepolia.id})`)
+      throw new Error(`Please switch to Base Sepolia (chain ID: ${baseSepolia.id})`);
     }
+
     return {
       address: DAO_CONTRACT_ADDRESS,
       abi: daoABI,
       walletClient,
       publicClient,
-    }
+    };
   } catch (error) {
-    console.error("Error initializing write contract:", error)
-    throw error
+    console.error("Error initializing write contract:", error);
+    throw new Error(`Failed to initialize contract: ${error.message}`);
   }
-}
+};
 
 export const setDisasterReliefFactory = async (factoryAddress) => {
   try {
@@ -107,20 +149,47 @@ export const addDAOMember = async (memberAddress) => {
 
 export const removeDAOMember = async (memberAddress) => {
   try {
-    const contract = await getWriteDaoContract()
-    const [account] = await contract.walletClient.getAddresses()
+    // First check if the member exists
+    const isMember = await isDAOMember(memberAddress);
+    if (!isMember) {
+      throw new Error("Address is not a DAO member");
+    }
+
+    const contract = await getWriteDaoContract();
+    if (!contract || !contract.walletClient) {
+      throw new Error("Contract or wallet client not available");
+    }
+
+    const [account] = await contract.walletClient.getAddresses();
+    if (!account) {
+      throw new Error("No account connected");
+    }
+
+    // Check if the caller is an admin
+    const isAdmin = await contract.publicClient.readContract({
+      address: contract.address,
+      abi: contract.abi,
+      functionName: 'isAdmin',
+      args: [account],
+    });
+
+    if (!isAdmin) {
+      throw new Error("Only admins can remove members");
+    }
+
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'removeDAOMember',
       args: [memberAddress],
       account,
-    })
-    console.log("Remove member transaction:", hash)
-    return hash
+    });
+
+    console.log("Remove member transaction:", hash);
+    return hash;
   } catch (error) {
-    console.error("Error in removeDAOMember:", error)
-    throw new Error(`Failed to remove member: ${error.message}`)
+    console.error("Error in removeDAOMember:", error);
+    throw new Error(error.message || "Failed to remove member");
   }
 }
 

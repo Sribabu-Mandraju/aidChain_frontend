@@ -81,13 +81,33 @@ export const removeDAOMember = createAsyncThunk(
   'daoMembers/removeDAOMember',
   async ({ address, connectedAddress }, { rejectWithValue }) => {
     try {
-      const contract = getWriteDaoContract();
-      if (!contract || !contract.publicClient || !contract.walletClient) {
-        throw new Error("DAO contract, public client, or wallet client not available");
+      // First check if the member exists
+      const readContract = getReadDaoContract();
+      if (!readContract || !readContract.publicClient) {
+        throw new Error("DAO contract or public client not available");
       }
 
+      const isMember = await readContract.publicClient.readContract({
+        address: readContract.address,
+        abi: readContract.abi,
+        functionName: 'isDAOMember',
+        args: [address],
+      });
+
+      if (!isMember) {
+        throw new Error("Address is not a DAO member");
+      }
+
+      // Get write contract
+      const contract = await getWriteDaoContract();
+      if (!contract || !contract.walletClient || !contract.publicClient) {
+        throw new Error("DAO contract or clients not available");
+      }
+
+      // Check if the caller is an admin
       const isAdmin = await contract.publicClient.readContract({
-        ...contract,
+        address: contract.address,
+        abi: contract.abi,
         functionName: 'isAdmin',
         args: [connectedAddress],
       });
@@ -96,15 +116,23 @@ export const removeDAOMember = createAsyncThunk(
         throw new Error("Only admins can remove members");
       }
 
+      // Get the connected account
+      const [account] = await contract.walletClient.getAddresses();
+      if (!account) {
+        throw new Error("No account connected");
+      }
+
+      // Remove the member
       const hash = await contract.walletClient.writeContract({
-        ...contract,
+        address: contract.address,
+        abi: contract.abi,
         functionName: 'removeDAOMember',
         args: [address],
-        account: connectedAddress,
+        account,
       });
 
+      // Wait for transaction receipt
       const receipt = await contract.publicClient.waitForTransactionReceipt({ hash });
-
       if (receipt.status !== 'success') {
         throw new Error(`Transaction failed. Status: ${receipt.status}`);
       }
