@@ -1,8 +1,12 @@
 import React from 'react';
 import { Shield, Zap, BarChart3, Award, Heart, Globe2, Users, Target, Clock, HandHeart, Lightbulb, Trophy } from 'lucide-react';
 import MissionImage from '../../assets/about/logo.png'; // Import the local image
+import { useSelector } from 'react-redux';
 
 function About() {
+  const campaigns = useSelector((state) => state.campaigns.campaigns);
+  console.log(campaigns);
+
   const features = [
     {
       icon: <Shield className="w-6 h-6 text-white" />,
