@@ -19,7 +19,7 @@ const ProposalCard = ({ proposal, onViewDetails, index }) => {
         <img
           src={proposal.image || "/placeholder.svg"}
           alt={proposal.disasterName}
-          className="w-full h-full object-cover mix-blend-overlay"
+          className="w-full h-full object-cover "
         />
         <div className="absolute top-3 right-3">
           <span

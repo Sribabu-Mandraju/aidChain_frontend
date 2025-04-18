@@ -32,6 +32,20 @@ const DonationSection = () => {
     return Math.floor(num * 1000000);
   };
 
+  // Format funds requested to dollars
+  const formatFundsRequested = (amount) => {
+    if (!amount) return '0';
+    // Convert from scientific notation to regular number
+    const num = Number(amount);
+    // Format as currency with 2 decimal places
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(num * 1e12); // Multiply by 1e12 to convert from scientific notation
+  };
+
   // Handle wallet connection
   const handleConnectWallet = async () => {
     try {
@@ -198,7 +212,7 @@ const DonationSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className=" rounded-3xl p-8 sm:p-12 border border-green-100"
+          className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 sm:p-12 shadow-2xl border border-green-100"
         >
           <div className="text-center mb-16">
             <motion.div
@@ -262,18 +276,18 @@ const DonationSection = () => {
               </motion.button>
             </div>
           ) : (
-            <div className="max-w-lg mx-auto  space-y-8">
+            <div className="max-w-lg mx-auto space-y-8">
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-r  bg-white from-green-50 to-emerald-50 p-8 rounded-2xl border border-green-100 shadow-lg"
+                className="bg-gradient-to-r from-green-50 to-emerald-50 p-8 rounded-2xl border border-green-100 shadow-lg"
               >
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-2xl font-semibold text-gray-900">Current Escrow Balance</h3>
                   <Gift className="w-8 h-8 text-green-600" />
                 </div>
                 <p className="text-4xl font-bold text-green-600 mb-2">
-                  {balance ? `${formatBalance(balance)} USDC` : 'Loading...'}
+                  {balance ? formatFundsRequested(balance) : 'Loading...'}
                 </p>
                 {isDonorStatus && (
                   <motion.div 
