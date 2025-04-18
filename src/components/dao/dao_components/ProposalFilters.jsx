@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 const ProposalFilters = ({ filter, setFilter, searchTerm, setSearchTerm }) => {
-  const filterOptions = ["All", "Active", "Urgent", "Completed"];
+  const filterOptions = ["All", "Active", "Passed", "Rejected"];
 
   return (
     <motion.div

@@ -16,6 +16,7 @@ const ProposalTable = ({ onViewDetails }) => {
   const loading = useSelector(selectProposalsLoading);
   const error = useSelector(selectProposalsError);
   const lastFetchTime = useSelector(selectProposalsLastFetchTime);
+  const [stateFilter, setStateFilter] = useState('all');
 
   // Fetch proposals only if they don't exist in Redux
   useEffect(() => {
@@ -32,6 +33,11 @@ const ProposalTable = ({ onViewDetails }) => {
       toast.error(`Failed to refresh proposals: ${error}`);
     }
   };
+
+  const filteredProposals = proposals.filter(proposal => {
+    if (stateFilter === 'all') return true;
+    return proposal.state === stateFilter;
+  });
 
   if (loading && !proposals.length) {
     return (
@@ -55,7 +61,7 @@ const ProposalTable = ({ onViewDetails }) => {
     );
   }
 
-  if (proposals.length === 0) {
+  if (filteredProposals.length === 0) {
     return (
       <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-8 text-center">
         <p className="text-gray-500 text-lg">
@@ -104,7 +110,19 @@ const ProposalTable = ({ onViewDetails }) => {
       />
 
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">Proposals</h2>
+        <div className="flex items-center space-x-4">
+          <h2 className="text-xl font-semibold text-gray-800">Proposals</h2>
+          <select
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            className="px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="all">All States</option>
+            <option value="Active">Active</option>
+            <option value="Passed">Passed</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
         <button
           onClick={handleRefresh}
           className="flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
@@ -191,7 +209,7 @@ const ProposalTable = ({ onViewDetails }) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {proposals.map((proposal) => {
+            {filteredProposals.map((proposal) => {
               const timeLeft = calculateTimeLeft(proposal.endTime);
 
               return (
@@ -264,7 +282,7 @@ const ProposalTable = ({ onViewDetails }) => {
 
       {/* Mobile Card View */}
       <div className="md:hidden grid grid-cols-1 gap-4">
-        {proposals.map((proposal, index) => (
+        {filteredProposals.map((proposal, index) => (
           <ProposalCard
             key={proposal.id}
             proposal={proposal}
@@ -277,4 +295,4 @@ const ProposalTable = ({ onViewDetails }) => {
   );
 };
 
-export default ProposalTable;
+export default ProposalTable; 

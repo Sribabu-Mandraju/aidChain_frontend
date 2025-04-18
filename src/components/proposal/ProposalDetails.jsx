@@ -6,6 +6,8 @@ import { motion } from "framer-motion"
 import { ArrowLeft, Loader, AlertCircle } from "lucide-react"
 import { getReadDaoContract, getWriteDaoContract } from "../../providers/dao_provider"
 import { formatEther } from "viem"
+import { useSelector, useDispatch } from "react-redux"
+import { fetchProposals } from "../../store/slices/proposalsListSlice"
 
 // Import components
 import ProposalHeader from "./proposal_components/ProposalHeader"
@@ -27,6 +29,7 @@ const DEFAULT_ELIGIBILITY_CRITERIA = [
 const ProposalDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const [proposal, setProposal] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -35,6 +38,11 @@ const ProposalDetails = () => {
   const [showAllVoters, setShowAllVoters] = useState(false)
   const [userAddress, setUserAddress] = useState(null)
   const [voters, setVoters] = useState([])
+
+  // Get proposals from Redux store
+  const proposals = useSelector((state) => state.proposalsList.proposals)
+  const proposalsLoading = useSelector((state) => state.proposalsList.loading)
+  const proposalsError = useSelector((state) => state.proposalsList.error)
 
   // Connect wallet
   useEffect(() => {
@@ -96,25 +104,24 @@ const ProposalDetails = () => {
     }
   }
 
-  // Fetch proposal data
+  // Fetch proposal data from Redux
   useEffect(() => {
-    const fetchProposalFromChain = async () => {
+    const fetchProposalFromRedux = async () => {
       if (!id) return
 
       setLoading(true)
       try {
-        const contract = getReadDaoContract()
-        const [proposalData, totalMembers] = await Promise.all([
-          contract.publicClient.readContract({
-            ...contract,
-            functionName: "getProposal",
-            args: [BigInt(id)],
-          }),
-          contract.publicClient.readContract({
-            ...contract,
-            functionName: "memberCount",
-          }),
-        ])
+        // If proposals are not in Redux, fetch them
+        if (!proposals.length && !proposalsLoading) {
+          await dispatch(fetchProposals()).unwrap()
+        }
+
+        // Find the proposal in Redux store
+        const proposalData = proposals.find(p => p.id === Number(id))
+        
+        if (!proposalData) {
+          throw new Error("Proposal not found")
+        }
 
         const startTimeMs = Number(proposalData.startTime) * 1000
         const endTimeMs = Number(proposalData.endTime) * 1000
@@ -136,22 +143,22 @@ const ProposalDetails = () => {
           proposer: proposalData.proposer,
           disasterName: proposalData.disasterName,
           description: proposalData.description || "Disaster Relief Proposal",
-          area: `${proposalData.location.country}, ${proposalData.location.state}, ${proposalData.location.city}`,
+          area: proposalData.area,
           location: {
-            latitude: Number(proposalData.location.latitude) || 0,
-            longitude: Number(proposalData.location.longitude) || 0,
-            radius: Number(proposalData.location.radius) || 10,
+            latitude: Number(proposalData.location?.latitude) || 0,
+            longitude: Number(proposalData.location?.longitude) || 0,
+            radius: Number(proposalData.location?.radius) || 10,
           },
-          fundsRequested: Number(formatEther(proposalData.fundsRequested)),
+          fundsRequested: Number(proposalData.fundsRequested),
           startTime: startTimeMs,
           endTime: endTimeMs,
           registrationPeriod,
           claimingPeriod,
           forVotes: Number(proposalData.forVotes),
           againstVotes: Number(proposalData.againstVotes),
-          totalDaoMembers: Number(totalMembers),
+          totalDaoMembers: Number(proposalData.totalDaoMembers) || 0,
           image: proposalData.image || "https://images.unsplash.com/photo-1542393545-10f5b85e14fc",
-          state: Number(proposalData.state),
+          state: proposalData.state,
           eligibilityCriteria: proposalData.eligibilityCriteria || DEFAULT_ELIGIBILITY_CRITERIA,
         }
 
@@ -164,8 +171,8 @@ const ProposalDetails = () => {
         setLoading(false)
       }
     }
-    fetchProposalFromChain()
-  }, [id])
+    fetchProposalFromRedux()
+  }, [id, proposals, proposalsLoading, dispatch])
 
   // Poll proposal state every 30 seconds
   useEffect(() => {

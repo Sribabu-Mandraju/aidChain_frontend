@@ -351,12 +351,12 @@ const DAO = () => {
         <DAOActions />
 
         {/* Filters */}
-        <ProposalFilters
+        {/* <ProposalFilters
           filter={filter}
           setFilter={setFilter}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-        />
+        /> */}
 
         {/* Proposals Table */}
         <motion.div

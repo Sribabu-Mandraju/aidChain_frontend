@@ -69,6 +69,9 @@ const initialState = {
   loading: false,
   error: null,
   lastFetchTime: null,
+  filter: "All",
+  searchTerm: "",
+  hasData: false
 }
 
 // Create slice
@@ -76,12 +79,23 @@ const proposalsListSlice = createSlice({
   name: "proposalsList",
   initialState,
   reducers: {
+    setFilter: (state, action) => {
+      if (["All", "Active", "Passed", "Rejected"].includes(action.payload)) {
+        state.filter = action.payload
+      }
+    },
+    setSearchTerm: (state, action) => {
+      state.searchTerm = action.payload
+    },
     clearProposals: (state) => {
       state.proposals = []
       state.loading = false
       state.error = null
       state.lastFetchTime = null
-    },
+      state.filter = "All"
+      state.searchTerm = ""
+      state.hasData = false
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -90,25 +104,57 @@ const proposalsListSlice = createSlice({
         state.error = null
       })
       .addCase(fetchProposals.fulfilled, (state, action) => {
-        state.proposals = action.payload
         state.loading = false
-        state.error = null
+        state.proposals = action.payload
         state.lastFetchTime = Date.now()
+        state.hasData = action.payload.length > 0
       })
       .addCase(fetchProposals.rejected, (state, action) => {
         state.loading = false
         state.error = action.payload
+        state.hasData = false
       })
   },
 })
 
 // Export actions
-export const { clearProposals } = proposalsListSlice.actions
+export const { setFilter, setSearchTerm, clearProposals } = proposalsListSlice.actions
 
 // Export selectors
 export const selectProposals = (state) => state.proposalsList.proposals
 export const selectProposalsLoading = (state) => state.proposalsList.loading
 export const selectProposalsError = (state) => state.proposalsList.error
 export const selectProposalsLastFetchTime = (state) => state.proposalsList.lastFetchTime
+export const selectCurrentFilter = (state) => state.proposalsList.filter
+export const selectSearchTerm = (state) => state.proposalsList.searchTerm
+export const selectHasProposals = (state) => state.proposalsList.hasData
+
+export const selectFilteredProposals = (state) => {
+  const proposals = state.proposalsList.proposals || []
+  const filter = state.proposalsList.filter || "All"
+  const searchTerm = state.proposalsList.searchTerm || ""
+  
+  return proposals.filter(proposal => {
+    // Apply filter based on proposal.state
+    if (filter !== "All") {
+      if (filter === "Active" && proposal.state !== "Active") return false
+      if (filter === "Passed" && proposal.state !== "Passed") return false
+      if (filter === "Rejected" && proposal.state !== "Rejected") return false
+    }
+    
+    // Apply search
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase()
+      return (
+        proposal.disasterName.toLowerCase().includes(searchLower) ||
+        proposal.area.toLowerCase().includes(searchLower) ||
+        proposal.proposer.toLowerCase().includes(searchLower) ||
+        proposal.id.toString().includes(searchLower)
+      )
+    }
+    
+    return true
+  })
+}
 
 export default proposalsListSlice.reducer 
