@@ -31,8 +31,6 @@ const Hero = () => {
 
   const handleDonateClick = () => {
     navigate("/donation");
-    // Placeholder for donation functionality
-    alert("Redirecting to donation page...");
   };
 
   const handleLearnMoreClick = () => {

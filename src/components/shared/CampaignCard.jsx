@@ -403,16 +403,8 @@ const CampaignCard = ({ campaign, index }) => {
           <div className="space-y-4">
             <div className="mb-4 p-4 bg-green-50 rounded-lg">
               <p className="text-sm text-gray-600">
-                Wallet: {formatAddress(address)}
+                Current Escrow Balance: {balance ? `${formatBalance(balance)} USDC` : 'Loading...'}
               </p>
-              <p className="text-sm text-gray-600">
-                USDC Balance: {formatBalance(balance)} USDC
-              </p>
-              {isDonorStatus && (
-                <p className="text-sm text-green-600 mt-1">
-                  You are a verified donor! Thank you for your support.
-                </p>
-              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

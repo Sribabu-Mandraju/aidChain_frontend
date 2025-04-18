@@ -12,7 +12,7 @@ import DAOActions from "./dao_components/DAOActions";
 import { useNavigate } from "react-router-dom";
 import { formatAddress } from "../../utils/dao_helper";
 import { useSelector } from "react-redux";
-import { getReadFundEscrowContract } from "../../providers/fund_escrow_provider";
+import { getReadFundEscrowContract, getBalance } from "../../providers/fund_escrow_provider";
 import { formatEther } from "viem";
 import { getReadDaoContract } from "../../providers/dao_provider";
 
@@ -34,16 +34,22 @@ const DAO = () => {
   const [totalFundsAllocated, setTotalFundsAllocated] = useState("0");
   const proposalsData = useSelector((state) => state.proposalsList.proposals)
 
+  // Format balance for display (similar to DonateForm)
+  const formatBalance = (balance) => {
+    return (Number(balance) / 1000000).toFixed(2);
+  };
+
   // Fetch treasury balance from the fund escrow contract
   useEffect(() => {
     const fetchTreasuryBalance = async () => {
       try {
-        const { publicClient, address, abi } = getReadFundEscrowContract();
-        const balance = await publicClient.getBalance({ address });
-        const formattedBalance = formatEther(balance);
-        setTreasuryBalance(formattedBalance);
+        console.log("Fetching treasury balance...");
+        const balance = await getBalance();
+        console.log("Raw treasury balance:", balance);
+        setTreasuryBalance(balance);
       } catch (error) {
         console.error("Error fetching treasury balance:", error);
+        setTreasuryBalance("0");
       }
     };
 
@@ -242,7 +248,7 @@ const DAO = () => {
       },
       {
         label: "Treasury Balance",
-        value: `$${Number(treasuryBalance).toFixed(2)}`,
+        value: `$${treasuryBalance ? formatBalance(treasuryBalance) : '0.00'} USDC`,
         icon: (
           <svg
             className="w-6 h-6 text-yellow-600"

@@ -10,7 +10,6 @@ import VictimRegistrationPage from "./components/victim_registration/VictimReges
 import NFTDetails from "./components/nft/NFTDetails";
 import WalletDetails from "./components/wallet/WalletDetails";
 import DonateDetails from "./components/donate/DonateDetails";
-import TreasuryDetails from "./components/treasury/TreasuryDetails";
 import ProposalPage from "./pages/PROPOSAL/ProposalPage";
 import SimpleAadhaarLogin from "./components/victim_registration/SS";
 import DonationPage from "./pages/DONATION/DonationPage";
@@ -25,7 +24,6 @@ const App = () => {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/dao" element={<DaoPage />} />
         <Route path="/dao/new-proposal" element={<AddProposalPage />} />
-        <Route path="/dao/treasury" element={<TreasuryDetails />} />
         <Route path="/campaigns" element={<CampaignsPage />} />
 
         <Route path="/victim-registration/:id" element={<VictimRegistrationPage />} />

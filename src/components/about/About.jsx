@@ -2,9 +2,11 @@ import React from 'react';
 import { Shield, Zap, BarChart3, Award, Heart, Globe2, Users, Target, Clock, HandHeart, Lightbulb, Trophy } from 'lucide-react';
 import MissionImage from '../../assets/about/logo.png'; // Import the local image
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 function About() {
   const campaigns = useSelector((state) => state.campaigns.campaigns);
+  const navigate = useNavigate();
   console.log(campaigns);
 
   const features = [
@@ -93,19 +95,6 @@ function About() {
       icon: <Lightbulb className="w-6 h-6 text-emerald-500" />,
       title: "Innovation",
       description: "Using technology to maximize impact."
-    }
-  ];
-
-  const recognitions = [
-    {
-      icon: <Trophy className="w-8 h-8 text-emerald-500" />,
-      title: "Best Social Impact Project 2023",
-      organization: "Global Blockchain Summit"
-    },
-    {
-      icon: <Award className="w-8 h-8 text-emerald-500" />,
-      title: "Innovation in Aid Distribution",
-      organization: "Tech for Good Awards"
     }
   ];
 
@@ -296,33 +285,6 @@ function About() {
         </div>
       </section>
 
-      {/* Recognition Section */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Recognition</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Our efforts in revolutionizing disaster relief have been recognized globally.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {recognitions.map((recognition, index) => (
-              <div key={index} className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 flex items-center space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
-                    {recognition.icon}
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-1">{recognition.title}</h3>
-                  <p className="text-gray-600">{recognition.organization}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Call to Action */}
       <section className="py-20 bg-gradient-to-b from-emerald-50 to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -332,10 +294,16 @@ function About() {
             Join our community of changemakers today.
           </p>
           <div className="flex justify-center space-x-4">
-            <button className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-semibold rounded-full hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-1">
+            <button 
+              onClick={() => navigate('/donation')}
+              className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-500 text-white font-semibold rounded-full hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:-translate-y-1"
+            >
               Get Involved
             </button>
-            <button className="px-8 py-4 bg-white text-emerald-600 font-semibold rounded-full border-2 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-300 hover:-translate-y-1">
+            <button 
+              onClick={() => navigate('/about')}
+              className="px-8 py-4 bg-white text-emerald-600 font-semibold rounded-full border-2 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-300 hover:-translate-y-1"
+            >
               Learn More
             </button>
           </div>
