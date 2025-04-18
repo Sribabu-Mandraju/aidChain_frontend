@@ -12,6 +12,9 @@ import DAOActions from "./dao_components/DAOActions";
 import { useNavigate } from "react-router-dom";
 import { formatAddress } from "../../utils/dao_helper";
 import { useSelector } from "react-redux";
+import { getReadFundEscrowContract } from "../../providers/fund_escrow_provider";
+import { formatEther } from "viem";
+import { getReadDaoContract } from "../../providers/dao_provider";
 
 
 const DAO = () => {
@@ -25,8 +28,64 @@ const DAO = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [members, setMembers] = useState([]);
   const [daoStats, setDaoStats] = useState([]);
+  const [treasuryBalance, setTreasuryBalance] = useState("0");
+  const [totalMembers, setTotalMembers] = useState("0");
+  const [activeProposals, setActiveProposals] = useState("0");
+  const [totalFundsAllocated, setTotalFundsAllocated] = useState("0");
   const proposalsData = useSelector((state) => state.proposalsList.proposals)
-  console.log(proposalsData)
+
+  // Fetch treasury balance from the fund escrow contract
+  useEffect(() => {
+    const fetchTreasuryBalance = async () => {
+      try {
+        const { publicClient, address, abi } = getReadFundEscrowContract();
+        const balance = await publicClient.getBalance({ address });
+        const formattedBalance = formatEther(balance);
+        setTreasuryBalance(formattedBalance);
+      } catch (error) {
+        console.error("Error fetching treasury balance:", error);
+      }
+    };
+
+    fetchTreasuryBalance();
+  }, []);
+
+  // Fetch DAO stats
+  useEffect(() => {
+    const fetchDaoStats = async () => {
+      try {
+        const { publicClient, address, abi } = getReadDaoContract();
+        
+        // Get total members
+        const members = await publicClient.readContract({
+          address,
+          abi,
+          functionName: "memberCount",
+        });
+        setTotalMembers(members.toString());
+
+        // Get total proposals
+        const proposals = await publicClient.readContract({
+          address,
+          abi,
+          functionName: "proposalCount",
+        });
+        setActiveProposals(proposals.toString());
+
+        // Calculate total funds allocated from proposals
+        if (proposalsData && proposalsData.length > 0) {
+          const total = proposalsData.reduce((sum, proposal) => {
+            return sum + Number(proposal.fundsRequested);
+          }, 0);
+          setTotalFundsAllocated(total.toFixed(2));
+        }
+      } catch (error) {
+        console.error("Error fetching DAO stats:", error);
+      }
+    };
+
+    fetchDaoStats();
+  }, [proposalsData]);
 
   // Mock data - in a real app, this would come from your blockchain connection
   useEffect(() => {
@@ -131,11 +190,17 @@ const DAO = () => {
       },
     ];
 
-    // Mock DAO stats
+    setProposals(mockProposals);
+    setFilteredProposals(mockProposals);
+    setMembers(mockMembers);
+  }, []);
+
+  // Update DAO stats whenever the values change
+  useEffect(() => {
     const mockStats = [
       {
         label: "Total Members",
-        value: mockMembers.length,
+        value: totalMembers,
         icon: (
           <svg
             className="w-6 h-6 text-blue-600"
@@ -148,16 +213,15 @@ const DAO = () => {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="2"
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 4a2 2 0 11-4 0 2 2 0 014 0z"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
             ></path>
           </svg>
         ),
         bgColor: "bg-blue-100",
-        // change: 12,
       },
       {
         label: "Active Proposals",
-        value: mockProposals.filter((p) => p.state === "Active").length,
+        value: activeProposals,
         icon: (
           <svg
             className="w-6 h-6 text-green-600"
@@ -175,11 +239,10 @@ const DAO = () => {
           </svg>
         ),
         bgColor: "bg-green-100",
-        // change: 8,
       },
       {
         label: "Treasury Balance",
-        value: "$1,250,000",
+        value: `$${Number(treasuryBalance).toFixed(2)}`,
         icon: (
           <svg
             className="w-6 h-6 text-yellow-600"
@@ -197,11 +260,10 @@ const DAO = () => {
           </svg>
         ),
         bgColor: "bg-yellow-100",
-        // change: 5,
       },
       {
         label: "Total Funds Allocated",
-        value: "$850,000",
+        value: `$${totalFundsAllocated}`,
         icon: (
           <svg
             className="w-6 h-6 text-purple-600"
@@ -219,15 +281,11 @@ const DAO = () => {
           </svg>
         ),
         bgColor: "bg-purple-100",
-        // change: -3,
       },
     ];
 
-    setProposals(mockProposals);
-    setFilteredProposals(mockProposals);
-    setMembers(mockMembers);
     setDaoStats(mockStats);
-  }, []);
+  }, [totalMembers, activeProposals, treasuryBalance, totalFundsAllocated]);
 
   // Filter proposals based on state and search term
   useEffect(() => {

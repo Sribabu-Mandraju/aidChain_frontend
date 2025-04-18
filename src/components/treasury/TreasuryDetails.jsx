@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Navbar from "../home/Navbar";
 import Footer from "../home/Footer";
-import { getBalance } from "../../providers/fund_escrow_provider";
+import { ethers } from "ethers";
 
 const LearnMoreDetails = () => {
   const [treasuryAmount, setTreasuryAmount] = useState("0");
@@ -12,15 +12,19 @@ const LearnMoreDetails = () => {
   useEffect(() => {
     const fetchTreasuryData = async () => {
       try {
+        // Replace with your actual contract address and ABI
+        const contractAddress = "YOUR_CONTRACT_ADDRESS";
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const contract = new ethers.Contract(contractAddress, YOUR_ABI, provider);
+        
         // Get treasury balance
-        const balance = await getBalance();
-        // Convert from wei to USDC (6 decimals)
-        const formattedBalance = (Number(balance) / 1e6).toFixed(2);
+        const balance = await contract.getTreasuryBalance();
+        const formattedBalance = ethers.utils.formatEther(balance);
         setTreasuryAmount(formattedBalance);
 
-        // For now, we'll set USD value same as USDC amount
-        // In future, you can integrate with a price feed if needed
-        setUsdValue(formattedBalance);
+        // Get USD value (you'll need to implement this based on your price feed)
+        const usdValue = await contract.getTreasuryUSDValue();
+        setUsdValue(usdValue);
 
         setLoading(false);
       } catch (error) {
@@ -101,20 +105,7 @@ const LearnMoreDetails = () => {
                 transition={{ duration: 0.6 }}
                 className="w-full md:w-1/2"
               >
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white p-4 rounded-lg shadow border border-gray-100">
-                    <h4 className="text-sm font-medium text-gray-600">Total Donations</h4>
-                    <p className="mt-2 text-xl font-semibold text-green-600">
-                      {loading ? "..." : "1,234"}
-                    </p>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg shadow border border-gray-100">
-                    <h4 className="text-sm font-medium text-gray-600">Active Proposals</h4>
-                    <p className="mt-2 text-xl font-semibold text-green-600">
-                      {loading ? "..." : "45"}
-                    </p>
-                  </div>
-                </div>
+                {/* Removed the grid with Total Donations and Active Proposals boxes */}
               </motion.div>
             </div>
           </div>

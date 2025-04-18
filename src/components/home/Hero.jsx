@@ -30,6 +30,7 @@ const Hero = () => {
   }, []);
 
   const handleDonateClick = () => {
+    navigate("/donation");
     // Placeholder for donation functionality
     alert("Redirecting to donation page...");
   };
@@ -92,7 +93,7 @@ const Hero = () => {
 
             <p className="text-lg text-gray-600 leading-relaxed max-w-2xl">
               Join our global movement to provide immediate relief and long-term
-              recovery support to communities affected by natural disasters.
+              recovery support to people affected by natural disasters.
               Every contribution makes a difference.
             </p>
 
