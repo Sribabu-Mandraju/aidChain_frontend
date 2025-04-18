@@ -249,21 +249,49 @@ export const donate = async (contractAddress, usdcAddress, amount, walletClient)
   }
 };
 
-export const registerAsVictim = async (contractAddress, zkProof, walletClient) => {
+export const registerAsVictim = async (
+  contractAddress,
+  nullifierSeed,
+  nullifier,
+  timestamp,
+  dataToReveal,
+  groth16Proof,
+  walletClient
+) => {
   try {
     const contract = await getWriteDisasterReliefContract(contractAddress, walletClient);
+    
+    // Prepare the arguments array in the correct order
+    const args = [
+      nullifierSeed,
+      nullifier,
+      timestamp,
+      dataToReveal,
+      groth16Proof
+    ];
+
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
       abi: contract.abi,
       functionName: 'registerAsVictim',
-      args: [zkProof],
+      args: args,
       account: contract.account,
     });
+
     console.log("Victim registration transaction submitted:", hash);
     return hash;
   } catch (error) {
     console.error("Error in registerAsVictim:", error);
-    throw new Error(`Failed to register as victim: ${error.message}`);
+    // Handle specific contract errors
+    if (error.message.includes("Registrations Not started")) {
+      throw new Error("Registration period has not started yet");
+    } else if (error.message.includes("Already registered")) {
+      throw new Error("You have already registered as a victim");
+    } else if (error.message.includes("Invalid proof")) {
+      throw new Error("Invalid Aadhaar proof provided");
+    } else {
+      throw new Error(`Failed to register as victim: ${error.message}`);
+    }
   }
 };
 
