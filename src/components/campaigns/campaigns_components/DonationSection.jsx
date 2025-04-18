@@ -43,7 +43,7 @@ const DonationSection = () => {
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    }).format(num * 1e12); // Multiply by 1e12 to convert from scientific notation
+    }).format(num *1e-6); // Multiply by 1e12 to convert from scientific notation
   };
 
   // Handle wallet connection

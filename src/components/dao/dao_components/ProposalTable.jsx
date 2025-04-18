@@ -232,8 +232,8 @@ const ProposalTable = ({ onViewDetails }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {formatAddress(proposal.proposer)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatCurrency(proposal.fundsRequested)}
+                  <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-900">
+                    ${proposal.fundsRequested*1e12 || 0}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {proposal.state === "Passed" || proposal.state === "Rejected" ? "Ended" : timeLeft}
