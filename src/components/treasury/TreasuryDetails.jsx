@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Navbar from "../home/Navbar";
 import Footer from "../home/Footer";
-import { ethers } from "ethers";
+import { getBalance } from "../../providers/fund_escrow_provider";
 
 const LearnMoreDetails = () => {
   const [treasuryAmount, setTreasuryAmount] = useState("0");
@@ -12,19 +12,15 @@ const LearnMoreDetails = () => {
   useEffect(() => {
     const fetchTreasuryData = async () => {
       try {
-        // Replace with your actual contract address and ABI
-        const contractAddress = "YOUR_CONTRACT_ADDRESS";
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const contract = new ethers.Contract(contractAddress, YOUR_ABI, provider);
-        
         // Get treasury balance
-        const balance = await contract.getTreasuryBalance();
-        const formattedBalance = ethers.utils.formatEther(balance);
+        const balance = await getBalance();
+        // Convert from wei to USDC (6 decimals)
+        const formattedBalance = (Number(balance) / 1e6).toFixed(2);
         setTreasuryAmount(formattedBalance);
 
-        // Get USD value (you'll need to implement this based on your price feed)
-        const usdValue = await contract.getTreasuryUSDValue();
-        setUsdValue(usdValue);
+        // For now, we'll set USD value same as USDC amount
+        // In future, you can integrate with a price feed if needed
+        setUsdValue(formattedBalance);
 
         setLoading(false);
       } catch (error) {
