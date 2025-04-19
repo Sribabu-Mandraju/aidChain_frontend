@@ -25,10 +25,10 @@ KarunyaSetu solves the inefficiencies, corruption, and delays in traditional dis
 `HashMinds`
 
 ### Team Members:  
-- Nandeesh ([Twitter](https://twitter.com/0x02Auditor)) – Smart Contracts, DAO Governance  
-- Sribabu ([Twitter](https://x.com/5R1B4BU)) – Full Stack UI/UX & React  
+- Nandeesh aka 0x02AUDITOR ([Twitter](https://x.com/0x02Auditor)) – Smart Contracts, DAO Governance  
+- Sribabu aka 5T3113E_10RD ([Twitter](https://x.com/5R1B4BU)) – Full Stack Web3 Developer
 - Bhanu Teja ([Twitter](https://x.com/BhanuTe56789860)) – Backend Integration
-- Umesh Chandra ([Twitter](https://twitter.com/UmeshChandra)) – Frontend/Backend Integration
+- Umesh Chandra ([Twitter](https://x.com/0x_u1a01)) – Frontend/Backend Integration
 
 ### Your Approach:  
 - **Why this problem?**: We were deeply moved by the inefficiencies and tragedies caused by delays in disaster relief, especially during events like floods, fires, and cyclones. The lack of transparency and the exploitation of relief funds inspired us to reimagine the entire system — one where trust is automated, and help reaches those who truly need it.  
