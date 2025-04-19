@@ -1,6 +1,6 @@
-# 🌪️ KarunyaSetu: Decentralized Disaster Relief Protocol
+#  KarunyaSetu: Decentralized Disaster Relief Protocol
 
-![KarunyaSetu Logo](![alt text](image-1.png)) 
+![alt text](image-1.png)) 
 
 ## Introduction
 
@@ -125,12 +125,17 @@ KarunyaSetu runs on **EVM-compatible testnets**.
 
 ## 📸 Screenshots
 
-> Add screenshots like landing page, DAO voting interface, and campaign status.
+![Web App](https://github.com/user-attachments/assets/cc717ce9-ea7d-4ed2-beee-2f8f1dc6e6b4)  
+**Web App**: The main interface of KarunyaSetu, where users can create campaigns, donate, and track relief efforts in real time.
 
-![Landing Page](images/landing-page.png)
-![Hero Section](images/hero-section.png)
-![DAO Flow](images/flow-diagram.png)
-![Team](images/team.png)
+![About](https://github.com/user-attachments/assets/4c9e074f-19ae-498b-8f97-3650eed6c8c4)  
+**About**: Learn about KarunyaSetu's mission to provide fast, transparent, and decentralized disaster relief with no middlemen.
+
+![Flow](https://github.com/user-attachments/assets/36cdeda9-030c-44f1-b51a-0df23f9c16ac)  
+**DAO Flow**: A visual representation of the decentralized governance process, from campaign proposal to fund distribution.
+
+![Team](images/team.png)  
+**Team**: Meet the dedicated contributors behind KarunyaSetu, driving innovation in disaster relief.
 
 ## 🎯 Join the KarunyaSetu Movement
 
