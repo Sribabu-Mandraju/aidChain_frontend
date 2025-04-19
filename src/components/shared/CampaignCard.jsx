@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, memo } from "react"
+import { useState, useEffect, useRef, memo, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   DollarSign,
@@ -46,7 +46,7 @@ import { baseSepolia } from "viem/chains"
 import { toast } from "react-hot-toast"
 import CampaignDetailsModal from "./campaignCard_components/CampaignDetailsModal"
 
-// Memoized DonationModal component to prevent unnecessary re-renders
+// Memoized DonationModalContent component to prevent unnecessary re-renders
 const DonationModalContent = memo(
   ({
     campaign,
@@ -442,15 +442,15 @@ const CampaignCard = ({ campaign, index }) => {
     }
   }
 
-  // Handle donation amount change with validation
-  const handleDonationAmountChange = (e) => {
+  // Update the handleDonationAmountChange function to use useCallback
+  const handleDonationAmountChange = useCallback((e) => {
     const value = e.target.value
-
+    
     // Only allow numbers and a single decimal point
     if (value === "" || /^\d*\.?\d*$/.test(value)) {
       setDonationAmount(value)
     }
-  }
+  }, [])
 
   // Handle donation
   const handleDonate = async () => {
@@ -479,18 +479,18 @@ const CampaignCard = ({ campaign, index }) => {
           success: "Donation submitted!",
           error: (error) => {
             if (error.message.includes("insufficient funds")) {
-              return "Insufficient funds for gas fee"
+              return "Insufficient funds for gas"
             }
             if (error.message.includes("user rejected")) {
-              return "Transaction rejected by user"
+              return "Transaction rejected"
             }
             if (error.message.includes("SafeERC20")) {
-              return "USDC transfer failed. Please try approving the contract first."
+              return "USDC transfer failed"
             }
             if (error.message.includes("gas")) {
-              return "Failed to estimate gas. Please try again."
+              return "Failed to estimate gas"
             }
-            return `Donation failed: ${error.message}`
+            return "Donation failed"
           },
         },
       )
@@ -511,7 +511,7 @@ const CampaignCard = ({ campaign, index }) => {
             </a>
           </div>
         ),
-        error: "Donation failed to confirm.",
+        error: "Donation failed to confirm",
       })
 
       // Update donor status and balance
@@ -523,7 +523,7 @@ const CampaignCard = ({ campaign, index }) => {
       setIsDonorStatus(donorStatus)
       setBalance(newBalance)
       setDonationAmount("")
-      setSuccess(`Thank you for your ${donationAmount} USDC donation to ${campaign.title}!`)
+      setSuccess(`Thank you for your ${donationAmount} USDC donation!`)
       setTimeout(() => {
         setIsDonateModalOpen(false)
         setSuccess("")
@@ -532,14 +532,14 @@ const CampaignCard = ({ campaign, index }) => {
       console.error("Donation error:", error)
       setError(
         error.message.includes("insufficient funds")
-          ? "Insufficient funds for gas fee"
+          ? "Insufficient funds for gas"
           : error.message.includes("user rejected")
-            ? "Transaction rejected by user"
+            ? "Transaction rejected"
             : error.message.includes("SafeERC20")
-              ? "USDC transfer failed. Please try approving the contract first."
+              ? "USDC transfer failed"
               : error.message.includes("gas")
-                ? "Failed to estimate gas. Please try again."
-                : `Donation failed: ${error.message}`,
+                ? "Failed to estimate gas"
+                : "Donation failed",
       )
     } finally {
       setIsLoading(false)
