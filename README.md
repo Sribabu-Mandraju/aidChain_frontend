@@ -34,6 +34,8 @@ KarunyaSetu solves the inefficiencies, corruption, and delays in traditional dis
 - **Why this problem?**: We were deeply moved by the inefficiencies and tragedies caused by delays in disaster relief, especially during events like floods, fires, and cyclones. The lack of transparency and the exploitation of relief funds inspired us to reimagine the entire system — one where trust is automated, and help reaches those who truly need it.  
 - **Key challenges addressed**: Funds were delayed due to too many manual steps, and fake claims wasted money.Victims couldn’t access help easily, especially without ID or if they didn’t speak English. 
 - **Breakthroughs**: We used ZKadhaar to check location and identity without exposing details.We added DAO voting, built chatbots, and made the whole process automatic with smart contracts.
+- The following diagram illustrates the overall flow of the KarunyaSetu platform and its key components:
+![Project Flow](https://raw.githubusercontent.com/Sribabu-Mandraju/aidChain_frontend/d3fa2957c4aecfecb536228c9a54da1164029fdf/src/assets/KarunyaSetuFlow.png)
 
 ---
 
