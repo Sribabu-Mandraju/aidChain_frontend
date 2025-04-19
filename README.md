@@ -1,6 +1,6 @@
 # 🌐 KarunyaSetu – Decentralized Disaster Relief Fund Platform
 
-![KarunyaSetu Logo](images/logo.png)
+![KarunyaSetu Logo](frontend\src\assets\about\logo.png)
 
 > **Decentralized Compassion at Scale.**  
 > Leveraging Blockchain, DAO, DeFi & ZKProofs to revolutionize how disaster relief reaches those who need it most—without delay, without corruption.
