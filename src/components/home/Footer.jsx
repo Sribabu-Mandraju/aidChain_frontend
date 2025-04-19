@@ -7,6 +7,7 @@ import {
   FaPhone,
   FaMapMarkerAlt,
 } from "react-icons/fa";
+import LogoImage from "../../assets/about/logo.png";
 
 const Footer = () => {
   // Animation variants for sections
@@ -62,9 +63,13 @@ const Footer = () => {
               className="space-y-4"
             >
               <div className="flex items-center space-x-2">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-md"></div>
+                <img
+                  src={LogoImage}
+                  alt="Relief Logo"
+                  className="w-20 h-10 object-cover"
+                />
                 <span className="text-xl font-extrabold text-white">
-                  Relief
+                  KarunyaSetu
                 </span>
               </div>
               <p className="text-sm sm:text-base text-gray-300 leading-relaxed">
@@ -119,22 +124,22 @@ const Footer = () => {
                 <li className="flex items-center gap-3">
                   <FaEnvelope className="text-green-400 w-5 h-5" />
                   <a
-                    href="mailto:support@relief.org"
+                    href="mailto:KarunyaSetu.org"
                     className="text-sm sm:text-base text-gray-300 hover:text-green-400 transition-colors duration-300"
                   >
-                    support@relief.org
+                    KarunyaSetu.org
                   </a>
                 </li>
                 <li className="flex items-center gap-3">
                   <FaPhone className="text-green-400 w-5 h-5" />
                   <span className="text-sm sm:text-base text-gray-300">
-                    +1 (800) 123-4567
+                    +91 6303854428
                   </span>
                 </li>
                 <li className="flex items-center gap-3">
                   <FaMapMarkerAlt className="text-green-400 w-5 h-5" />
                   <span className="text-sm sm:text-base text-gray-300">
-                    Global, Decentralized
+                    IIIT Nuzvid, Andhra Pradesh, India
                   </span>
                 </li>
               </ul>
@@ -154,8 +159,8 @@ const Footer = () => {
               <div className="flex space-x-4">
                 {[
                   { icon: FaTwitter, href: "https://twitter.com" },
-                  { icon: FaDiscord, href: "https://discord.com" },
-                  { icon: FaGithub, href: "https://github.com" },
+                  { icon: FaDiscord, href: "https://discord.gg/rTSUxqTU" },
+                  { icon: FaGithub, href: "https://github.com/Sribabu-Mandraju" },
                 ].map((social, index) => (
                   <motion.a
                     key={index}

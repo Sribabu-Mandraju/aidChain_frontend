@@ -3,85 +3,56 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { formatAddress } from "../../../utils/dao_helper"
-import { getReadDaoContract, getWriteDaoContract } from '../../../providers/dao_provider'
 import { Toaster, toast } from "react-hot-toast"
 import { useAccount } from 'wagmi'
+import { useDispatch, useSelector } from 'react-redux'
+import { getWriteDaoContract } from "../../../providers/dao_provider"
+import {
+  fetchDAOMembers,
+  addDAOMember,
+  removeDAOMember,
+  setSearchTerm,
+  clearMembers,
+  selectMembers,
+  selectMembersLoading,
+  selectMembersError,
+  selectSearchTerm,
+  selectHasMembers,
+  selectFilteredMembers
+} from '../../../store/slices/daoMembersSlice'
 
 const MemberManagement = ({ onClose }) => {
   const [newMemberAddress, setNewMemberAddress] = useState("")
   const [addressError, setAddressError] = useState("")
-  const [searchTerm, setSearchTerm] = useState("")
-  const [members, setMembers] = useState([])
-  const [filteredMembers, setFilteredMembers] = useState([])
   const [selectedMember, setSelectedMember] = useState(null)
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const { address: connectedAddress, isConnected } = useAccount()
+  
+  const dispatch = useDispatch()
+  const members = useSelector(selectMembers)
+  const filteredMembers = useSelector(selectFilteredMembers)
+  const loading = useSelector(selectMembersLoading)
+  const error = useSelector(selectMembersError)
+  const searchTerm = useSelector(selectSearchTerm)
+  const hasMembers = useSelector(selectHasMembers)
 
   useEffect(() => {
-    if (isConnected) {
-      fetchMembers()
+    if (isConnected && !hasMembers && !loading) {
+      dispatch(fetchDAOMembers())
     }
-  }, [isConnected])
+  }, [isConnected, hasMembers, loading, dispatch])
 
-  useEffect(() => {
-    setFilteredMembers(
-      members.filter((member) => member.address.toLowerCase().includes(searchTerm.toLowerCase())),
-    )
-  }, [searchTerm, members])
+  const handleSearch = (e) => {
+    dispatch(setSearchTerm(e.target.value))
+  }
 
-  const fetchMembers = async () => {
-    toast.loading('Fetching members...', { id: 'fetch-members' })
-    setIsLoading(true)
-    setMembers([]) // Clear previous members while fetching
-
+  const handleRefresh = async () => {
     try {
-      const contract = getReadDaoContract()
-      if (!contract || !contract.publicClient) {
-        throw new Error("DAO contract or public client not available")
-      }
-
-      console.log("Attempting to call getDAOMembers...")
-      const memberAddressesResult = await contract.publicClient.readContract({
-        ...contract,
-        functionName: 'getDAOMembers',
-      })
-
-      // Log the raw result from the contract call
-      console.log("Raw result from getDAOMembers:", memberAddressesResult)
-
-      // Ensure the result is an array before proceeding
-      if (!Array.isArray(memberAddressesResult)) {
-         // Check if it's null/undefined vs. some other non-array type
-         if (memberAddressesResult == null) {
-             console.log("getDAOMembers returned null or undefined. Assuming no members.")
-             setMembers([]) // Set to empty array if null/undefined
-         } else {
-             // Throw an error if it's some other unexpected type
-             throw new Error(`Invalid data type received from getDAOMembers: expected array, got ${typeof memberAddressesResult}`)
-         }
-      } else {
-          // If it's an array, proceed with formatting
-          const formattedMembers = memberAddressesResult.map(address => ({
-            address: address,
-            joinedAt: new Date().toISOString() // Placeholder join date
-          }))
-          setMembers(formattedMembers)
-          console.log("Formatted members:", formattedMembers)
-      }
-
-      toast.success('Members fetched successfully!', { id: 'fetch-members' })
-
+      dispatch(clearMembers())
+      await dispatch(fetchDAOMembers()).unwrap()
+      toast.success('Members refreshed successfully!')
     } catch (error) {
-       // Log the *entire* error object for detailed debugging
-       console.error("Detailed error fetching members:", error)
-
-       // Display a user-friendly message
-       const errorMessage = error?.shortMessage || (error instanceof Error ? error.message : 'An unknown error occurred')
-       toast.error(`Failed to fetch members: ${errorMessage}`, { id: 'fetch-members' })
-       setMembers([]) // Ensure members are cleared on error
-    } finally {
-       setIsLoading(false)
+      toast.error(`Failed to refresh members: ${error}`)
     }
   }
 
@@ -111,140 +82,140 @@ const MemberManagement = ({ onClose }) => {
       return
     }
 
-    setIsLoading(true)
     const toastId = toast.loading('Adding member...')
     try {
-      const contract = await getWriteDaoContract()
-       if (!contract || !contract.publicClient || !contract.walletClient) {
-          throw new Error("DAO contract, public client, or wallet client not available")
-       }
-
-      const isAdmin = await contract.publicClient.readContract({
-        ...contract,
-        functionName: 'isAdmin',
-        args: [connectedAddress],
-      })
-
-      if (!isAdmin) {
-        toast.error('Only admins can add members', { id: toastId })
-        setIsLoading(false)
-        return
-      }
-
-      const hash = await contract.walletClient.writeContract({
-        ...contract,
-        functionName: 'addDAOMember',
-        args: [newMemberAddress],
-        account: connectedAddress,
-      })
-
+      const result = await dispatch(addDAOMember({ address: newMemberAddress, connectedAddress })).unwrap()
+      
       toast.loading('Waiting for transaction confirmation...', { id: toastId })
-
-      const receipt = await contract.publicClient.waitForTransactionReceipt({ hash })
-
-      if (receipt.status === 'success') {
-        toast.success(
-          <div>
-            Member added successfully!
-            <a
-              href={`https://sepolia.basescan.org/tx/${hash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline ml-1"
-            >
-              View Tx
-            </a>
-          </div>,
-          { id: toastId, duration: 5000 }
-        )
-        await fetchMembers()
-        setNewMemberAddress("")
-        setAddressError("")
-      } else {
-         toast.error(`Transaction failed. Status: ${receipt.status}`, { id: toastId })
-      }
+      
+      toast.success(
+        <div>
+          Member added successfully!
+          <a
+            href={`https://sepolia.basescan.org/tx/${result.hash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline ml-1"
+          >
+            View Tx
+          </a>
+        </div>,
+        { id: toastId, duration: 5000 }
+      )
+      
+      setNewMemberAddress("")
+      setAddressError("")
+      await dispatch(fetchDAOMembers()).unwrap()
     } catch (error) {
       console.error("Error adding member:", error)
-       const errorMessage = error?.shortMessage || error?.message || 'An unknown error occurred'
-       toast.error(`Failed to add member: ${errorMessage}`, { id: toastId })
-    } finally {
-      setIsLoading(false)
+      const errorMessage = error?.shortMessage || error?.message || 'An unknown error occurred'
+      toast.error(`Failed to add member: ${errorMessage}`, { id: toastId })
     }
   }
 
   const handleRemoveMember = async () => {
     if (!isConnected) {
-      toast.error('Please connect your wallet first')
-      return
+      toast.error('Please connect your wallet first');
+      return;
     }
 
-    if (!selectedMember) return
+    if (!selectedMember) {
+      toast.error('No member selected');
+      return;
+    }
 
-    setIsLoading(true)
-    const toastId = toast.loading('Removing member...')
+    const toastId = toast.loading('Removing member...');
     try {
-      const contract = await getWriteDaoContract()
-       if (!contract || !contract.publicClient || !contract.walletClient) {
-          throw new Error("DAO contract, public client, or wallet client not available")
-       }
+      // First check if the contract is available
+      let contract;
+      try {
+        contract = await getWriteDaoContract();
+      } catch (error) {
+        console.error("Error getting contract:", error);
+        toast.error('Failed to initialize contract. Please try again.', { id: toastId });
+        return;
+      }
 
-      const isAdmin = await contract.publicClient.readContract({
-        ...contract,
-        functionName: 'isAdmin',
-        args: [connectedAddress],
-      })
+      if (!contract || !contract.walletClient || !contract.publicClient) {
+        toast.error('Contract not available. Please try again.', { id: toastId });
+        return;
+      }
+
+      // Check if the connected address is an admin
+      let isAdmin;
+      try {
+        isAdmin = await contract.publicClient.readContract({
+          address: contract.address,
+          abi: contract.abi,
+          functionName: 'isAdmin',
+          args: [connectedAddress],
+        });
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        toast.error('Failed to check admin status', { id: toastId });
+        return;
+      }
 
       if (!isAdmin) {
-        toast.error('Only admins can remove members', { id: toastId })
-        setIsLoading(false)
-        return
+        toast.error('Only admins can remove members', { id: toastId });
+        return;
       }
 
-      const hash = await contract.walletClient.writeContract({
-        ...contract,
-        functionName: 'removeDAOMember',
-        args: [selectedMember.address],
-        account: connectedAddress,
-      })
-
-      toast.loading('Waiting for transaction confirmation...', { id: toastId })
-
-      const receipt = await contract.publicClient.waitForTransactionReceipt({ hash })
-
-      if (receipt.status === 'success') {
-        toast.success(
-          <div>
-            Member removed successfully!
-            <a
-              href={`https://sepolia.basescan.org/tx/${hash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline ml-1"
-            >
-              View Tx
-            </a>
-          </div>,
-          { id: toastId, duration: 5000 }
-        )
-         await fetchMembers()
-        setIsRemoveModalOpen(false)
-        setSelectedMember(null)
-      } else {
-        toast.error(`Transaction failed. Status: ${receipt.status}`, { id: toastId })
+      // Check if the member exists
+      let isMember;
+      try {
+        isMember = await contract.publicClient.readContract({
+          address: contract.address,
+          abi: contract.abi,
+          functionName: 'isDAOMember',
+          args: [selectedMember.address],
+        });
+      } catch (error) {
+        console.error("Error checking member status:", error);
+        toast.error('Failed to check member status', { id: toastId });
+        return;
       }
+
+      if (!isMember) {
+        toast.error('Address is not a DAO member', { id: toastId });
+        return;
+      }
+
+      const result = await dispatch(removeDAOMember({ 
+        address: selectedMember.address, 
+        connectedAddress 
+      })).unwrap();
+      
+      toast.loading('Waiting for transaction confirmation...', { id: toastId });
+      
+      toast.success(
+        <div>
+          Member removed successfully!
+          <a
+            href={`https://sepolia.basescan.org/tx/${result.hash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline ml-1"
+          >
+            View Tx
+          </a>
+        </div>,
+        { id: toastId, duration: 5000 }
+      );
+      
+      setIsRemoveModalOpen(false);
+      setSelectedMember(null);
+      await dispatch(fetchDAOMembers()).unwrap();
     } catch (error) {
-      console.error("Error removing member:", error)
-       const errorMessage = error?.shortMessage || error?.message || 'An unknown error occurred'
-       toast.error(`Failed to remove member: ${errorMessage}`, { id: toastId })
-    } finally {
-      setIsLoading(false)
+      console.error("Error removing member:", error);
+      const errorMessage = error?.message || 'An unknown error occurred';
+      toast.error(`Failed to remove member: ${errorMessage}`, { id: toastId });
     }
-  }
+  };
 
   return (
     <div className="relative bg-white/80 backdrop-blur-sm rounded-xl shadow-md overflow-hidden max-w-2xl mx-auto my-8">
-
-      {isLoading && (
+      {loading && (
         <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-20">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
         </div>
@@ -253,17 +224,39 @@ const MemberManagement = ({ onClose }) => {
       <div className="bg-gradient-to-r from-green-500 to-emerald-600 py-4 px-6">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-medium text-white">DAO Member Management</h3>
-          <button onClick={onClose} className="text-white hover:text-gray-200 transition-colors">
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              className="text-white hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-white/10"
+              disabled={loading}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+            </button>
+            <button onClick={onClose} className="text-white hover:text-gray-200 transition-colors">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -283,7 +276,7 @@ const MemberManagement = ({ onClose }) => {
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                   addressError ? "border-red-500 ring-red-500" : "border-gray-300"
                 }`}
-                disabled={isLoading || !isConnected}
+                disabled={loading || !isConnected}
                 aria-invalid={!!addressError}
                 aria-describedby={addressError ? "address-error" : undefined}
               />
@@ -292,7 +285,7 @@ const MemberManagement = ({ onClose }) => {
             <button
               onClick={handleAddMember}
               className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-              disabled={isLoading || !isConnected || !newMemberAddress || !!addressError}
+              disabled={loading || !isConnected || !newMemberAddress || !!addressError}
             >
               Add Member
             </button>
@@ -324,25 +317,35 @@ const MemberManagement = ({ onClose }) => {
               <input
                 type="search"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearch}
                 placeholder="Search members..."
                 className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded-lg bg-white/80 focus:outline-none focus:ring-2 focus:ring-green-500"
-                disabled={isLoading || !members.length}
+                disabled={loading || !members.length}
               />
             </div>
           </div>
 
           <div className="bg-white/50 rounded-lg overflow-hidden border border-gray-200 min-h-[200px] max-h-[400px] overflow-y-auto">
-            {isLoading && members.length === 0 ? (
-               <div className="py-8 text-center text-gray-500">Loading members...</div>
-            ) : !isLoading && members.length === 0 ? (
+            {loading && !hasMembers ? (
+              <div className="py-8 text-center text-gray-500">Loading members...</div>
+            ) : error ? (
+              <div className="py-8 text-center">
+                <p className="text-red-500 mb-4">{error}</p>
+                <button
+                  onClick={handleRefresh}
+                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : !hasMembers ? (
               <div className="py-8 text-center text-gray-500">
                 No members have been added to this DAO yet.
               </div>
-            ) : filteredMembers.length === 0 && searchTerm ? (
-               <div className="py-8 text-center text-gray-500">
-                  No members found matching "{searchTerm}".
-               </div>
+            ) : filteredMembers.length === 0 ? (
+              <div className="py-8 text-center text-gray-500">
+                No members found matching "{searchTerm}".
+              </div>
             ) : (
               <ul className="divide-y divide-gray-200">
                 {filteredMembers.map((member) => (
@@ -364,11 +367,11 @@ const MemberManagement = ({ onClose }) => {
                         setIsRemoveModalOpen(true)
                       }}
                       className="text-red-600 hover:text-red-800 transition-colors p-1 rounded-full hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={isLoading || !isConnected}
+                      disabled={loading || !isConnected}
                       title="Remove Member"
                     >
-                       <span className="sr-only">Remove Member {formatAddress(member.address)}</span>
-                       <svg
+                      <span className="sr-only">Remove Member {formatAddress(member.address)}</span>
+                      <svg
                         className="w-5 h-5"
                         fill="none"
                         stroke="currentColor"
@@ -380,47 +383,36 @@ const MemberManagement = ({ onClose }) => {
                           strokeLinejoin="round"
                           strokeWidth="2"
                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        ></path>
+                        />
                       </svg>
                     </button>
                   </motion.li>
                 ))}
               </ul>
             )}
-             {isLoading && members.length === 0 && (
-               <div className="absolute inset-0 flex items-center justify-center bg-white/50">
-                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
-               </div>
-             )}
           </div>
         </div>
       </div>
 
-      {/* Remove Member Confirmation Modal */}
       <AnimatePresence>
         {isRemoveModalOpen && selectedMember && (
-          // Using a Portal might be better here if z-index issues persist,
-          // but keeping it simple for now. Requires importing 'react-dom'.
-          <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4"> {/* Adjusted centering and padding */}
-            {/* Backdrop */}
+          <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
             <motion.div
-               initial={{ opacity: 0 }}
-               animate={{ opacity: 1 }}
-               exit={{ opacity: 0 }}
-               transition={{ duration: 0.2 }}
-               className="fixed inset-0 bg-black/50" // Darker backdrop
-               aria-hidden="true"
-               onClick={() => !isLoading && setIsRemoveModalOpen(false)} // Close on click outside if not loading
-            ></motion.div>
-
-            {/* Modal Panel */}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/50"
+              aria-hidden="true"
+              onClick={() => !loading && setIsRemoveModalOpen(false)}
+            />
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full" // Responsive width
-              role="dialog" // Add role
+              className="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full"
+              role="dialog"
               aria-modal="true"
               aria-labelledby="modal-title"
             >
@@ -442,28 +434,28 @@ const MemberManagement = ({ onClose }) => {
                       <p className="text-sm text-gray-500">
                         Are you sure you want to remove this member from the DAO? This action cannot be undone.
                       </p>
-                      <p className="mt-2 font-medium break-all">{/* Allow address to break */}
+                      <p className="mt-2 font-medium break-all">
                         {selectedMember.address}
                       </p>
-                       <p className="mt-1 font-medium">({formatAddress(selectedMember.address)})</p> {/* Show formatted too */}
+                      <p className="mt-1 font-medium">({formatAddress(selectedMember.address)})</p>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2"> {/* Added gap */}
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
                 <button
                   type="button"
                   onClick={handleRemoveMember}
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed" // Added focus ring styles
-                  disabled={isLoading || !isConnected}
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading || !isConnected}
                 >
-                   {isLoading ? 'Removing...' : 'Remove'} {/* Dynamic button text */}
+                  {loading ? 'Removing...' : 'Remove'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsRemoveModalOpen(false)}
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50" // Added focus ring styles
-                  disabled={isLoading} // Disable cancel if loading
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
+                  disabled={loading}
                 >
                   Cancel
                 </button>

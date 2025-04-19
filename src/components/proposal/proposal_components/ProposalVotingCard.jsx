@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast"
 import { createPublicClient, http } from "viem"
 import { baseSepolia } from "viem/chains"
 import { vote, isDAOMember, getProposal, memberCount, hasVoted, executeProposal, finalizeProposal } from "../../../providers/dao_provider"
-
+import { fetchCampaigns } from "../../../store/slices/campaignSlice"
 const publicClient = createPublicClient({
   chain: baseSepolia,
   transport: http("https://base-sepolia.g.alchemy.com/v2/kBfhfjgaUbr1xz7I4QTPU7ZepOM6uMxK"),
@@ -274,7 +274,7 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
       let gasEstimate
       try {
         gasEstimate = await publicClient.estimateContractGas({
-          address: "0x28C883CD0D075E2080d1fdC99d07D56f5fDf765b",
+          address:import.meta.env.VITE_DAO_GOVERNANCE,
           abi: [
             {
               name: "executeProposal",
@@ -362,6 +362,44 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
         : "bg-red-500"
   }
 
+  // Helper function to render voting status message
+  const renderVotingStatusMessage = () => {
+    switch (currentProposal.state) {
+      case 1: // Passed
+        return (
+          <div className="mb-6 p-4 bg-green-50 rounded-lg text-center">
+            <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+            <p className="text-green-700 font-medium">This proposal has passed</p>
+            <p className="text-sm text-green-600">
+              Final votes: {currentProposal.forVotes} For, {currentProposal.againstVotes} Against
+            </p>
+          </div>
+        );
+      case 2: // Rejected
+        return (
+          <div className="mb-6 p-4 bg-red-50 rounded-lg text-center">
+            <XCircle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+            <p className="text-red-700 font-medium">This proposal has been rejected</p>
+            <p className="text-sm text-red-600">
+              Final votes: {currentProposal.forVotes} For, {currentProposal.againstVotes} Against
+            </p>
+          </div>
+        );
+      case 3: // Executed
+        return (
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg text-center">
+            <CheckCircle className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+            <p className="text-blue-700 font-medium">This proposal has been executed</p>
+            <p className="text-sm text-blue-600">
+              Final votes: {currentProposal.forVotes} For, {currentProposal.againstVotes} Against
+            </p>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -391,16 +429,6 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
                   isOperator && <span className="text-sm text-blue-600 font-medium">Operator</span>
                 )}
               </div>
-            </div>
-
-            <div className="mb-6 p-4 bg-gray-100 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Debug Info</h3>
-              <p className="text-sm text-gray-600">Proposal ID: {proposal.id}</p>
-              <p className="text-sm text-gray-600">State: {currentProposal.state} ({approvalStatus.status})</p>
-              <p className="text-sm text-gray-600">Is Operator: {isOperatorLoading ? "Loading..." : isOperator.toString()}</p>
-              <p className="text-sm text-gray-600">For Votes: {currentProposal.forVotes}</p>
-              <p className="text-sm text-gray-600">Required Votes: {requiredVotes}</p>
-              {error && <p className="text-sm text-red-600">Error: {error}</p>}
             </div>
 
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -433,46 +461,63 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-green-50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-green-600">{currentProposal.forVotes}</div>
-                <div className="text-sm text-gray-600">For</div>
+            {/* Voting status message */}
+            {renderVotingStatusMessage()}
+
+            {/* Voting stats - show regardless of state */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">Voting Results</h3>
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-green-50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-green-600">{currentProposal.forVotes}</div>
+                  <div className="text-sm text-gray-600">For</div>
+                </div>
+                <div className="bg-red-50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-red-600">{currentProposal.againstVotes}</div>
+                  <div className="text-sm text-gray-600">Against</div>
+                </div>
               </div>
-              <div className="bg-red-50 rounded-lg p-4 text-center">
-                <div className="text-2xl font-bold text-red-600">{currentProposal.againstVotes}</div>
-                <div className="text-sm text-gray-600">Against</div>
+              <div className="text-sm text-gray-600">
+                Required Votes: <span className="font-medium">{requiredVotes} (60%)</span>
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleVote("for")}
-                className="flex-1 py-3 rounded-lg font-semibold text-white flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:shadow-lg"
-              >
-                <ThumbsUp className="h-5 w-5" />
-                Vote For
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleVote("against")}
-                className="flex-1 py-3 rounded-lg font-semibold text-white flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:shadow-lg"
-              >
-                <ThumbsDown className="h-5 w-5" />
-                Vote Against
-              </motion.button>
-            </div>
+            {/* Show voting buttons only if proposal is active (state 0) */}
+            {currentProposal.state === 0 && (
+              <div className="flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleVote("for")}
+                  className="flex-1 py-3 rounded-lg font-semibold text-white flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 hover:shadow-lg"
+                >
+                  <ThumbsUp className="h-5 w-5" />
+                  Vote For
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleVote("against")}
+                  className="flex-1 py-3 rounded-lg font-semibold text-white flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:shadow-lg"
+                >
+                  <ThumbsDown className="h-5 w-5" />
+                  Vote Against
+                </motion.button>
+              </div>
+            )}
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsExecuteModalOpen(true)}
-              className="mt-4 py-2 px-4 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700"
-            >
-              Approve Proposal
-            </motion.button>
+            {/* Show approve button only for operator when proposal is passed */}
+            {currentProposal.state === 1 && isOperator && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsExecuteModalOpen(true)}
+                className="w-full mt-4 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="h-5 w-5" />
+                Approve Proposal
+              </motion.button>
+            )}
           </>
         )}
       </div>

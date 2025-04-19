@@ -120,7 +120,7 @@ const Navbar = () => {
                   className="w-[70px] h-[80px] rounded-xl  transform  duration-300 object-cover"
                 />
                 <span className="text-2xl hidden sm:block font-extrabold text-gray-900 tracking-tight">
-                  Relief
+                  KarunyaSetu
                 </span>
               </a>
             </div>

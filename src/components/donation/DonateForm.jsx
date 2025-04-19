@@ -210,11 +210,6 @@ const DonateForm = () => {
               <p className="text-sm text-gray-600">
                 Current Escrow Balance: {balance ? `${formatBalance(balance)} USDC` : 'Loading...'}
               </p>
-              {isDonorStatus && (
-                <p className="text-sm text-green-600 mt-1">
-                  You are a verified donor! Thank you for your support.
-                </p>
-              )}
             </div>
 
             <button

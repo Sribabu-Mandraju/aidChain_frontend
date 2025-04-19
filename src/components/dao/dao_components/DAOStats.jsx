@@ -1,8 +1,14 @@
 "use client"
 
 import { motion } from "framer-motion"
+import { useSelector } from "react-redux"
 
 const DAOStats = ({ stats }) => {
+  const daoMembersList = useSelector((state) => state.daoMembers.members);
+  const proposalsList = useSelector((state) => state.proposalsList.proposals);
+
+  console.log(proposalsList);
+  console.log(daoMembersList);
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

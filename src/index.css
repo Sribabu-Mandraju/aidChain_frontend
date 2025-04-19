@@ -348,6 +348,45 @@
 }
 
 /* Ensure Inter font is applied globally */
-body {
-  font-family: 'Inter', sans-serif;
+/* ---------------chat bot */
+
+
+/* Add custom glow effect for the chat button */
+.chat-button-glow {
+  box-shadow: 0 0 15px rgba(74, 222, 128, 0.5);
+}
+
+/* Custom scrollbar for the chat window */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #c5e8c5;
+  border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #4ade80;
+}
+
+/* Animation for chat window */
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease forwards;
 }

@@ -69,7 +69,6 @@ export const approveUSDC = async (walletClient, usdcAddress, spenderAddress, amo
       throw new Error("No account connected for USDC approval.");
     }
 
-    // First check if approval is needed
     const currentAllowance = await publicClient.readContract({
       address: usdcAddress,
       abi: [
@@ -88,12 +87,10 @@ export const approveUSDC = async (walletClient, usdcAddress, spenderAddress, amo
       args: [accounts[0], spenderAddress]
     });
 
-    // If current allowance is sufficient, no need to approve
     if (BigInt(currentAllowance) >= BigInt(amount)) {
       return null;
     }
 
-    // Estimate gas for approval
     const gasEstimate = await publicClient.estimateContractGas({
       address: usdcAddress,
       abi: usdcABI,
@@ -137,7 +134,6 @@ export const ensureUsdcApproval = async (walletClient, usdcAddress, campaignAddr
       throw new Error("No account connected for USDC approval.");
     }
 
-    // Check current allowance
     const allowance = await publicClient.readContract({
       address: usdcAddress,
       abi: [
@@ -188,7 +184,7 @@ export const getUSDCBalance = async (usdcAddress, userAddress) => {
     return balance;
   } catch (error) {
     console.error("Error in getUSDCBalance:", error);
-    return BigInt(0); // Return 0 balance on error to prevent UI blocking
+    return BigInt(0);
   }
 };
 
@@ -204,16 +200,13 @@ export const donate = async (contractAddress, usdcAddress, amount, walletClient)
       throw new Error("No account connected for donation.");
     }
 
-    // Check if user has sufficient USDC balance
     const balance = await getUSDCBalance(usdcAddress, accounts[0]);
     if (BigInt(balance) < BigInt(amount)) {
       throw new Error("Insufficient USDC balance");
     }
 
-    // Ensure USDC approval
     await ensureUsdcApproval(walletClient, usdcAddress, contractAddress, amount);
 
-    // Estimate gas for donation
     const gasEstimate = await publicClient.estimateContractGas({
       address: contractAddress,
       abi: disasterReliefABI,
@@ -222,7 +215,6 @@ export const donate = async (contractAddress, usdcAddress, amount, walletClient)
       account: accounts[0]
     });
 
-    // Then proceed with donation
     const contract = await getWriteDisasterReliefContract(contractAddress, walletClient);
     const hash = await contract.walletClient.writeContract({
       address: contract.address,
@@ -261,7 +253,6 @@ export const registerAsVictim = async (
   try {
     const writeContract = await getWriteDisasterReliefContract(contractAddress, walletClient);
     
-    // Prepare the arguments array in the correct order
     const args = [
       nullifierSeed,
       nullifier,
@@ -278,7 +269,6 @@ export const registerAsVictim = async (
       groth16Proof: groth16Proof.map(x => x.toString())
     });
 
-    // Simulate the transaction first to get any revert reasons
     const { request } = await publicClient.simulateContract({
       address: contractAddress,
       abi: disasterReliefABI,
@@ -287,18 +277,13 @@ export const registerAsVictim = async (
       account: writeContract.account,
     });
 
-    // If simulation succeeds, proceed with the actual transaction
     const hash = await writeContract.walletClient.writeContract(request);
 
     console.log("Victim registration transaction submitted:", hash);
     return hash;
   } catch (error) {
     console.error("Error in registerAsVictim:", error);
-
-    // Extract revert reason if available
     const revertReason = error.message.match(/execution reverted: (.*?)(?:\n|$)/)?.[1];
-    
-    // Pass the error up with the revert reason if available
     throw new Error(revertReason || error.message);
   }
 };
@@ -419,6 +404,48 @@ export const getDonationEndTime = async (contractAddress) => {
   }
 };
 
+export const getRegistrationEndTime = async (contractAddress) => {
+  try {
+    const contract = getReadDisasterReliefContract(contractAddress);
+    const result = await contract.publicClient.readContract({
+      ...contract,
+      functionName: 'registrationEndTime',
+    });
+    return result;
+  } catch (error) {
+    console.error("Error in getRegistrationEndTime:", error);
+    throw new Error(`Failed to get registration end time: ${error.message}`);
+  }
+};
+
+export const getWaitingEndTime = async (contractAddress) => {
+  try {
+    const contract = getReadDisasterReliefContract(contractAddress);
+    const result = await contract.publicClient.readContract({
+      ...contract,
+      functionName: 'waitingEndTime',
+    });
+    return result;
+  } catch (error) {
+    console.error("Error in getWaitingEndTime:", error);
+    throw new Error(`Failed to get waiting end time: ${error.message}`);
+  }
+};
+
+export const getDistributionEndTime = async (contractAddress) => {
+  try {
+    const contract = getReadDisasterReliefContract(contractAddress);
+    const result = await contract.publicClient.readContract({
+      ...contract,
+      functionName: 'distributionEndTime',
+    });
+    return result;
+  } catch (error) {
+    console.error("Error in getDistributionEndTime:", error);
+    throw new Error(`Failed to get distribution end time: ${error.message}`);
+  }
+};
+
 export const getAmountPerVictim = async (contractAddress) => {
   try {
     const contract = getReadDisasterReliefContract(contractAddress);
@@ -478,7 +505,6 @@ export const hasWithdrawn = async (contractAddress, address) => {
   }
 };
 
-// Add this new function after the other read functions
 export const getCampaignDetails = async (contractAddress) => {
   try {
     const contract = getReadDisasterReliefContract(contractAddress);
@@ -487,16 +513,6 @@ export const getCampaignDetails = async (contractAddress) => {
       functionName: 'getCampaginDetails',
     });
 
-    // Transform the returned data into a more usable format
-    // The contract returns a DisasterDetails struct with the following fields:
-    // - disasterId: uint256
-    // - disasterName: string
-    // - image: string
-    // - location: LocationDetails.Location
-    // - totalFunds: uint256
-    // - totalDonors: uint256
-    // - totalVictimsRegistered: uint256
-    // - state: ContractState
     return {
       disasterId: Number(result.disasterId),
       disasterName: result.disasterName,

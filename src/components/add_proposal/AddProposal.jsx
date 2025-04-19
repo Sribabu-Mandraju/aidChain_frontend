@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, FileText, MapPin, Image, CheckCircle } from 'lucide-react';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { useAccount } from 'wagmi';
 import { getReadDaoContract, getWriteDaoContract } from '../../providers/dao_provider';
 import Step1BasicInfo from './addProposal_components/Step1BasicInfo';
@@ -257,36 +257,7 @@ const ProposalForm = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden">
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          style: {
-            background: '#fff',
-            color: '#333',
-            borderRadius: '8px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          },
-          success: {
-            style: {
-              background: '#10B981',
-              color: '#fff',
-            },
-          },
-          error: {
-            style: {
-              background: '#EF4444',
-              color: '#fff',
-            },
-          },
-          loading: {
-            style: {
-              background: '#3B82F6',
-              color: '#fff',
-            },
-          },
-        }}
-      />
-
+      
       {isSubmitting && (
         <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>

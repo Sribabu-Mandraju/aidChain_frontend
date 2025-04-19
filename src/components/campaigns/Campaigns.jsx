@@ -6,6 +6,8 @@ import DonationSection from "./campaigns_components/DonationSection";
 import CampaignFooter from "./campaigns_components/CampaignFooter";
 import CampaignList from "../shared/campaignCard_components/CampaignList";
 import { updateMetaTags } from "../../utils/metaTags";
+import Campaigns from "../home/Campaigns";
+
 
 // Sample campaign data (replace with real data from a contract or API)
 const campaigns = [
@@ -101,12 +103,12 @@ const CampaignsSection = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-green-50">
-      <CampaignHeader />
-      <CampaignFilters filter={filter} setFilter={setFilter} />
-      <CampaignList 
+      {/* <CampaignFilters filter={filter} setFilter={setFilter} /> */}
+      {/* <CampaignList 
         campaigns={filteredCampaigns} 
         onShare={handleShare}
-      />
+      /> */}
+      <Campaigns />
       <DonationSection campaigns={campaigns} />
       <CampaignFooter />
     </div>

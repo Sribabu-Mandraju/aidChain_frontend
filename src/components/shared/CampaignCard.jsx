@@ -20,7 +20,17 @@ import {
   FacebookShareButton,
 } from "react-share";
 import CampaignMap from "./campaignCard_components/CampaignMap";
-import { donate, registerAsVictim, isDonor, getUSDCBalance, publicClient } from "../../providers/disasterRelief_provider";
+import { getWriteDisasterReliefContract } from "../../providers/disasterRelief_provider";
+import { 
+  donate, 
+  registerAsVictim, 
+  isDonor, 
+  getUSDCBalance, 
+  publicClient,
+  hasWithdrawn,
+  isVictim,
+  withdrawFunds 
+} from "../../providers/disasterRelief_provider";
 import { useAccount, useConnect, useDisconnect, useWalletClient } from 'wagmi';
 import { coinbaseWallet } from '@wagmi/connectors';
 import { baseSepolia } from 'viem/chains';
@@ -201,8 +211,13 @@ const CampaignCard = ({ campaign, index }) => {
 
   // Handle claim fund
   const handleClaimFund = async () => {
-    if (!isConnected || !walletClient) {
+    if (!isConnected) {
       toast.error('Please connect your wallet first');
+      return;
+    }
+
+    if (!walletClient) {
+      toast.error('Wallet client not available');
       return;
     }
 
@@ -211,14 +226,87 @@ const CampaignCard = ({ campaign, index }) => {
     setSuccess("");
 
     try {
-      // Add your claim fund logic here
-      // This is a placeholder - implement the actual claim functionality
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulated delay
-      toast.success('Funds claimed successfully!');
-      setIsClaimModalOpen(false);
+      // First check if user has already withdrawn
+      const hasAlreadyWithdrawn = await hasWithdrawn(campaign.contractAddress, address);
+      if (hasAlreadyWithdrawn) {
+        setError('You have already claimed your funds for this campaign.');
+        return;
+      }
+
+      // Check if user is a verified victim
+      const isVerifiedVictim = await isVictim(campaign.contractAddress, address);
+      if (!isVerifiedVictim) {
+        setError('You are not a verified victim for this campaign.');
+        return;
+      }
+
+      // Get the write contract instance
+      const contract = await getWriteDisasterReliefContract(campaign.contractAddress, walletClient);
+      if (!contract || !contract.walletClient) {
+        throw new Error("Contract or wallet client not available");
+      }
+
+      // Execute withdrawal with proper error handling
+      const txHash = await toast.promise(
+        contract.walletClient.writeContract({
+          address: contract.address,
+          abi: contract.abi,
+          functionName: 'withdrawFunds',
+          account: contract.account,
+        }),
+        {
+          loading: 'Processing withdrawal...',
+          success: 'Withdrawal submitted!',
+          error: (error) => {
+            if (error.message.includes('insufficient funds')) {
+              return 'Insufficient funds for gas fee';
+            }
+            if (error.message.includes('user rejected')) {
+              return 'Transaction rejected by user';
+            }
+            if (error.message.includes('already withdrawn')) {
+              return 'You have already claimed your funds';
+            }
+            return `Withdrawal failed: ${error.message}`;
+          },
+        }
+      );
+
+      // Wait for transaction to be mined
+      await toast.promise(
+        publicClient.waitForTransactionReceipt({ hash: txHash }),
+        {
+          loading: 'Confirming withdrawal...',
+          success: (receipt) => (
+            <div className="flex flex-col">
+              <span>Funds claimed successfully!</span>
+              <a
+                href={`https://sepolia.basescan.org/tx/${receipt.transactionHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-green-600 hover:underline"
+              >
+                View transaction
+              </a>
+            </div>
+          ),
+          error: 'Withdrawal failed to confirm.',
+        }
+      );
+
+      setSuccess('Funds claimed successfully!');
+      setTimeout(() => {
+        setIsClaimModalOpen(false);
+        setSuccess("");
+      }, 3000);
     } catch (error) {
       console.error('Claim error:', error);
-      setError('Failed to claim funds. Please try again.');
+      setError(
+        error.message.includes('insufficient funds') ? 'Insufficient funds for gas fee' :
+        error.message.includes('user rejected') ? 'Transaction rejected by user' :
+        error.message.includes('already withdrawn') ? 'You have already claimed your funds' :
+        `Failed to claim funds: ${error.message}`
+      );
     } finally {
       setIsClaiming(false);
     }
@@ -315,16 +403,8 @@ const CampaignCard = ({ campaign, index }) => {
           <div className="space-y-4">
             <div className="mb-4 p-4 bg-green-50 rounded-lg">
               <p className="text-sm text-gray-600">
-                Wallet: {formatAddress(address)}
+                Current Escrow Balance: {balance ? `${formatBalance(balance)} USDC` : 'Loading...'}
               </p>
-              <p className="text-sm text-gray-600">
-                USDC Balance: {formatBalance(balance)} USDC
-              </p>
-              {isDonorStatus && (
-                <p className="text-sm text-green-600 mt-1">
-                  You are a verified donor! Thank you for your support.
-                </p>
-              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
