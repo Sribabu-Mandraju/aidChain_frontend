@@ -351,27 +351,11 @@ const CampaignCard = ({ campaign, index }) => {
     setProgress(progressValue)
   }
 
-  // Get state-specific time left
-  const getStateTimeLeft = () => {
-    switch (currentState) {
-      case 0:
-        return timeLeft.donation
-      case 1:
-        return timeLeft.registration
-      case 2:
-        return timeLeft.waiting
-      case 3:
-        return timeLeft.distribution
-      default:
-        return 0
-    }
-  }
-
   // Get state-specific message
   const getStateMessage = () => {
     switch (currentState) {
       case 0:
-        return "Donation Period"
+        return timeLeft.donation > 0 ? "Donation Period" : "Registration Period"
       case 1:
         return "Registration Period"
       case 2:
@@ -389,7 +373,9 @@ const CampaignCard = ({ campaign, index }) => {
   const getStateColor = () => {
     switch (currentState) {
       case 0:
-        return "bg-gradient-to-r from-emerald-500 to-green-600"
+        return timeLeft.donation > 0 
+          ? "bg-gradient-to-r from-emerald-500 to-green-600"
+          : "bg-gradient-to-r from-blue-500 to-indigo-600"
       case 1:
         return "bg-gradient-to-r from-blue-500 to-indigo-600"
       case 2:
@@ -407,7 +393,7 @@ const CampaignCard = ({ campaign, index }) => {
   const getStateIcon = () => {
     switch (currentState) {
       case 0:
-        return <DollarSign size={16} />
+        return timeLeft.donation > 0 ? <DollarSign size={16} /> : <UserPlus size={16} />
       case 1:
         return <UserPlus size={16} />
       case 2:
@@ -418,6 +404,22 @@ const CampaignCard = ({ campaign, index }) => {
         return <CheckCircle size={16} />
       default:
         return <AlertCircle size={16} />
+    }
+  }
+
+  // Get state-specific time left
+  const getStateTimeLeft = () => {
+    switch (currentState) {
+      case 0:
+        return timeLeft.donation > 0 ? timeLeft.donation : timeLeft.registration
+      case 1:
+        return timeLeft.registration
+      case 2:
+        return timeLeft.waiting
+      case 3:
+        return timeLeft.distribution
+      default:
+        return 0
     }
   }
 
@@ -1067,56 +1069,6 @@ const CampaignCard = ({ campaign, index }) => {
         <div className={`h-full ${getStateColor()}`} style={{ width: `${progress}%` }}></div>
       </div>
 
-      {/* State Indicator */}
-      <div
-        className={`absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white ${getStateColor()} shadow-md z-10`}
-      >
-        {getStateIcon()}
-        <span>{getStateMessage()}</span>
-      </div>
-
-      {/* Time Left Indicator */}
-      <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white bg-gray-800/80 backdrop-blur-sm shadow-md z-10">
-        <Clock size={14} />
-        <span>{formatTimeLeft(getStateTimeLeft())}</span>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="absolute top-4 right-[140px] flex gap-2 z-10">
-        {/* Share Button */}
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setIsShareModalOpen(true)}
-          className="p-2 text-gray-600 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
-          title="Share Campaign"
-        >
-          <Share2 size={18} />
-        </motion.button>
-
-        {/* Map Button */}
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setIsMapModalOpen(true)}
-          className="p-2 text-gray-600 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
-          title="View on map"
-        >
-          <MapPin size={18} />
-        </motion.button>
-
-        {/* Details Button */}
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setIsDetailsModalOpen(true)}
-          className="p-2 text-gray-600 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
-          title="Campaign details"
-        >
-          <Info size={18} />
-        </motion.button>
-      </div>
-
       {/* Card Layout */}
       <div className="flex flex-col">
         {/* Card Image */}
@@ -1139,6 +1091,57 @@ const CampaignCard = ({ campaign, index }) => {
                 <span>{campaign.totalDonations} donations</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Status Badges */}
+        <div className="p-4 flex flex-wrap gap-2">
+          {/* State Badge */}
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white ${getStateColor()} shadow-md`}>
+            {getStateIcon()}
+            <span>{getStateMessage()}</span>
+          </div>
+
+          {/* Time Left Badge */}
+          {/* <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white bg-gray-800/80 backdrop-blur-sm shadow-md">
+            <Clock size={14} />
+            <span>{formatTimeLeft(getStateTimeLeft())}</span>
+          </div> */}
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 ml-auto">
+            {/* Share Button */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsShareModalOpen(true)}
+              className="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full shadow-md hover:shadow-lg transition-all duration-300"
+              title="Share Campaign"
+            >
+              <Share2 size={18} />
+            </motion.button>
+
+            {/* Map Button */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsMapModalOpen(true)}
+              className="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full shadow-md hover:shadow-lg transition-all duration-300"
+              title="View on map"
+            >
+              <MapPin size={18} />
+            </motion.button>
+
+            {/* Details Button */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsDetailsModalOpen(true)}
+              className="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full shadow-md hover:shadow-lg transition-all duration-300"
+              title="Campaign details"
+            >
+              <Info size={18} />
+            </motion.button>
           </div>
         </div>
 
