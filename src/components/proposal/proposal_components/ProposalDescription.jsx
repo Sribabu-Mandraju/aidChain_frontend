@@ -146,7 +146,7 @@ const ProposalDescription = ({ proposal }) => {
           <DollarSign className="w-5 h-5 text-green-500 mt-0.5 mr-2" />
           <div>
             <p className="text-sm text-gray-500">Funds Requested</p>
-            <p className="font-semibold">{formatCurrency(proposal.fundsRequested)}</p>
+            <p className="font-semibold">${proposal.fundsRequested*1e12}</p>
           </div>
         </div>
         <div className="flex items-start">
