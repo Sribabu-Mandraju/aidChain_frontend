@@ -497,12 +497,12 @@ const CampaignCard = ({ campaign, index }) => {
             campaign={campaign}
           />
         )}
-        {isShareModalOpen && <ShareModal />}
-        {isMapModalOpen && <MapModal />}
+        {isShareModalOpen && <ShareModal campaign={campaign} onClose={() => setIsShareModalOpen(false)} />}
+        {isMapModalOpen && <MapModal campaign={campaign} onClose={() => setIsMapModalOpen(false)} />}
         {isDetailsModalOpen && (
           <CampaignDetailsModal campaign={campaign} onClose={() => setIsDetailsModalOpen(false)} />
         )}
-        {isClaimModalOpen && <ClaimFundModal />}
+        {isClaimModalOpen && <ClaimFundModal campaign={campaign} onClose={() => setIsClaimModalOpen(false)} />}
       </AnimatePresence>
     </motion.div>
   )

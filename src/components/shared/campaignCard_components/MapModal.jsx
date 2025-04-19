@@ -1,18 +1,77 @@
 import { motion } from "framer-motion"
 import { X, MapPin, ExternalLink } from "lucide-react"
 import { toast } from "react-hot-toast"
+import { MapContainer, TileLayer, Marker, Circle, useMap, Popup } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+import { useEffect } from "react"
+
+// Fix for default marker icons
+const DefaultIcon = L.icon({
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+})
+
+L.Marker.prototype.options.icon = DefaultIcon
+
+const MapController = ({ center, radius, disasterName }) => {
+  const map = useMap()
+
+  useEffect(() => {
+    if (center && typeof center.latitude === 'number' && typeof center.longitude === 'number' &&
+        !isNaN(center.latitude) && !isNaN(center.longitude)) {
+      map.setView([center.latitude, center.longitude], 10)
+    }
+  }, [center, map])
+
+  if (!center || typeof center.latitude !== 'number' || typeof center.longitude !== 'number' ||
+      isNaN(center.latitude) || isNaN(center.longitude)) {
+    return null
+  }
+
+  return (
+    <>
+      <Marker position={[center.latitude, center.longitude]}>
+        <Popup>
+          <div className="text-center">
+            <strong>{disasterName || 'Campaign Location'}</strong>
+            <div className="text-xs mt-1">
+              {center.latitude}, {center.longitude}
+            </div>
+          </div>
+        </Popup>
+      </Marker>
+      {radius && !isNaN(parseFloat(radius)) && (
+        <Circle
+          center={[center.latitude, center.longitude]}
+          radius={parseFloat(radius) * 1000}
+          pathOptions={{
+            color: 'red',
+            fillColor: 'red',
+            fillOpacity: 0.2,
+            weight: 2,
+            dashArray: '5, 5',
+          }}
+        />
+      )}
+    </>
+  )
+}
 
 const MapModal = ({ campaign, onClose }) => {
-  const handleOpenGoogleMaps = () => {
-    if (!campaign.latitude || !campaign.longitude) {
-      toast.error("Location data not available")
-      return
-    }
-    window.open(
-      `https://www.google.com/maps?q=${campaign.latitude},${campaign.longitude}`,
-      "_blank"
-    )
-  }
+  const defaultCenter = [20, 0]
+  const defaultZoom = 2
+
+  const mapCenter = campaign.latitude && campaign.longitude
+    ? [parseFloat(campaign.latitude), parseFloat(campaign.longitude)]
+    : defaultCenter
+
+  const mapZoom = campaign.latitude && campaign.longitude ? 10 : defaultZoom
 
   return (
     <motion.div
@@ -26,7 +85,7 @@ const MapModal = ({ campaign, onClose }) => {
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
-        className="bg-white rounded-2xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl"
+        className="bg-white rounded-2xl p-6 sm:p-8 max-w-4xl w-full shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
@@ -44,23 +103,30 @@ const MapModal = ({ campaign, onClose }) => {
 
         <div className="space-y-6">
           {/* Map Preview */}
-          <div className="relative h-[300px] bg-gray-100 rounded-xl overflow-hidden">
-            {campaign.latitude && campaign.longitude ? (
-              <iframe
-                src={`https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=${campaign.latitude},${campaign.longitude}`}
-                className="w-full h-full border-0"
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
+          <div className="relative h-[400px] bg-gray-100 rounded-xl overflow-hidden">
+            <MapContainer
+              center={mapCenter}
+              zoom={mapZoom}
+              style={{ height: '100%', width: '100%' }}
+              scrollWheelZoom={true}
+              zoomControl={true}
+              className="z-0"
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin size={48} className="text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">Location data not available</p>
-                </div>
-              </div>
-            )}
+              {campaign.latitude && campaign.longitude && (
+                <MapController
+                  center={{
+                    latitude: parseFloat(campaign.latitude),
+                    longitude: parseFloat(campaign.longitude),
+                  }}
+                  radius={campaign.radius}
+                  disasterName={campaign.title}
+                />
+              )}
+            </MapContainer>
           </div>
 
           {/* Location Details */}
@@ -76,11 +142,11 @@ const MapModal = ({ campaign, onClose }) => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={handleOpenGoogleMaps}
+                  onClick={() => window.open(`https://www.openstreetmap.org/?mlat=${campaign.latitude}&mlon=${campaign.longitude}&zoom=10`, '_blank')}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
                   <ExternalLink size={16} />
-                  Open in Maps
+                  Open in OSM
                 </motion.button>
               )}
             </div>
