@@ -63,36 +63,91 @@ const MemberManagement = ({ onClose }) => {
 
   const handleAddMember = async () => {
     if (!isConnected) {
-      toast.error('Please connect your wallet first')
-      return
+      toast.error('Please connect your wallet first');
+      return;
     }
 
     if (!newMemberAddress) {
-      setAddressError("Address is required")
-      return
+      setAddressError("Address is required");
+      return;
     }
 
     if (!validateAddress(newMemberAddress)) {
-      setAddressError("Invalid Ethereum address format")
-      return
+      setAddressError("Invalid Ethereum address format");
+      return;
     }
 
     if (members.some((member) => member.address.toLowerCase() === newMemberAddress.toLowerCase())) {
-      setAddressError("This address is already a member")
-      return
+      setAddressError("This address is already a member");
+      return;
     }
 
-    const toastId = toast.loading('Adding member...')
+    const toastId = toast.loading('Adding member...');
     try {
-      const result = await dispatch(addDAOMember({ address: newMemberAddress, connectedAddress })).unwrap()
-      
-      toast.loading('Waiting for transaction confirmation...', { id: toastId })
-      
+      // First check if the contract is available
+      let contract;
+      try {
+        contract = await getWriteDaoContract();
+      } catch (error) {
+        console.error("Error getting contract:", error);
+        toast.error('Failed to initialize contract. Please try again.', { id: toastId });
+        return;
+      }
+
+      if (!contract || !contract.walletClient || !contract.publicClient) {
+        toast.error('Contract not available. Please try again.', { id: toastId });
+        return;
+      }
+
+      // Check if the connected address is an admin
+      let isAdmin;
+      try {
+        isAdmin = await contract.publicClient.readContract({
+          address: contract.address,
+          abi: contract.abi,
+          functionName: 'isAdmin',
+          args: [connectedAddress],
+        });
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+        toast.error('Failed to check admin status', { id: toastId });
+        return;
+      }
+
+      if (!isAdmin) {
+        toast.error('Only admins can add members', { id: toastId });
+        return;
+      }
+
+      // Get the connected account
+      const [account] = await contract.walletClient.getAddresses();
+      if (!account) {
+        toast.error('No account connected', { id: toastId });
+        return;
+      }
+
+      // Add the member
+      const hash = await contract.walletClient.writeContract({
+        address: contract.address,
+        abi: contract.abi,
+        functionName: 'addDAOMember',
+        args: [newMemberAddress],
+        account,
+      });
+
+      toast.loading('Waiting for transaction confirmation...', { id: toastId });
+
+      // Wait for transaction receipt
+      const receipt = await contract.publicClient.waitForTransactionReceipt({ hash });
+      if (receipt.status !== 'success') {
+        throw new Error(`Transaction failed. Status: ${receipt.status}`);
+      }
+
       toast.success(
         <div>
           Member added successfully!
           <a
-            href={`https://sepolia.basescan.org/tx/${result.hash}`}
+            href={`https://sepolia.basescan.org/tx/${hash}`}
             target="_blank"
             rel="noopener noreferrer"
             className="underline ml-1"
@@ -101,17 +156,17 @@ const MemberManagement = ({ onClose }) => {
           </a>
         </div>,
         { id: toastId, duration: 5000 }
-      )
-      
-      setNewMemberAddress("")
-      setAddressError("")
-      await dispatch(fetchDAOMembers()).unwrap()
+      );
+
+      setNewMemberAddress("");
+      setAddressError("");
+      await dispatch(fetchDAOMembers()).unwrap();
     } catch (error) {
-      console.error("Error adding member:", error)
-      const errorMessage = error?.shortMessage || error?.message || 'An unknown error occurred'
-      toast.error(`Failed to add member: ${errorMessage}`, { id: toastId })
+      console.error("Error adding member:", error);
+      const errorMessage = error?.shortMessage || error?.message || 'An unknown error occurred';
+      toast.error(`Failed to add member: ${errorMessage}`, { id: toastId });
     }
-  }
+  };
 
   const handleRemoveMember = async () => {
     if (!isConnected) {
