@@ -1,5 +1,5 @@
 import { Calendar, Clock, Users, DollarSign } from "lucide-react"
-import { formatAddress, formatCurrency, formatDate } from "../../../utils/dao_helper"
+import { formatAddress, formatCurrency, formatDate } from "../../../utils/ao_helper"
 import { useState } from "react"
 
 const ProposalDescription = ({ proposal }) => {
