@@ -2,37 +2,38 @@
 
 # 🚀 KarunyaSetu: Decentralized Disaster Relief Protocol
 
-> Connecting verified disaster victims with compassionate donors through a transparent, decentralized platform.
+> "From Generous Hearts to Deserving Hands – A Bridge of Hope and Healing."
 
 ---
 
 ## 📌 Problem Statement
 
-**Problem Statement X – Decentralized Disaster Relief**  
-*Note: Replace "X" with the specific problem statement number and title from the Participant Manual.*
+Problem Statement 4 - Craft the Future of Onchain Consumer Experiences with Base.
+
 
 ---
 
 ## 🎯 Objective
 
-KarunyaSetu solves the inefficiencies, corruption, and delays in traditional disaster relief by providing a **decentralized platform** that ensures **instant aid delivery**, **privacy-preserving victim verification**, and **transparent fund management**. It serves **disaster victims**, **donors**, **NGOs**, and **governments**, offering a trustless, tamper-proof system to deliver aid where it’s needed most.
+KarunyaSetu solves the inefficiencies, corruption, and delays in traditional disaster relief by providing a decentralized platform that ensures instant aid delivery, privacy-preserving victim verification, and transparent fund management. It serves disaster victims, donors, NGOs, and governments, offering a trustless, tamper-proof system to deliver aid where it’s needed most. Multilingual AI chatbots improve accessibility to the victims as well as the donors.
 
 ---
 
 ## 🧠 Team & Approach
 
 ### Team Name:  
-KarunyaSetu Innovators
+`HashMinds`
 
 ### Team Members:  
 - Nandeesh ([Twitter](https://twitter.com/0x02Auditor)) – Smart Contracts, DAO Governance  
 - Sribabu ([Twitter](https://x.com/5R1B4BU)) – Full Stack UI/UX & React  
-- Bhanu Teja ([Twitter](https://twitter.com/BhanuTeja)) – Backend Integration  
+- Bhanu Teja ([Twitter](https://x.com/BhanuTe56789860)) – Backend Integration
+- Umesh Chandra ([Twitter](https://twitter.com/UmeshChandra)) – Frontend/Backend Integration
 
 ### Your Approach:  
-- **Why this problem?** Disaster relief is plagued by bureaucracy and mistrust. We aimed to leverage blockchain for transparency and efficiency.  
-- **Key challenges addressed**: Implementing zkProofs for privacy-preserving verification, ensuring scalable DAO governance, and creating an intuitive UI.  
-- **Breakthroughs**: Successfully integrated zkProofs with Aadhaar and GPS data, and built a DAO voting system that’s both secure and user-friendly.
+- **Why this problem?**: We were deeply moved by the inefficiencies and tragedies caused by delays in disaster relief, especially during events like floods, fires, and cyclones. The lack of transparency and the exploitation of relief funds inspired us to reimagine the entire system — one where trust is automated, and help reaches those who truly need it.  
+- **Key challenges addressed**: Funds were delayed due to too many manual steps, and fake claims wasted money.Victims couldn’t access help easily, especially without ID or if they didn’t speak English. 
+- **Breakthroughs**: We used ZKadhaar to check location and identity without exposing details.We added DAO voting, built chatbots, and made the whole process automatic with smart contracts.
 
 ---
 
@@ -46,7 +47,7 @@ KarunyaSetu Innovators
 
 ### Sponsor Technologies Used:
 - [✅] **Base**: Used OnchainKit for seamless blockchain wallet and smart contract interactions.  
-- [ ] **Groq**: _Not used in this project._  
+- [✅] **Groq**: For developing multilingual chatbot and disaster summary generator model.  
 - [ ] **Monad**: _Not used in this project._  
 - [ ] **Fluvio**: _Not used in this project._  
 - [ ] **Screenpipe**: _Not used in this project._  
@@ -61,6 +62,8 @@ KarunyaSetu Innovators
 - ✅ **Automated Fund Disbursement**: Smart contracts ensure instant, trustless payouts to verified victims.  
 - ✅ **Donor NFT Rewards**: Unique NFTs as gratitude tokens for contributions.  
 - ✅ **Real-Time Transparency**: All transactions auditable on-chain for full accountability.
+- ✅ **Multilingual ChatBot**: Interacts in multiple Indian languages to assist donors and victims with their queries.
+- ✅ **Disaster Summary Bot**: Gives DAO members realtime updates on disasters before voting.
 
 ![Web App](https://github.com/user-attachments/assets/cc717ce9-ea7d-4ed2-beee-2f8f1dc6e6b4)  
 **Web App**: The main interface for creating campaigns, donating, and tracking relief efforts.
@@ -77,8 +80,8 @@ KarunyaSetu Innovators
 ## ✅ Tasks & Bonus Checklist
 
 - [✅] **All members of the team completed the mandatory task - Followed at least 2 of our social channels and filled the form**  
-- [ ] **All members of the team completed Bonus Task 1 - Sharing of Badges and filled the form (2 points)**  
-- [ ] **All members of the team completed Bonus Task 2 - Signing up for Sprint.dev and filled the form (3 points)**  
+- [✅] **All members of the team completed Bonus Task 1 - Sharing of Badges and filled the form (2 points)**  
+- [✅] **All members of the team completed Bonus Task 2 - Signing up for Sprint.dev and filled the form (3 points)**  
 
 ---
 
