@@ -182,12 +182,12 @@ const ProposalTable = ({ onViewDetails }) => {
               >
                 Funds Requested
               </th>
-              <th
+              {/* <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
                 Time Left
-              </th>
+              </th> */}
               <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -224,7 +224,7 @@ const ProposalTable = ({ onViewDetails }) => {
                     #{proposal.id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {proposal.disasterName}
+                    {proposal.disasterName.length >20?proposal.disasterName.slice(0, 20) + '...':proposal.disasterName}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {proposal.area}
@@ -235,9 +235,9 @@ const ProposalTable = ({ onViewDetails }) => {
                   <td className="px-6 py-4 text-center whitespace-nowrap text-sm text-gray-900">
                     ${proposal.fundsRequested*1e12 || 0}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {proposal.state === "Passed" || proposal.state === "Rejected" ? "Ended" : timeLeft}
-                  </td>
+                  </td> */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
