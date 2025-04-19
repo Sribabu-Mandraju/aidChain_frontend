@@ -1,6 +1,6 @@
 # 🌪️ KarunyaSetu: Decentralized Disaster Relief Protocol
 
-![KarunyaSetu Logo](images/logo.png)
+![KarunyaSetu Logo](C:\Users\91630\Documents\web\aidChain\frontend\src\assets\about\logo.png)
 
 ## Introduction
 
