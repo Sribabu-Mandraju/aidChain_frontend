@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, memo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   DollarSign,
@@ -45,6 +45,156 @@ import { coinbaseWallet } from "@wagmi/connectors"
 import { baseSepolia } from "viem/chains"
 import { toast } from "react-hot-toast"
 import CampaignDetailsModal from "./campaignCard_components/CampaignDetailsModal"
+
+// Memoized DonationModal component to prevent unnecessary re-renders
+const DonationModalContent = memo(
+  ({
+    campaign,
+    isConnected,
+    isConnecting,
+    balance,
+    donationAmount,
+    error,
+    success,
+    isLoading,
+    formatBalance,
+    handleConnectWallet,
+    handleDonationAmountChange,
+    handleDonate,
+    onClose,
+  }) => {
+    const inputRef = useRef(null)
+
+    // Focus the input when the component mounts
+    useEffect(() => {
+      if (inputRef.current && isConnected) {
+        setTimeout(() => {
+          inputRef.current.focus()
+        }, 50)
+      }
+    }, [isConnected])
+
+    return (
+      <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-900">Donate to Support</h3>
+            <p className="text-sm text-gray-500 mt-1">{campaign.title}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <p className="text-amber-800 text-sm leading-relaxed">
+            Your donation will directly help victims affected by {campaign.title.toLowerCase()}. Funds are securely
+            managed through smart contracts and distributed fairly.
+          </p>
+        </div>
+
+        {!isConnected ? (
+          <div className="text-center">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleConnectWallet}
+              disabled={isConnecting}
+              className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 shadow-lg hover:shadow-blue-200 disabled:from-gray-400 disabled:to-gray-500 disabled:shadow-none transition-all duration-300"
+            >
+              {isConnecting ? (
+                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+              ) : (
+                <>
+                  <Wallet size={20} />
+                  Connect Coinbase Smart Wallet
+                </>
+              )}
+            </motion.button>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="p-4 bg-green-50 border border-green-100 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Your USDC Balance</p>
+                <p className="text-lg font-semibold text-gray-800">
+                  {balance ? `${formatBalance(balance)} USDC` : "Loading..."}
+                </p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                <Coins size={20} className="text-green-600" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Donation Amount (USDC)</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <DollarSign size={18} className="text-gray-500" />
+                </div>
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={donationAmount}
+                  onChange={handleDonationAmountChange}
+                  placeholder="e.g., 10.00"
+                  min="0"
+                  disabled={isLoading}
+                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none disabled:bg-gray-100 text-lg"
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm flex items-center gap-2">
+                <AlertCircle size={16} />
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="p-3 bg-green-50 border border-green-100 rounded-lg text-green-600 text-sm flex items-center gap-2">
+                <CheckCircle size={16} />
+                {success}
+              </div>
+            )}
+
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handleDonate}
+              disabled={isLoading || !donationAmount || Number(donationAmount) <= 0}
+              className={`w-full py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 ${
+                isLoading || !donationAmount || Number(donationAmount) <= 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 shadow-lg hover:shadow-green-200 transition-all duration-300"
+              }`}
+            >
+              {isLoading ? (
+                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+              ) : (
+                <>
+                  <Heart size={20} />
+                  Donate Now
+                </>
+              )}
+            </motion.button>
+
+            <p className="text-xs text-center text-gray-500 mt-4">
+              All donations are processed securely on the Base Sepolia blockchain.
+            </p>
+          </div>
+        )}
+      </div>
+    )
+  },
+)
+
+// Ensure displayName is set for React DevTools
+DonationModalContent.displayName = "DonationModalContent"
 
 const CampaignCard = ({ campaign, index }) => {
   const [hovered, setHovered] = useState(false)
@@ -292,6 +442,16 @@ const CampaignCard = ({ campaign, index }) => {
     }
   }
 
+  // Handle donation amount change with validation
+  const handleDonationAmountChange = (e) => {
+    const value = e.target.value
+
+    // Only allow numbers and a single decimal point
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+      setDonationAmount(value)
+    }
+  }
+
   // Handle donation
   const handleDonate = async () => {
     if (!isConnected || !walletClient) {
@@ -533,137 +693,47 @@ const CampaignCard = ({ campaign, index }) => {
     return text.substring(0, maxLength) + "..."
   }
 
-  // Donation Modal
-  const DonationModal = () => (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      onClick={() => setIsDonateModalOpen(false)}
-    >
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900">Donate to Support</h3>
-            <p className="text-sm text-gray-500 mt-1">{campaign.title}</p>
-          </div>
-          <button
-            onClick={() => setIsDonateModalOpen(false)}
-            className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
+  // Donation Modal with stable animation
+  const DonationModal = () => {
+    // Use a stable animation configuration that won't restart on re-renders
+    const modalAnimation = {
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      exit: { opacity: 0 },
+      transition: { duration: 0.2 },
+    }
 
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-          <p className="text-amber-800 text-sm leading-relaxed">
-            Your donation will directly help victims affected by {campaign.title.toLowerCase()}. Funds are securely
-            managed through smart contracts and distributed fairly.
-          </p>
-        </div>
+    const contentAnimation = {
+      initial: { scale: 0.8, opacity: 0 },
+      animate: { scale: 1, opacity: 1 },
+      exit: { scale: 0.8, opacity: 0 },
+      transition: { type: "spring", damping: 25, stiffness: 300 },
+    }
 
-        {!isConnected ? (
-          <div className="text-center">
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={handleConnectWallet}
-              disabled={isConnecting}
-              className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-xl font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 shadow-lg hover:shadow-blue-200 disabled:from-gray-400 disabled:to-gray-500 disabled:shadow-none transition-all duration-300"
-            >
-              {isConnecting ? (
-                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-              ) : (
-                <>
-                  <Wallet size={20} />
-                  Connect Coinbase Smart Wallet
-                </>
-              )}
-            </motion.button>
-          </div>
-        ) : (
-          <div className="space-y-5">
-            <div className="p-4 bg-green-50 border border-green-100 rounded-xl flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500 mb-1">Your USDC Balance</p>
-                <p className="text-lg font-semibold text-gray-800">
-                  {balance ? `${formatBalance(balance)} USDC` : "Loading..."}
-                </p>
-              </div>
-              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                <Coins size={20} className="text-green-600" />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Donation Amount (USDC)</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <DollarSign size={18} className="text-gray-500" />
-                </div>
-                <input
-                  type="number"
-                  value={donationAmount}
-                  onChange={(e) => setDonationAmount(e.target.value)}
-                  placeholder="e.g., 10.00"
-                  step="0.01"
-                  min="0"
-                  disabled={isLoading}
-                  className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none disabled:bg-gray-100 text-lg"
-                />
-              </div>
-            </div>
-
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm flex items-center gap-2">
-                <AlertCircle size={16} />
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="p-3 bg-green-50 border border-green-100 rounded-lg text-green-600 text-sm flex items-center gap-2">
-                <CheckCircle size={16} />
-                {success}
-              </div>
-            )}
-
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={handleDonate}
-              disabled={isLoading || !donationAmount || Number(donationAmount) <= 0}
-              className={`w-full py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 ${
-                isLoading || !donationAmount || Number(donationAmount) <= 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 shadow-lg hover:shadow-green-200 transition-all duration-300"
-              }`}
-            >
-              {isLoading ? (
-                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-              ) : (
-                <>
-                  <Heart size={20} />
-                  Donate Now
-                </>
-              )}
-            </motion.button>
-
-            <p className="text-xs text-center text-gray-500 mt-4">
-              All donations are processed securely on the Base Sepolia blockchain.
-            </p>
-          </div>
-        )}
-      </motion.div>
-    </motion.div>
-  )
+    return (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <motion.div {...modalAnimation} className="w-full max-w-md">
+          <motion.div {...contentAnimation}>
+            <DonationModalContent
+              campaign={campaign}
+              isConnected={isConnected}
+              isConnecting={isConnecting}
+              balance={balance}
+              donationAmount={donationAmount}
+              error={error}
+              success={success}
+              isLoading={isLoading}
+              formatBalance={formatBalance}
+              handleConnectWallet={handleConnectWallet}
+              handleDonationAmountChange={handleDonationAmountChange}
+              handleDonate={handleDonate}
+              onClose={() => setIsDonateModalOpen(false)}
+            />
+          </motion.div>
+        </motion.div>
+      </div>
+    )
+  }
 
   // Share Modal
   const ShareModal = () => (
@@ -1019,7 +1089,7 @@ const CampaignCard = ({ campaign, index }) => {
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsShareModalOpen(true)}
           className="p-2 text-gray-600 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
-          title="Share Campaign"k
+          title="Share Campaign"
         >
           <Share2 size={18} />
         </motion.button>

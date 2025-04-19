@@ -45,7 +45,6 @@ const ProposalDetails = () => {
   const proposalsLoading = useSelector((state) => state.proposalsList.loading)
   const proposalsError = useSelector((state) => state.proposalsList.error)
 
-  console.log(proposals)
 
   // Connect wallet
   useEffect(() => {
@@ -289,7 +288,6 @@ const ProposalDetails = () => {
   }
 
 
-  console.log(proposal)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-green-50 py-12 px-4 sm:px-6 lg:px-8">
