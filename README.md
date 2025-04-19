@@ -1,153 +1,106 @@
-
 # 🌐 KarunyaSetu – Decentralized Disaster Relief Fund Platform
 
-KarunyaSetu is a Web3-based decentralized application (dApp) that leverages **DAO**, **DeFi protocols**, **zkProofs**, and **smart contracts** to ensure **transparent**, **automated**, and **trustworthy** fund distribution to disaster-affected victims. It empowers donors and communities to take direct control over humanitarian aid.
+![KarunyaSetu Logo](images/logo.png)
+
+> **Decentralized Compassion at Scale.**  
+> Leveraging Blockchain, DAO, DeFi & ZKProofs to revolutionize how disaster relief reaches those who need it most—without delay, without corruption.
 
 ---
 
-## 🔥 Problem We Solve
+## 🖼️ Landing Page Preview
 
-Traditional disaster relief systems are plagued by:
-- ⚠️ **Delays** in fund distribution due to administrative inefficiencies.
-- ❌ **Lack of transparency** in how donations are utilized.
-- 🧾 **Fake claims**, middlemen, and fund mismanagement.
-- 🚫 **No direct link** between donors and actual victims.
-- 🕵️‍♂️ **Poor victim identity/location verification**.
+![Landing Page](images/landing-page.png)
 
 ---
 
-## ✅ Our Solution – KarunyaSetu
+## 🚀 Hero Section
 
-### 💡 Key Features
-
-- **🧠 DAO-Based Campaign Approval**: Disaster campaigns are proposed and voted on by DAO members.
-- **🔐 zkProof-Based Victim Verification**: Victims are verified using Aadhaar pincode & geolocation through privacy-preserving zero-knowledge proofs.
-- **💰 Smart Fund Management**: Fully automated fund distribution using Solidity smart contracts—no manual intervention.
-- **🧾 On-Chain Transparency**: Every transaction is logged on the blockchain for real-time traceability.
-- **🌍 Multilingual Chatbot**: Assists donors and victims in their native Indian languages.
-- **🧠 Disaster Summary Bot**: Provides real-time disaster updates to DAO members before voting.
-- **🎁 Donor Recognition via NFTs**: Donors receive unique NFTs as a token of gratitude.
+![Hero Section](images/hero-section.png)
 
 ---
 
-## 🛠 Tech Stack
+## 🔁 How It Works
 
-| Layer | Technology |
-|-------|------------|
-| **Smart Contracts** | Solidity |
-| **Frontend** | React.js |
-| **Backend/API** | Node.js, Flask |
-| **Verification** | zkProofs (Zero Knowledge Proofs) |
-| **AI Integration** | Groq (Multilingual chatbot & summary generator) |
-| **Blockchain Interaction** | Base Onchain Kit, Wallets |
+![Flow Diagram](images/flow-diagram.png)
+
+KarunyaSetu ensures an end-to-end **trustless**, **transparent**, and **automated** disaster relief experience powered by blockchain.
 
 ---
 
-## 🔄 How It Works
+## 🎯 Why KarunyaSetu?
 
-1. **Campaign Creation**: DAO members propose relief campaigns.
-2. **Community Voting**: The DAO votes on which campaigns go live.
-3. **Victim Authentication**: Victims register using Aadhaar-based pincode + location zkProofs.
-4. **Automated Fund Disbursement**: Funds are distributed through audited smart contracts.
-5. **Donor Interaction**: Donors donate, receive NFTs, and monitor impact in real-time.
-
----
-
-## 🧭 Future Plans
-
-- 🤖 **Discord Bot**: Automate proposal, voting, and fund transfers within Discord.
-- 📢 **Real-Time Disaster Alerts**: Auto-create DAO proposals based on national alert systems.
-- 🎙️ **Voice-Activated Interaction**: Let users interact via voice in their native language.
-- 📊 **Donor Dashboards**: Personalized insights on donations, campaigns, and DAO votes.
-- 🪪 **Verified Donor Badges**: Shareable badges (via NFT or QR) for verified contributors.
-- ⏲️ **Countdown Timers**: Urgency-driven donation/registration/claim periods.
+| Problem | Our Solution |
+|--------|---------------|
+| ⏳ Delayed fund disbursement | 💸 Automated smart contract payouts |
+| 🤷‍♂️ No donor transparency | 🔍 Full on-chain visibility |
+| 🧾 Fake claims & middlemen | 🔐 zkProof-based identity verification |
+| 🧍 Victim inaccessibility | 📍 Location-based, Aadhaar-integrated authentication |
+| 🌐 Language barriers | 🧠 Multilingual AI chatbot with voice support (planned) |
 
 ---
 
-## 🚀 Why KarunyaSetu?
+## ✨ Key Features
 
-KarunyaSetu isn't just a platform—it's a movement to decentralize compassion, build transparent disaster response systems, and ensure **every rupee goes where it matters most**.
-
-Join us in redefining disaster relief through blockchain.
-
----
-
-Let me know if you'd like to include badges (build status, license, etc.), contribution guidelines, or a separate section for API documentation or demo screenshots.
-Based on the content of the provided PDF, here is a professional `README.md` file for your blockchain-based decentralized disaster relief application **KarunyaSetu**:
+- 🧠 **DAO-Governed Campaigns**: Community-driven approval and funding.
+- 🔐 **zkProof Victim Verification**: Privacy-preserving but verifiable.
+- 💰 **Smart Fund Management**: No manual intervention, no corruption.
+- 🌐 **Multilingual Chatbot**: Localized assistance in Indian languages.
+- 🧠 **Disaster Summary Bot**: Real-time updates for DAO decisions.
+- 🎁 **Donor NFTs**: A token of gratitude + shareable social proof.
 
 ---
 
-# 🌐 KarunyaSetu – Decentralized Disaster Relief Fund Platform
+## 🧑‍💻 Tech Stack
 
-KarunyaSetu is a Web3-based decentralized application (dApp) that leverages **DAO**, **DeFi protocols**, **zkProofs**, and **smart contracts** to ensure **transparent**, **automated**, and **trustworthy** fund distribution to disaster-affected victims. It empowers donors and communities to take direct control over humanitarian aid.
-
----
-
-## 🔥 Problem We Solve
-
-Traditional disaster relief systems are plagued by:
-- ⚠️ **Delays** in fund distribution due to administrative inefficiencies.
-- ❌ **Lack of transparency** in how donations are utilized.
-- 🧾 **Fake claims**, middlemen, and fund mismanagement.
-- 🚫 **No direct link** between donors and actual victims.
-- 🕵️‍♂️ **Poor victim identity/location verification**.
+| Layer         | Technology           |
+|---------------|----------------------|
+| Smart Contracts | Solidity            |
+| Frontend       | React.js            |
+| API / Backend  | Node.js, Flask       |
+| Blockchain Interaction | Base Onchain Kit, Wallets |
+| Identity Verification | zkProofs (Geo + Aadhaar pin) |
+| AI/NLP         | Groq                |
 
 ---
 
-## ✅ Our Solution – KarunyaSetu
+## 🗂 Project Structure
 
-### 💡 Key Features
 
-- **🧠 DAO-Based Campaign Approval**: Disaster campaigns are proposed and voted on by DAO members.
-- **🔐 zkProof-Based Victim Verification**: Victims are verified using Aadhaar pincode & geolocation through privacy-preserving zero-knowledge proofs.
-- **💰 Smart Fund Management**: Fully automated fund distribution using Solidity smart contracts—no manual intervention.
-- **🧾 On-Chain Transparency**: Every transaction is logged on the blockchain for real-time traceability.
-- **🌍 Multilingual Chatbot**: Assists donors and victims in their native Indian languages.
-- **🧠 Disaster Summary Bot**: Provides real-time disaster updates to DAO members before voting.
-- **🎁 Donor Recognition via NFTs**: Donors receive unique NFTs as a token of gratitude.
+📄 Read more in:
+- [📜 Smart Contracts README](./contracts/README.md)
+- [🎨 Frontend README](./frontend/README.md)
 
 ---
 
-## 🛠 Tech Stack
+## 🧑‍🤝‍🧑 Meet the Team
 
-| Layer | Technology |
-|-------|------------|
-| **Smart Contracts** | Solidity |
-| **Frontend** | React.js |
-| **Backend/API** | Node.js, Flask |
-| **Verification** | zkProofs (Zero Knowledge Proofs) |
-| **AI Integration** | Groq (Multilingual chatbot & summary generator) |
-| **Blockchain Interaction** | Base Onchain Kit, Wallets |
+![Team Section](images/team.png)
+
+We're a passionate group of developers, designers, and changemakers.  
+Want to join us? Reach out!
 
 ---
 
-## 🔄 How It Works
+## 🔮 What’s Next
 
-1. **Campaign Creation**: DAO members propose relief campaigns.
-2. **Community Voting**: The DAO votes on which campaigns go live.
-3. **Victim Authentication**: Victims register using Aadhaar-based pincode + location zkProofs.
-4. **Automated Fund Disbursement**: Funds are distributed through audited smart contracts.
-5. **Donor Interaction**: Donors donate, receive NFTs, and monitor impact in real-time.
-
----
-
-## 🧭 Future Plans
-
-- 🤖 **Discord Bot**: Automate proposal, voting, and fund transfers within Discord.
-- 📢 **Real-Time Disaster Alerts**: Auto-create DAO proposals based on national alert systems.
-- 🎙️ **Voice-Activated Interaction**: Let users interact via voice in their native language.
-- 📊 **Donor Dashboards**: Personalized insights on donations, campaigns, and DAO votes.
-- 🪪 **Verified Donor Badges**: Shareable badges (via NFT or QR) for verified contributors.
-- ⏲️ **Countdown Timers**: Urgency-driven donation/registration/claim periods.
+- 🤖 Discord DAO Bot for proposals and votes
+- 📢 Real-time disaster alerts from national APIs
+- 🎙️ Voice-enabled chatbot experience
+- 📊 Personalized donor dashboards
+- 🪪 NFT/QR-based verified donor badges
+- ⏲️ Countdown timers to increase urgency
 
 ---
 
-## 🚀 Why KarunyaSetu?
+## 🫱 Join the Movement
 
-KarunyaSetu isn't just a platform—it's a movement to decentralize compassion, build transparent disaster response systems, and ensure **every rupee goes where it matters most**.
+**Every second matters during a disaster.**  
+With KarunyaSetu, your donations reach the right hands, at the right time, without delay.
 
-Join us in redefining disaster relief through blockchain.
+> Built on trust. Powered by tech. Inspired by humanity.
 
 ---
 
-Let me know if you'd like to include badges (build status, license, etc.), contribution guidelines, or a separate section for API documentation or demo screenshots.
+🧭 Follow our journey:  
+📘 [Docs](./docs/) • 🧪 [Contracts](./contracts/) • 🖼 [Frontend](./frontend/)  
+🌟 Star us | 🍴 Fork us | 🛠 Contribute | 📣 Spread the word
