@@ -45,6 +45,7 @@ import { coinbaseWallet } from "@wagmi/connectors"
 import { baseSepolia } from "viem/chains"
 import { toast } from "react-hot-toast"
 import CampaignDetailsModal from "./campaignCard_components/CampaignDetailsModal"
+import DonationModal from "./DonationModal"
 
 // Memoized DonationModalContent component to prevent unnecessary re-renders
 const DonationModalContent = memo(
@@ -695,48 +696,6 @@ const CampaignCard = ({ campaign, index }) => {
     return text.substring(0, maxLength) + "..."
   }
 
-  // Donation Modal with stable animation
-  const DonationModal = () => {
-    // Use a stable animation configuration that won't restart on re-renders
-    const modalAnimation = {
-      initial: { opacity: 0 },
-      animate: { opacity: 1 },
-      exit: { opacity: 0 },
-      transition: { duration: 0.2 },
-    }
-
-    const contentAnimation = {
-      initial: { scale: 0.8, opacity: 0 },
-      animate: { scale: 1, opacity: 1 },
-      exit: { scale: 0.8, opacity: 0 },
-      transition: { type: "spring", damping: 25, stiffness: 300 },
-    }
-
-    return (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <motion.div {...modalAnimation} className="w-full max-w-md">
-          <motion.div {...contentAnimation}>
-            <DonationModalContent
-              campaign={campaign}
-              isConnected={isConnected}
-              isConnecting={isConnecting}
-              balance={balance}
-              donationAmount={donationAmount}
-              error={error}
-              success={success}
-              isLoading={isLoading}
-              formatBalance={formatBalance}
-              handleConnectWallet={handleConnectWallet}
-              handleDonationAmountChange={handleDonationAmountChange}
-              handleDonate={handleDonate}
-              onClose={() => setIsDonateModalOpen(false)}
-            />
-          </motion.div>
-        </motion.div>
-      </div>
-    )
-  }
-
   // Share Modal
   const ShareModal = () => (
     <motion.div
@@ -1196,7 +1155,13 @@ const CampaignCard = ({ campaign, index }) => {
 
       {/* Modals */}
       <AnimatePresence>
-        {isDonateModalOpen && <DonationModal />}
+        {isDonateModalOpen && (
+          <DonationModal
+            isOpen={isDonateModalOpen}
+            onClose={() => setIsDonateModalOpen(false)}
+            campaign={campaign}
+          />
+        )}
         {isShareModalOpen && <ShareModal />}
         {isMapModalOpen && <MapModal />}
         {isDetailsModalOpen && (
