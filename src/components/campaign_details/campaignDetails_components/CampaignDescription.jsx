@@ -20,11 +20,11 @@ const CampaignDescription = ({ campaign }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">About This Campaign</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">{campaign.title}</h2>
 
-        <div className={`prose prose-green max-w-none ${!expanded && "line-clamp-6"}`}>
+        {/* <div className={`prose prose-green max-w-none ${!expanded && "line-clamp-6"}`}>
           <p>{campaign.description}</p>
-        </div>
+        </div> */}
 
         {campaign.description && campaign.description.length > 300 && (
           <button

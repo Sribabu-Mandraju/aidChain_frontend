@@ -23,6 +23,7 @@ import {
   Info,
   ExternalLink,
 } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import { WhatsappShareButton, TwitterShareButton, FacebookShareButton } from "react-share"
 import CampaignMap from "./campaignCard_components/CampaignMap"
 import { getWriteDisasterReliefContract } from "../../providers/disasterRelief_provider"
@@ -64,6 +65,7 @@ const CampaignCard = ({ campaign, index }) => {
   const [selectedCampaign, setSelectedCampaign] = useState(null)
   const [isClaiming, setIsClaiming] = useState(false)
   const [currentState, setCurrentState] = useState(null)
+  const navigate = useNavigate()
   const [timeLeft, setTimeLeft] = useState({
     donation: 0,
     registration: 0,
@@ -1017,7 +1019,7 @@ const CampaignCard = ({ campaign, index }) => {
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsShareModalOpen(true)}
           className="p-2 text-gray-600 bg-white/90 hover:bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300"
-          title="Share Campaign"
+          title="Share Campaign"k
         >
           <Share2 size={18} />
         </motion.button>
@@ -1075,7 +1077,7 @@ const CampaignCard = ({ campaign, index }) => {
           <p className="text-gray-600 text-sm leading-relaxed mb-6">
             {truncateDescription(campaign.description, 120)}
             <button
-              onClick={() => setIsDetailsModalOpen(true)}
+              onClick={() => navigate(`/campaign/${campaign.id}`)}
               className="ml-1 text-blue-600 hover:text-blue-700 font-medium inline-flex items-center"
             >
               Read more
