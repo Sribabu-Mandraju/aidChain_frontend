@@ -41,7 +41,7 @@ const EnhancedVerification = ({ onVerificationComplete }) => {
     connector: injected(),
   });
   const { disconnect } = useDisconnect();
-
+//
   // Handle wallet connection
   const handleWalletConnect = async () => {
     try {
