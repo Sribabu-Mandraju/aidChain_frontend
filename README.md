@@ -1,147 +1,134 @@
-#  KarunyaSetu: Decentralized Disaster Relief Protocol
+![github-submission-banner](https://github.com/user-attachments/assets/a1493b84-e4e2-456e-a791-ce35ee2bcf2f)
 
-![alt text](image-1.png)) 
+# 🚀 KarunyaSetu: Decentralized Disaster Relief Protocol
 
-## Introduction
-
-**KarunyaSetu** is a **decentralized disaster relief platform** powered by smart contracts, DAO governance, and zkProofs. Designed to eliminate corruption, delays, and inefficiencies in traditional systems, KarunyaSetu connects **verified victims** with **compassionate donors** in a transparent, automated, and tamper-proof environment. The protocol ensures **instant aid delivery**, **on-chain transparency**, and **real-time governance**, redefining how communities respond to crises.
+> Connecting verified disaster victims with compassionate donors through a transparent, decentralized platform.
 
 ---
 
-## 🚨 The Problem We Solve
+## 📌 Problem Statement
 
-Traditional disaster relief is broken:
-
-- ❌ **Delayed fund distribution** due to bureaucracy.
-- 🧾 **Fake claims & middlemen** siphoning away resources.
-- 🤝 **No direct channel** between donors and real victims.
-- 🔒 **Lack of privacy** & identity verification for victims.
-- 🔍 **Limited visibility** into how funds are used.
+**Problem Statement X – Decentralized Disaster Relief**  
+*Note: Replace "X" with the specific problem statement number and title from the Participant Manual.*
 
 ---
 
-## ✅ Our Solution
+## 🎯 Objective
 
-KarunyaSetu introduces a **DAO-governed**, **smart contract–powered** relief protocol with **zkProof-based victim verification**:
-
-- 🔐 **Zero-Knowledge Verification** – Aadhaar pin + geolocation without exposing identities.
-- 🧠 **DAO-Driven Campaigns** – Relief campaigns proposed and approved by the community.
-- 💸 **Smart Fund Automation** – Transparent, trustless fund disbursement to verified victims.
-- 🎁 **NFT Gratitude Tokens** – Donors receive unique NFTs as badges of contribution.
+KarunyaSetu solves the inefficiencies, corruption, and delays in traditional disaster relief by providing a **decentralized platform** that ensures **instant aid delivery**, **privacy-preserving victim verification**, and **transparent fund management**. It serves **disaster victims**, **donors**, **NGOs**, and **governments**, offering a trustless, tamper-proof system to deliver aid where it’s needed most.
 
 ---
 
-## 🧩 Key Features
+## 🧠 Team & Approach
 
-✅ **Decentralized Fund Management** – No middlemen or delays.  
-✅ **Privacy-Preserving Victim Authentication** – zkProofs for identity + location verification.  
-✅ **DAO Voting System** – Campaigns initiated and voted on by the community.  
-✅ **Automated Payouts** – Funds reach victims instantly through smart contracts.  
-✅ **Real-Time Transparency** – Every transaction is auditable on-chain.  
-✅ **Donor NFTs** – Custom NFTs as proof of compassion and support.
+### Team Name:  
+KarunyaSetu Innovators
 
----
+### Team Members:  
+- Nandeesh ([Twitter](https://twitter.com/0x02Auditor)) – Smart Contracts, DAO Governance  
+- Sribabu ([Twitter](https://x.com/5R1B4BU)) – Full Stack UI/UX & React  
+- Bhanu Teja ([Twitter](https://twitter.com/BhanuTeja)) – Backend Integration  
 
-## 📂 Project Structure
-
-KarunyaSetu/
-├── contracts/         → Solidity smart contracts
-├── frontend/          → React.js user interface
-├── backend/           → APIs for victim validation
-├── docs/              → Diagrams, design specs, and whitepapers
-└── README.md
-
-
-📘 Detailed module guides:  
-- [🧾 Contracts README](./contracts/README.md)  
-- [🌐 Frontend README](./frontend/README.md)
+### Your Approach:  
+- **Why this problem?** Disaster relief is plagued by bureaucracy and mistrust. We aimed to leverage blockchain for transparency and efficiency.  
+- **Key challenges addressed**: Implementing zkProofs for privacy-preserving verification, ensuring scalable DAO governance, and creating an intuitive UI.  
+- **Breakthroughs**: Successfully integrated zkProofs with Aadhaar and GPS data, and built a DAO voting system that’s both secure and user-friendly.
 
 ---
 
-## 🛠 Tech Stack
+## 🛠️ Tech Stack
 
-### 🧠 Blockchain & Contracts:
-- **Solidity** – Smart contracts for DAO, fund management.
-- **zkProofs** – Victim verification via Aadhaar + GPS data.
-- **EVM Compatible** – Deployable across Ethereum/Layer 2 chains.
+### Core Technologies Used:
+- **Frontend**: React.js, Tailwind CSS, Web3 Wallet Integration (MetaMask, WalletConnect)  
+- **Backend**: Node.js, APIs for victim validation and campaign management  
+- **Blockchain**: Solidity (Smart Contracts), zkProofs (Victim Verification), EVM-Compatible Chains  
+- **Tools**: Base Onchain Kit (Wallet & Contract Interaction)  
 
-### 🖥 Frontend:
-- **React.js** – Web interface for campaign creation, voting, and tracking.
-- **Tailwind CSS** – Responsive and clean design.
-- **Wallet Integration** – MetaMask, WalletConnect, and other Web3 wallets.
-
-### 🔗 Backend:
-- **Node.js** – APIs for victim validation and campaign management.
-- **Base Onchain Kit** – Blockchain wallet & contract interaction.
-
----
-
-## 📊 How It Works
-
-1. 🗳 **Campaign Proposal** – DAO members propose relief efforts.
-2. 🧑‍⚖️ **Voting** – DAO votes to approve or reject proposals.
-3. 👤 **Victim Registration** – zkProof-based Aadhaar & GPS validation.
-4. 💸 **Fund Distribution** – Smart contracts disburse donations directly to victims.
-5. 🧾 **On-chain Records** – Full transparency for all stakeholders.
+### Sponsor Technologies Used:
+- [✅] **Base**: Used OnchainKit for seamless blockchain wallet and smart contract interactions.  
+- [ ] **Groq**: _Not used in this project._  
+- [ ] **Monad**: _Not used in this project._  
+- [ ] **Fluvio**: _Not used in this project._  
+- [ ] **Screenpipe**: _Not used in this project._  
+- [ ] **Stellar**: _Not used in this project._
 
 ---
 
-## 🌐 Future Enhancements
+## ✨ Key Features
 
-🚀 **Discord DAO Bot** – Voting, fund updates, and proposals in real time.  
-📢 **National Disaster Alert Integration** – Real-time DAO proposal triggers.  
-🪪 **Social Media Donor Badges** – NFT or QR-coded badges for donor recognition.  
-🕒 **Live Countdown Timers** – Registration, voting, and funding phases.  
-📊 **Donor Dashboards** – Personalized giving history and impact insights.
-
----
-
-## 🌍 Real-World Use Cases
-
-- 🌀 **Flood, Earthquake, Fire Relief** – Quick distribution of verified aid.
-- 🏥 **Medical Emergencies** – Critical help in outbreaks and health crises.
-- 🧑‍🎓 **Student Aid** – DAO-driven campaigns for displaced or disaster-affected students.
-- 🧾 **Corporate CSR & NGO Collaboration** – Transparent giving with on-chain proof.
-- 🇮🇳 **Government Partnerships** – National-scale adoption with trustless verification.
-
----
-
-## 🔗 Live Network & Wallet Guide
-
-KarunyaSetu runs on **EVM-compatible testnets**.
-
-🔹 **Test Tokens**: Request test ETH or tokens from [Alchemy Sepolia Faucet](https://sepoliafaucet.com).  
-🔹 **Supported Wallets**: MetaMask, WalletConnect, Brave Wallet.
-
----
-
-## 👥 Contributors
-
-👨‍💻 **[Nandeesh (0x02Auditor)](https://twitter.com/0x02Auditor)** – Smart Contracts, DAO Governance  
-🎨 **[Sribabu (5r1b4bu)](https://x.com/5R1B4BU)** – Full Stack UI/UX & React  
-💻 **[Bhanu Teja](https://twitter.com/BhanuTeja)** – Backend Integration
-
----
-
-## 📸 Screenshots
+- ✅ **Zero-Knowledge Victim Verification**: Privacy-preserving Aadhaar + GPS validation using zkProofs.  
+- ✅ **DAO-Driven Campaigns**: Community-proposed and voted relief efforts via a transparent governance system.  
+- ✅ **Automated Fund Disbursement**: Smart contracts ensure instant, trustless payouts to verified victims.  
+- ✅ **Donor NFT Rewards**: Unique NFTs as gratitude tokens for contributions.  
+- ✅ **Real-Time Transparency**: All transactions auditable on-chain for full accountability.
 
 ![Web App](https://github.com/user-attachments/assets/cc717ce9-ea7d-4ed2-beee-2f8f1dc6e6b4)  
-**Web App**: The main interface of KarunyaSetu, where users can create campaigns, donate, and track relief efforts in real time.
+**Web App**: The main interface for creating campaigns, donating, and tracking relief efforts.
 
-![About](https://github.com/user-attachments/assets/4c9e074f-19ae-498b-8f97-3650eed6c8c4)  
-**About**: Learn about KarunyaSetu's mission to provide fast, transparent, and decentralized disaster relief with no middlemen.
+---
 
-![Flow](https://github.com/user-attachments/assets/36cdeda9-030c-44f1-b51a-0df23f9c16ac)  
-**DAO Flow**: A visual representation of the decentralized governance process, from campaign proposal to fund distribution.
+## 📽️ Demo & Deliverables
 
-![Team](images/team.png)  
-**Team**: Meet the dedicated contributors behind KarunyaSetu, driving innovation in disaster relief.
+- **Demo Video Link**: [Paste YouTube or Loom link here]  
+- **Pitch Deck / PPT Link**: [Paste Google Slides / PDF link here]  
 
-## 🎯 Join the KarunyaSetu Movement
+---
 
-**Disasters demand fast, fair, and fearless action.**  
-KarunyaSetu empowers people to help **without red tape**, **without corruption**, and **without borders**.
+## ✅ Tasks & Bonus Checklist
 
-🔗 Predict. Propose. Protect. Together.
+- [✅] **All members of the team completed the mandatory task - Followed at least 2 of our social channels and filled the form**  
+- [ ] **All members of the team completed Bonus Task 1 - Sharing of Badges and filled the form (2 points)**  
+- [ ] **All members of the team completed Bonus Task 2 - Signing up for Sprint.dev and filled the form (3 points)**  
 
-📌 [Website] • [Docs] • [DAO Portal] • [Twitter](https://x.com/5R1B4BU)
+---
+
+## 🧪 How to Run the Project
+
+### Requirements:
+- Node.js (v16 or higher)
+- MetaMask or compatible Web3 wallet
+- Testnet ETH (via [Alchemy Sepolia Faucet](https://sepoliafaucet.com))
+- .env file with API keys (if applicable)
+
+### Local Setup:
+```bash
+# Clone the repo
+git clone https://github.com/your-team/karunyasetu
+
+# Install dependencies
+cd karunyasetu
+npm install
+
+# Start development server
+npm run dev
+```
+
+**Backend/Frontend Notes:**  
+Frontend: Run `npm run dev` to start the React.js interface.  
+Backend: Ensure Node.js APIs are running for victim validation.  
+Blockchain: Deploy smart contracts on an EVM-compatible testnet (e.g., Sepolia) using Hardhat or Truffle.
+
+---
+
+## 🦠 Future Scope
+
+📈 **Discord DAO Bot**: Real-time voting and fund updates.  
+🛡️ **National Disaster Alert Integration**: Auto-trigger DAO proposals during crises.  
+🌐 **Social Media Badges**: NFT/QR-coded donor recognition.  
+🕒 **Live Timers**: For registration, voting, and funding phases.  
+📊 **Donor Dashboards**: Personalized impact and giving history.
+
+---
+
+## 📌 Resources / Credits
+
+**APIs**: Aadhaar API (for zkProof integration), Base Onchain Kit  
+**Open Source Libraries**: ethers.js, Hardhat, Tailwind CSS  
+**Acknowledgements**: Thanks to the hackathon organizers and Base for providing robust blockchain tools.
+
+---
+
+## 🏁 Final Words
+
+Building KarunyaSetu was a thrilling journey! We tackled complex challenges like zkProof integration and DAO governance while learning to balance decentralization with usability. The late-night brainstorms, countless coffee runs, and breakthrough moments made this hackathon unforgettable. Shout-out to our mentors and the vibrant hackathon community for the support!
+
