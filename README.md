@@ -127,15 +127,16 @@ KarunyaSetu runs on **EVM-compatible testnets**.
 
 > Add screenshots like landing page, DAO voting interface, and campaign status.
 
-```md
 ![Landing Page](images/landing-page.png)
 ![Hero Section](images/hero-section.png)
 ![DAO Flow](images/flow-diagram.png)
 ![Team](images/team.png)
 
- Join the KarunyaSetu Movement
-Disasters demand fast, fair, and fearless action.
-KarunyaSetu empowers people to help without red tape, without corruption, and without borders.
- Predict. Propose. Protect. Together.
- [Website] • [Docs] • [DAO Portal] • Twitter
+## 🎯 Join the KarunyaSetu Movement
 
+**Disasters demand fast, fair, and fearless action.**  
+KarunyaSetu empowers people to help **without red tape**, **without corruption**, and **without borders**.
+
+🔗 Predict. Propose. Protect. Together.
+
+📌 [Website] • [Docs] • [DAO Portal] • [Twitter](https://x.com/5R1B4BU)
