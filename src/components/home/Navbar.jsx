@@ -296,7 +296,7 @@ const Navbar = () => {
                 className="w-9 h-9 rounded-xl shadow-md object-cover"
               />
               <span className="text-2xl font-extrabold text-gray-900 tracking-tight">
-                Relief
+              KarunyaSetu
               </span>
             </div>
             <button
