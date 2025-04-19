@@ -7,6 +7,19 @@ const DAOStats = ({ stats }) => {
   const daoMembersList = useSelector((state) => state.daoMembers.members);
   const proposalsList = useSelector((state) => state.proposalsList.proposals);
 
+
+  const sumPassedRequestedFunds = (proposals) => {
+    // Filter proposals with "Passed" status and sum their fundsRequested values
+    const totalFunds = proposals
+      .filter(proposal => proposal.state === "Passed")
+      .reduce((sum, proposal) => {
+        return sum + proposal.fundsRequested;
+      }, 0);
+  
+    // Multiply by 1e12 to get the actual value
+    return totalFunds * 1e12;
+  };
+
   console.log(proposalsList);
   console.log(daoMembersList);
   return (

@@ -55,6 +55,7 @@ export const fetchCampaigns = createAsyncThunk(
           // Construct campaign object
           return {
             id: address,
+            proposalId: campaignDetails.proposalId || address, // Use proposalId if available, fallback to address
             title: campaignDetails.disasterName,
             description: `Location: ${locationString || 'Unknown'}`,
             image: campaignDetails.image || campaignDetails.location.image || "https://images.unsplash.com/photo-1541675154750-0444c7d51e8e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
@@ -70,7 +71,10 @@ export const fetchCampaigns = createAsyncThunk(
             radius: campaignDetails.location.radius || "10",
             contractAddress: address,
             amountPerVictim: `${(Number(amountPerVictim) / 1e6).toFixed(2)} USDC`,
-            disasterId: campaignDetails.disasterId
+            disasterId: campaignDetails.disasterId,
+            state: campaignDetails.state, // Store the raw state value
+            startDate: campaignDetails.startDate,
+            endDate: campaignDetails.endDate
           };
         } catch (err) {
           console.error(`Error fetching details for contract ${address}:`, err);
@@ -142,5 +146,9 @@ export const selectCampaignsError = (state) => state.campaigns.error;
 export const selectCurrentFilter = (state) => state.campaigns.filter;
 export const selectLastFetchTime = (state) => state.campaigns.lastFetchTime;
 export const selectHasCampaigns = (state) => state.campaigns.hasData;
+
+// New selector to get campaign by proposalId
+export const selectCampaignByProposalId = (state, proposalId) => 
+  state.campaigns.campaigns.find(campaign => campaign.proposalId === proposalId);
 
 export default campaignSlice.reducer;

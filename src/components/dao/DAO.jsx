@@ -93,116 +93,21 @@ const DAO = () => {
     fetchDaoStats();
   }, [proposalsData]);
 
-  // Mock data - in a real app, this would come from your blockchain connection
-  useEffect(() => {
-    // Mock proposals data
-    const mockProposals = [
-      {
-        id: 1,
-        proposer: "0x1234567890123456789012345678901234567890",
-        disasterName: "Hurricane Relief Fund",
-        area: "Caribbean Islands",
-        duration: 15, // days
-        fundsRequested: 200000,
-        startTime: Date.now() - 5 * 24 * 60 * 60 * 1000, // 5 days ago
-        endTime: Date.now() + 10 * 24 * 60 * 60 * 1000, // 10 days from now
-        forVotes: 125,
-        againstVotes: 15,
-        image:
-          "https://images.unsplash.com/photo-1542393545-10f5b85e14fc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        state: "Active",
-      },
-      {
-        id: 2,
-        proposer: "0x2345678901234567890123456789012345678901",
-        disasterName: "Earthquake Recovery Initiative",
-        area: "Southeast Asia",
-        duration: 30, // days
-        fundsRequested: 150000,
-        startTime: Date.now() - 3 * 24 * 60 * 60 * 1000, // 3 days ago
-        endTime: Date.now() + 27 * 24 * 60 * 60 * 1000, // 27 days from now
-        forVotes: 89,
-        againstVotes: 12,
-        image:
-          "https://images.unsplash.com/photo-1610550603158-91f50474b235?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        state: "Urgent",
-      },
-      {
-        id: 3,
-        proposer: "0x3456789012345678901234567890123456789012",
-        disasterName: "Flood Relief Campaign",
-        area: "Western Europe",
-        duration: 21, // days
-        fundsRequested: 100000,
-        startTime: Date.now() - 7 * 24 * 60 * 60 * 1000, // 7 days ago
-        endTime: Date.now() + 14 * 24 * 60 * 60 * 1000, // 14 days from now
-        forVotes: 47,
-        againstVotes: 8,
-        image:
-          "https://images.unsplash.com/photo-1595854341625-fc2528d3b11e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        state: "Active",
-      },
-      {
-        id: 4,
-        proposer: "0x4567890123456789012345678901234567890123",
-        disasterName: "Wildfire Support Network",
-        area: "North America",
-        duration: 45, // days
-        fundsRequested: 80000,
-        startTime: Date.now() - 45 * 24 * 60 * 60 * 1000, // 45 days ago
-        endTime: Date.now() - 1 * 24 * 60 * 60 * 1000, // 1 day ago (completed)
-        forVotes: 63,
-        againstVotes: 5,
-        image:
-          "https://images.unsplash.com/photo-1500994340878-40ce894df491?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        state: "Completed",
-      },
-      {
-        id: 5,
-        proposer: "0x5678901234567890123456789012345678901234",
-        disasterName: "Drought Relief Program",
-        area: "East Africa",
-        duration: 60, // days
-        fundsRequested: 250000,
-        startTime: Date.now() - 10 * 24 * 60 * 60 * 1000, // 10 days ago
-        endTime: Date.now() + 50 * 24 * 60 * 60 * 1000, // 50 days from now
-        forVotes: 112,
-        againstVotes: 23,
-        image:
-          "https://images.unsplash.com/photo-1594367031514-3aee0295ec98?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        state: "Active",
-      },
-    ];
+  // Function to calculate total passed requested funds
+  const calculatePassedRequestedFunds = (proposals) => {
+    const totalFunds = proposals
+      .filter(proposal => proposal.state === "Passed")
+      .reduce((sum, proposal) => {
+        return sum + proposal.fundsRequested;
+      }, 0);
 
-    // Mock members data
-    const mockMembers = [
-      {
-        address: "0x1234567890123456789012345678901234567890",
-        joinedAt: Date.now() - 90 * 24 * 60 * 60 * 1000, // 90 days ago
-        proposalsCreated: 3,
-        votesParticipated: 12,
-      },
-      {
-        address: "0x2345678901234567890123456789012345678901",
-        joinedAt: Date.now() - 60 * 24 * 60 * 60 * 1000, // 60 days ago
-        proposalsCreated: 1,
-        votesParticipated: 8,
-      },
-      {
-        address: "0x3456789012345678901234567890123456789012",
-        joinedAt: Date.now() - 30 * 24 * 60 * 60 * 1000, // 30 days ago
-        proposalsCreated: 0,
-        votesParticipated: 5,
-      },
-    ];
-
-    setProposals(mockProposals);
-    setFilteredProposals(mockProposals);
-    setMembers(mockMembers);
-  }, []);
+    return totalFunds * 1e12;
+  };
 
   // Update DAO stats whenever the values change
   useEffect(() => {
+    const totalPassedFunds = calculatePassedRequestedFunds(proposalsData || []);
+
     const mockStats = [
       {
         label: "Total Members",
@@ -226,7 +131,7 @@ const DAO = () => {
         bgColor: "bg-blue-100",
       },
       {
-        label: "Active Proposals",
+        label: "Total Proposals",
         value: activeProposals,
         icon: (
           <svg
@@ -268,8 +173,8 @@ const DAO = () => {
         bgColor: "bg-yellow-100",
       },
       {
-        label: "Total Funds Allocated",
-        value: `$${totalFundsAllocated}`,
+        label: "Total Passed Funds",
+        value: `$${totalPassedFunds} USDC`,
         icon: (
           <svg
             className="w-6 h-6 text-purple-600"
@@ -291,7 +196,7 @@ const DAO = () => {
     ];
 
     setDaoStats(mockStats);
-  }, [totalMembers, activeProposals, treasuryBalance, totalFundsAllocated]);
+  }, [totalMembers, activeProposals, treasuryBalance, proposalsData]);
 
   // Filter proposals based on state and search term
   useEffect(() => {
