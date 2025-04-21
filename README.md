@@ -138,8 +138,6 @@ forge script script/BaseDeployments.s.sol:BaseDeployments --private-key $your-pr
 **Open Source Libraries**: Foundry , Base-Sepolia RPC , ANON AAdhar , Leaflet-map for Locations
 **Acknowledgements**: Thanks to the hackathon organizers and Base for providing robust blockchain tools.
 
-    ---
-
 ## 🏁 Final Words
 
 Building KarunyaSetu was a thrilling journey! We tackled complex challenges like zkProof integration and DAO governance while learning to balance decentralization with usability. The late-night brainstorms, countless coffee runs, and breakthrough moments made this hackathon unforgettable. Shout-out to our mentors and the vibrant hackathon community for the support!
