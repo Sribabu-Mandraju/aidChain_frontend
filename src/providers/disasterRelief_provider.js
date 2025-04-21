@@ -302,6 +302,7 @@ export const withdrawFunds = async (contractAddress, walletClient) => {
   } catch (error) {
     console.error("Error in withdrawFunds:", error);
     throw new Error(`Failed to withdraw funds: ${error.message}`);
+    alert(error)
   }
 };
 

@@ -313,9 +313,10 @@ const ProposalVotingCard = ({ proposal, isUserDaoMember, hasUserVoted, userAddre
           ...prev,
           state: 3, // Executed
         }))
-      } else {
-        throw new Error("Transaction reverted")
-      }
+       }  
+      // else {
+      //   throw new Error("Transaction reverted")
+      // }
     } catch (error) {
       console.error("Approval error:", error)
       const errorMessage = error.message.includes("Only the operator")

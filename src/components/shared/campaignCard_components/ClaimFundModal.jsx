@@ -43,10 +43,19 @@ const ClaimFundModal = ({ campaign, onClose }) => {
     setError(null)
 
     try {
-      const tx = await withdrawFunds(campaign.contractAddress, walletClient)
-      await tx.wait()
-      setHasClaimed(true)
+      // Call withdrawFunds without waiting for transaction
+      await withdrawFunds(campaign.contractAddress, walletClient)
+      
+      // Show success message
       toast.success("Funds claimed successfully!")
+      
+      // Update claim status
+      setHasClaimed(true)
+      
+      // Close modal after successful claim
+      setTimeout(() => {
+        onClose()
+      }, 2000)
     } catch (error) {
       console.error("Error claiming funds:", error)
       setError("Failed to claim funds. Please try again.")
@@ -105,7 +114,7 @@ const ClaimFundModal = ({ campaign, onClose }) => {
           </div>
 
           {/* Claim Amount */}
-          <div className="p-4 bg-green-50 rounded-xl border border-green-100">
+          {/* <div className="p-4 bg-green-50 rounded-xl border border-green-100">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Amount to Claim</p>
@@ -117,7 +126,7 @@ const ClaimFundModal = ({ campaign, onClose }) => {
                 <Coins size={20} className="text-green-600" />
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Error Message */}
           {error && (

@@ -112,7 +112,7 @@ function About() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-8">
-              About <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600">AidChain</span>
+              About <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-600">KarunyaSetu</span>
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Revolutionizing disaster relief through blockchain technology, ensuring every donation reaches those who need it most.
@@ -145,7 +145,7 @@ function About() {
               </div>
               <h2 className="text-3xl font-bold mb-6">Empowering Communities Through Technology</h2>
               <p className="text-gray-600 mb-8 leading-relaxed">
-                At AidChain, we believe that technology can bridge the gap between generosity and impact. Our mission is to create a world where aid reaches those in need swiftly and transparently, powered by blockchain technology.
+                At KarunyaSetu, we believe that technology can bridge the gap between generosity and impact. Our mission is to create a world where aid reaches those in need swiftly and transparently, powered by blockchain technology.
               </p>
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
