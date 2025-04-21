@@ -101,7 +101,7 @@ KarunyaSetu solves the **inefficiencies, corruption, and delays in traditional d
 ## frontend
 ```bash
 # Clone the repo
-git clone https://github.com/your-team/karunyasetu
+git clone https://github.com/Sribabu-Mandraju/karunyasetu
 
 # Install dependencies
 cd frontend
