@@ -39,6 +39,7 @@ const App = () => {
         <Route path="/donation" element={<DonationPage />} />
         <Route path="/campaign/:proposalId" element={<CampaignDetailsPage />} />
       </Routes>
+    
     </Router>
     <ChatBot />
     </>
