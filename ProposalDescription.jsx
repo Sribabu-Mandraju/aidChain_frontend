@@ -14,6 +14,8 @@ const ProposalDescription = ({ proposal }) => {
       return
     }
 
+    //
+
     setIsLoading(true)
     try {
       const response = await fetch('https://disaster-summary-3.onrender.com/get_disaster_summary', {
