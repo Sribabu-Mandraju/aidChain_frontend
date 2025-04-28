@@ -24,7 +24,7 @@ import {
 } from "../../providers/disasterRelief_provider"
 
 const CampaignDetails = () => {
-  const { campaignId } = useParams()
+  const { proposalId } = useParams()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [currentState, setCurrentState] = useState(null)
@@ -42,8 +42,8 @@ const CampaignDetails = () => {
   // Get campaign from Redux store
   const campaigns = useSelector((state) => state.campaigns.campaigns)
   console.log(campaigns)
-  const campaign = campaigns.find(c => c.id === "0x9F1f566C52aa6D0D82B24144D236B7037351B555")
-  console.log(campaign)
+  const campaign = campaigns.find(c => c.id === proposalId)
+
 
   // Fetch campaign state and timelines
   useEffect(() => {
